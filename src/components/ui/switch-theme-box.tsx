@@ -1,40 +1,35 @@
 "use client";
 
-import {Switch} from "@/components/ui/switch";
-import {useState} from "react";
-import {theme} from "@/app/styles/theme";
+import { useTheme } from "next-themes";
+import { Switch } from "@/components/ui/switch";
+import { SunIcon, MoonIcon } from "lucide-react";
 
-type SwitchThemeBoxProps = {
-    modeInicial?: "light" | "dark";
-    onModeChange?: (mode: "light" | "dark") => void;
-};
+import { useEffect, useState } from "react";
 
-export function SwitchThemeBox({ modeInicial = "light", onModeChange }: SwitchThemeBoxProps) {
-    const [mode, setMode] = useState<"light" | "dark">(modeInicial);
+export function SwitchThemeBox() {
+    const { setTheme, theme } = useTheme();
+    const [mounted, setMounted] = useState(false);
 
-    const handleSwitch = () => {
-        const novoModo = mode === "light" ? "dark" : "light";
-        setMode(novoModo);
-        if (onModeChange) onModeChange(novoModo);
-    };
+    useEffect(() => setMounted(true), []);
+
+    if (!mounted) return null; // evita mismatch no SSR
 
     return (
-        <div style={{
-            background: theme[mode].colors.background,
-            color: theme[mode].colors.text,
-            padding: "1rem",
-        }}>
-            <div className="flex items-center space-x-2 mb-4">
+        <div style={{ padding: "1rem" }}>
+            <div className="flex items-center justify-end space-x-2 mb-4">
                 <Switch
                     id="theme-switch"
-                    checked={mode === "dark"}
-                    onCheckedChange={handleSwitch}
+                    checked={theme === "dark"}
+                    onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+                    className="data-[state=unchecked]:bg-orange-600 data-[state=checked]:bg-indigo-400"
                 />
-                <img
-                    src={mode === "light" ? "/images/ic_sun.svg" : "/images/ic_moon.svg"}
-                    alt={mode === "light" ? "Sol" : "Lua"}
-                    className="w-6 h-6"
-                />
+                <label htmlFor="theme-switch" className="cursor-pointer">
+                    {theme === "dark" ? (
+                        <MoonIcon className="text-indigo-400" />
+                    ) : (
+                        <SunIcon className="text-orange-600" />
+                    )}
+                </label>
             </div>
         </div>
     );

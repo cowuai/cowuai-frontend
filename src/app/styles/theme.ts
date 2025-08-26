@@ -5,7 +5,7 @@ export const theme = {
         colors: {
             primary: "#7f1d1d",      // red-900
             text: "#0c0a09",         // stone-950
-            background: "#f5f5f4",   // stone-100
+            background: "#E5E5E5",   // stone-100
             accent: {
                 redTriangulo: "#f63940",
                 orange: "#fb923c",
