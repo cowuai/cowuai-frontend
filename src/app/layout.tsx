@@ -32,3 +32,10 @@ export default function RootLayout({
     </html>
   );
 }
+
+import { Tsukimi_Rounded } from "next/font/google";
+
+const tsukimi = Tsukimi_Rounded({
+  subsets: ["latin"],
+  weight: ["600"], // semibold
+});
