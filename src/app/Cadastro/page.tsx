@@ -142,7 +142,7 @@ export default function CadastroPage() {
         >
           <div className="flex w-12 items-start justify-center bg-white">
             <Link
-              href="/"
+              href="/login"
               className="mt-13 ml-6 text-black hover:text-red-900 transition-colors"
             >
               <ArrowLeft className="w-7 h-7" strokeWidth={1} />

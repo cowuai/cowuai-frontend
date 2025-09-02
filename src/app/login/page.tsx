@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function LoginPage() {
   return (
@@ -65,9 +66,9 @@ export default function LoginPage() {
 
             <p className="text-sm text-center mt-4">
               Não possui uma conta?{" "}
-              <a href="#" className="text-red-900 hover:underline">
+              <Link href="/Cadastro" className="text-red-900 hover:underline">
                 Cadastre-se
-              </a>
+              </Link>
             </p>
           </div>
         </div>
