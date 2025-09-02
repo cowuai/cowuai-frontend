@@ -7,7 +7,7 @@ import {ThemeProvider} from "@/components/theme-provider"
 const ubuntu = Ubuntu_Sans({
     variable: "--font-ubuntu",
     subsets: ["latin"],
-    weight: ["400", "700"],
+    weight: ["400", "600", "700"],
 });
 
 const tsukimiRounded = Tsukimi_Rounded({
@@ -45,10 +45,3 @@ export default function RootLayout({children}: RootLayoutProps) {
         </>
     )
 }
-
-import { Tsukimi_Rounded } from "next/font/google";
-
-const tsukimi = Tsukimi_Rounded({
-  subsets: ["latin"],
-  weight: ["600"], // semibold
-});
