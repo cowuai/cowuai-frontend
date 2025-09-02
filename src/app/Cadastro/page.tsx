@@ -36,15 +36,63 @@ const tsukimi = Tsukimi_Rounded({
   weight: ["300", "400", "600"],
 });
 
+// --- helpers de validação ---
+const onlyDigits = (s: string) => s.replace(/\D/g, "");
+
+function isValidCPF(cpfRaw: string): boolean {
+  const cpf = onlyDigits(cpfRaw);
+  if (!/^\d{11}$/.test(cpf)) return false;
+  if (/^(\d)\1{10}$/.test(cpf)) return false; // todos iguais
+
+  // dígitos verificadores
+  const calcDigit = (base: string, factorStart: number) => {
+    let sum = 0, factor = factorStart;
+    for (const ch of base) sum += parseInt(ch, 10) * factor--;
+    const rest = sum % 11;
+    return rest < 2 ? 0 : 11 - rest;
+  };
+
+  const d1 = calcDigit(cpf.slice(0, 9), 10);
+  const d2 = calcDigit(cpf.slice(0, 9) + d1.toString(), 11);
+  return cpf.endsWith(`${d1}${d2}`);
+}
+
+function isValidBirthDateStr(s: string): boolean {
+  // espera "YYYY-MM-DD"
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const d = new Date(s + "T00:00:00");
+  if (Number.isNaN(d.getTime())) return false;
+
+  const today = new Date();
+  // não pode ser no futuro
+  if (d > today) return false;
+
+  // idade máxima (ex.: 120 anos)
+  const oldest = new Date();
+  oldest.setFullYear(oldest.getFullYear() - 120);
+  if (d < oldest) return false;
+
+  return true;
+}
+
+
 const schema = z
   .object({
     name: z.string().min(3, "Informe seu nome completo"),
     email: z.string().email("E-mail inválido"),
     password: z.string().min(6, "Mínimo 6 caracteres"),
     confirm: z.string().min(6, "Confirme a senha"),
-    terms: z.boolean().refine((v) => v, {
-      message: "Aceite os termos de uso",
-    }),
+    terms: z.boolean().refine((v) => v, { message: "Aceite os termos de uso" }),
+
+    // 👇 novos
+    cpf: z
+      .string()
+      .min(11, "Informe o CPF")
+      .refine((v) => isValidCPF(v), "CPF inválido"),
+    birthDate: z
+      .string()
+      .refine((v) => isValidBirthDateStr(v), "Data de nascimento inválida"),
+
     farmName: z.string().min(3, "Informe o nome da fazenda"),
     address: z.string().min(5, "Informe o endereço"),
     city: z.string().min(2, "Informe a cidade"),
@@ -66,11 +114,17 @@ export default function CadastroPage() {
       password: "",
       confirm: "",
       terms: false,
+
+      // 👇 novos
+      cpf: "",
+      birthDate: "",
+
       farmName: "",
       address: "",
       city: "",
       size: 1,
     },
+
     mode: "onTouched",
   });
 
@@ -89,13 +143,14 @@ export default function CadastroPage() {
           <div className="flex w-12 items-start justify-center bg-white">
             <Link
               href="/"
-              className="mt-6 ml-4 text-black hover:text-red-900 transition-colors"
+              className="mt-13 ml-6 text-black hover:text-red-900 transition-colors"
             >
               <ArrowLeft className="w-7 h-7" strokeWidth={1} />
             </Link>
           </div>
+
           <div className="flex items-center justify-center w-1/2 bg-white">
-            <Card className="w-full max-w-md border-0 shadow-none py-10">
+            <Card className="w-full max-w-md border-0 shadow-none py-8">
               <CardHeader>
                 <CardTitle
                   className={`${tsukimi.className} text-3xl font-semibold text-red-900`}
@@ -120,13 +175,53 @@ export default function CadastroPage() {
                           <Input
                             placeholder="Digite seu nome..."
                             {...field}
-                            className=" border-red-900 focus-visible:ring-0 focus:border-red-90"
+                            className=" border-red-900 focus-visible:ring-0 focus:border-red-900"
+
                           />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="cpf"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-red-900">CPF</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="000.000.000-00"
+                            {...field}
+                            className=" border-red-900 focus-visible:ring-0 focus:border-red-900"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Data de Nascimento */}
+                  <FormField
+                    control={form.control}
+                    name="birthDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-red-900">Data de Nascimento</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            {...field}
+                            className="border-red-900 focus-visible:ring-0 focus:border-red-900"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+
                   <FormField
                     control={form.control}
                     name="email"
@@ -138,7 +233,7 @@ export default function CadastroPage() {
                             type="email"
                             placeholder="Digite seu e-mail..."
                             {...field}
-                            className=" border-red-900 focus-visible:ring-0 focus:border-red-90"
+                            className=" border-red-900 focus-visible:ring-0 focus:border-red-900"
                           />
                         </FormControl>
                         <FormMessage />
@@ -156,7 +251,7 @@ export default function CadastroPage() {
                             type="password"
                             placeholder="Digite sua senha..."
                             {...field}
-                            className=" border-red-900 focus-visible:ring-0 focus:border-red-90"
+                            className=" border-red-900 focus-visible:ring-0 focus:border-red-900"
                           />
                         </FormControl>
                         <FormMessage />
@@ -183,7 +278,8 @@ export default function CadastroPage() {
                       </FormItem>
                     )}
                   />
-                  <FormField
+
+                  {/* <FormField
                     control={form.control}
                     name="terms"
                     render={({ field }) => (
@@ -203,11 +299,13 @@ export default function CadastroPage() {
                         </div>
                       </FormItem>
                     )}
-                  />
+                  /> */}
                 </div>
               </CardContent>
             </Card>
           </div>
+
+          {/* ... conteúdo da coluna direita ... */}
           <div className="flex w-1/2 bg-white p-8 items-stretch">
             <Card className="w-full h-full bg-red-900 text-white flex flex-col border-0 shadow-none">
               <CardHeader>
@@ -216,7 +314,7 @@ export default function CadastroPage() {
                 >
                   Dados da Fazenda
                 </CardTitle>
-                <CardDescription className="text-[12px] !text-white/80 text-center">
+                <CardDescription className="text-[12px] !text-white  text-center">
                   Preencha os campos com os dados da sua fazenda
                 </CardDescription>
               </CardHeader>
@@ -229,7 +327,7 @@ export default function CadastroPage() {
                     <FormItem>
                       <FormLabel>Nome da Fazenda</FormLabel>
                       <FormControl>
-                        <Input
+                        <Input className=" text-white placeholder:text-white/80 focus:border-white"
                           placeholder="Digite o nome da fazenda..."
                           {...field}
                         />
@@ -245,7 +343,7 @@ export default function CadastroPage() {
                     <FormItem>
                       <FormLabel>Endereço / Localidade</FormLabel>
                       <FormControl>
-                        <Input
+                        <Input className="text-white placeholder:text-white/80 focus:border-white"
                           placeholder="Digite o endereço da fazenda..."
                           {...field}
                         />
@@ -261,7 +359,9 @@ export default function CadastroPage() {
                     <FormItem>
                       <FormLabel>Cidade</FormLabel>
                       <FormControl>
-                        <Input placeholder="Digite a cidade..." {...field} />
+                        <Input className=" text-white placeholder:text-white/80 focus:border-white"
+                          placeholder="Digite a cidade..."
+                          {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -272,21 +372,22 @@ export default function CadastroPage() {
                   name="size"
                   render={({ field: { value, onChange } }) => (
                     <FormItem>
-                      <FormLabel>Defina o porte</FormLabel>
+                      <FormLabel className="text-white">Defina o porte</FormLabel>
                       <FormControl>
                         <div className="flex items-center gap-4">
-                          <span>Pequena</span>
+                          <span className="text-white/80">Pequena</span>
                           <Slider
-                            onValueChange={(val: number[]) => onChange(val[0])}
-                            defaultValue={[1]}
+                            value={[value ?? 1]}                   // controla pelo form
+                            onValueChange={(v) => onChange(v[0])}  // salva como number
+                            min={1}
                             max={3}
                             step={1}
                             className="w-full"
-                            trackClassName="bg-black"
-                            rangeClassName="bg-pink-300"
-                            thumbClassName="h-4 w-4 bg-pink-300 focus-visible:ring-pink-300"
+                            trackClassName="bg-white/30"
+                            rangeClassName="bg-white"
+                            thumbClassName="h-4 w-4 border-white bg-red-900"
                           />
-                          <span>Grande</span>
+                          <span className="text-white/80">Grande</span>
                         </div>
                       </FormControl>
                       <FormMessage />
