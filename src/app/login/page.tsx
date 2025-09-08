@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function LoginPage() {
   return (
-    <main className="flex items-center justify-center min-h-screen bg-gray-200 dark:bg-gray-800 transition-colors duration-500">
+    <main className="flex items-center justify-center min-h-screen transition-colors duration-500">
       <div className="flex w-[900px] h-[500px] rounded-lg overflow-hidden shadow-lg">
         {/* Coluna esquerda */}
         <div className="flex items-center justify-center w-1/2 bg-white">
@@ -66,7 +66,7 @@ export default function LoginPage() {
 
             <p className="text-sm text-center mt-4">
               Não possui uma conta?{" "}
-              <Link href="/Cadastro" className="text-red-900 hover:underline">
+              <Link href="/cadastro" className="text-red-900 hover:underline">
                 Cadastre-se
               </Link>
             </p>
