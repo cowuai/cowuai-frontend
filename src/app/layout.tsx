@@ -35,7 +35,7 @@ export default function RootLayout({children}: RootLayoutProps) {
                 enableSystem
                 disableTransitionOnChange
             >
-          <div className="w-full h-12 bg-gray-200 dark:bg-gray-800 transition-colors duration-500 flex items-center justify-end px-4">
+          <div className="fixed top-0 right-0 w-auto flex items-center justify-end z-50 p-4">
             <SwitchThemeBox />
           </div>
                 {children}
