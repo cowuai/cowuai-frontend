@@ -80,9 +80,10 @@ export default function DashboardPage() {
         fill: true,
         backgroundColor: darkMode
           ? "rgba(99, 102, 241, 0.3)"
-          : "rgba(59, 130, 246, 0.3)",
-        borderColor: darkMode ? "#6366F1" : "#3B82F6",
+          : "rgba(243, 151, 75, 0.3)",
+        borderColor: darkMode ? "#F97316" : "#F97316",
         tension: 0.3,
+        borderWidth: 2,
       },
     ],
   };
