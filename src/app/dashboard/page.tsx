@@ -174,8 +174,8 @@ export default function DashboardPage() {
           href="/dashboard"
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors duration-500 ${
             darkMode
-              ? "hover:bg-stone-800 text-stone-100"
-              : "hover:bg-stone-200 text-stone-950"
+          ? "bg-white border border-white text-stone-950"
+          : "hover:bg-red-200 text-stone-950" 
           }`}
         >
           <LuLayoutDashboard size={20} className="text-red-600" />
@@ -186,28 +186,28 @@ export default function DashboardPage() {
           <summary
             className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors duration-500 ${
               darkMode
-                ? "hover:bg-stone-800 text-stone-100"
-                : "hover:bg-stone-200 text-stone-950"
+            ? "bg-white border border-white text-stone-950"
+            : "hover:bg-red-200 text-stone-950" 
             }`}
           >
             <PiCow size={20} className="text-red-600" />
             {sidebarOpen && <span>Gerenciar Animais</span>}
           </summary>
           {sidebarOpen && (
-            <ul className="ml-6 mt-2 space-y-1 text-sm">
-              <li>
-                <Link href="#">Cadastrar Animal</Link>
-              </li>
-              <li>
-                <Link href="#">Atualizar Animal</Link>
-              </li>
-              <li>
-                <Link href="#">Excluir Animal</Link>
-              </li>
-              <li>
-                <Link href="#">Visualizar Animal</Link>
-              </li>
-            </ul>
+            <ul className="ml-6 mt-2 space-y-1 text-sm bg-white border border-white rounded-md p-2">
+            <li className="hover:bg-red-200 rounded-md px-2 py-1">
+              <Link href="#">Cadastrar Animal</Link>
+            </li>
+            <li className="hover:bg-red-200 rounded-md px-2 py-1">
+              <Link href="#">Atualizar Animal</Link>
+            </li>
+            <li className="hover:bg-red-200 rounded-md px-2 py-1">
+              <Link href="#">Excluir Animal</Link>
+            </li>
+            <li className="hover:bg-red-200 rounded-md px-2 py-1">
+              <Link href="#">Visualizar Animal</Link>
+            </li>
+          </ul>
           )}
         </details>
 
@@ -215,8 +215,8 @@ export default function DashboardPage() {
           href="#"
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors duration-500 ${
             darkMode
-              ? "hover:bg-stone-800 text-stone-100"
-              : "hover:bg-stone-200 text-stone-950"
+          ? "bg-white border border-white text-stone-950"
+          : "hover:bg-red-200 text-stone-950" 
           }`}
         >
           <PiUsersThree size={20} className="text-red-600" />
