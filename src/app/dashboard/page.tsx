@@ -318,7 +318,7 @@ export default function DashboardPage() {
 
           {/* Tipos de Criações na Fazenda */}
           <div
-            className={`col-span-2 lg:col-span-1 p-6 rounded-xl shadow transition-colors duration-500 ${
+            className={`lg:col-start-3 p-6 rounded-xl shadow transition-colors duration-500 ${
               darkMode ? "bg-stone-950" : "bg-white"
             }`}
           >
