@@ -56,7 +56,7 @@ export default function DashboardPage() {
       {
         label: "Natalidade",
         data: [10, 20, 15, 25],
-        borderColor: darkMode ? "#818CF8" : "#10B981",
+        borderColor: darkMode ? "#10B981" : "#10B981",
         backgroundColor: "transparent",
         tension: 0.4,
         borderWidth: 2,
@@ -80,7 +80,7 @@ export default function DashboardPage() {
         data: [500, 700, 650, 800],
         fill: true,
         backgroundColor: darkMode
-          ? "rgba(99, 102, 241, 0.3)"
+          ? "rgba(243, 151, 75, 0.3)"
           : "rgba(243, 151, 75, 0.3)",
         borderColor: darkMode ? "#F97316" : "#F97316",
         tension: 0.3,
