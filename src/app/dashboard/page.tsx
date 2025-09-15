@@ -11,6 +11,7 @@ import { PiCow } from "react-icons/pi";
 import { LuLayoutDashboard } from "react-icons/lu";
 import { PiUsersThree } from "react-icons/pi";
 import { PiKeyReturn } from "react-icons/pi";
+import { FaChevronRight, FaChevronDown } from "react-icons/fa";
 
 import {
   Chart as ChartJS,
@@ -197,6 +198,9 @@ export default function DashboardPage() {
           >
             <PiCow size={20} className="text-red-600" />
             {sidebarOpen && <span>Gerenciar Animais</span>}
+          <FaChevronRight
+            className="transition-transform duration-300 group-open:rotate-90 text-red-600" 
+          />
           </summary>
           {sidebarOpen && (
             <ul className="ml-6 mt-2 space-y-1 text-sm bg-white border border-white rounded-md p-2">
@@ -226,6 +230,9 @@ export default function DashboardPage() {
         >
           <PiUsersThree size={20} className="text-red-600" />
           {sidebarOpen && <span>Gerenciar Fazenda</span>}
+          <FaChevronRight
+            className="transition-transform duration-300 group-open:rotate-90 text-red-600" 
+          />
         </summary>
         {sidebarOpen && (
           <ul className="ml-6 mt-2 space-y-1 text-sm bg-white border border-white rounded-md p-2">
