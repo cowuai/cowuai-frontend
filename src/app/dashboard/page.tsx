@@ -216,17 +216,35 @@ export default function DashboardPage() {
           )}
         </details>
 
-        <Link
-          href="#"
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors duration-500 ${
+        <details className="group">
+        <summary
+          className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors duration-500 ${
             darkMode
-          ? "bg-white border border-white text-stone-950"
-          : "hover:bg-red-200 text-stone-950" 
+              ? "bg-white border border-white text-stone-950"
+              : "hover:bg-red-200 text-stone-950"
           }`}
         >
           <PiUsersThree size={20} className="text-red-600" />
           {sidebarOpen && <span>Gerenciar Fazenda</span>}
-        </Link>
+        </summary>
+        {sidebarOpen && (
+          <ul className="ml-6 mt-2 space-y-1 text-sm bg-white border border-white rounded-md p-2">
+            <li className="hover:bg-red-200 rounded-md px-2 py-1">
+              <Link href="#">Cadastrar Fazenda</Link>
+            </li>
+            <li className="hover:bg-red-200 rounded-md px-2 py-1">
+              <Link href="#">Atualizar Fazenda</Link>
+            </li>
+            <li className="hover:bg-red-200 rounded-md px-2 py-1">
+              <Link href="#">Excluir Fazenda</Link>
+            </li>
+            <li className="hover:bg-red-200 rounded-md px-2 py-1">
+              <Link href="#">Visualizar Fazenda</Link>
+            </li>
+          </ul>
+        )}
+</details>
+
       </nav>
     </div>
   </aside>
@@ -267,15 +285,20 @@ export default function DashboardPage() {
 
             {/* Card Taxa Reprodução Efetiva */}
             <div className="flex items-center p-4 rounded-xl shadow-md bg-orange-600/20 text-white w-52 h-24 gap-3">
-              <GiSeedling size={30} className="text-white" />
-              <div className="flex flex-col justify-center flex-1 text-right">
-                <h2 className="text-lg font-medium leading-snug">
-                  Taxa de Reprodução <br />
-                  Efetiva
-                </h2>
-                <p className="text-sm">85%</p>
-              </div>
+            <Image
+              src="/images/sperm.svg"
+              alt="Ícone de reprodução"
+              width={30}
+              height={30}
+            />
+            <div className="flex flex-col justify-center flex-1 text-right">
+              <h2 className="text-lg font-medium leading-snug">
+                Taxa de Reprodução <br />
+                Efetiva
+              </h2>
+              <p className="text-sm">85%</p>
             </div>
+          </div>
           </div>
         </div>
 
