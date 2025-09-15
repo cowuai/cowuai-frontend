@@ -203,7 +203,7 @@ export default function DashboardPage() {
           />
           </summary>
           {sidebarOpen && (
-            <ul className="ml-1 mt-2 space-y-1 text-md bg-white border border-white rounded-md p-2">
+            <ul className="mt-2 space-y-1 text-md bg-white border border-white rounded-md p-2">
             <li className="hover:bg-red-200 rounded-md px-2 py-1">
               <Link href="#">Cadastrar Animal</Link>
             </li>
@@ -235,7 +235,7 @@ export default function DashboardPage() {
           />
         </summary>
         {sidebarOpen && (
-          <ul className="ml-1 mt-2 space-y-1 text-md bg-white border border-white rounded-md p-2">
+          <ul className="mt-2 space-y-1 text-md bg-white border border-white rounded-md p-2">
             <li className="hover:bg-red-200 rounded-md px-2 py-1">
               <Link href="#">Cadastrar Fazenda</Link>
             </li>
