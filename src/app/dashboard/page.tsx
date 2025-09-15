@@ -4,10 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { PlusCircle, KeyRound } from "lucide-react";
 import { Line, Bar, Pie } from "react-chartjs-2";
 import { Cross } from "lucide-react"; //cruz do card de animais doentes
 import { GiSeedling } from "react-icons/gi"; //vaso com planta do card de taxa de reprodução efetiva
+import { PiCow } from "react-icons/pi";
+import { LuLayoutDashboard } from "react-icons/lu";
+import { PiUsersThree } from "react-icons/pi";
+import { PiKeyReturn } from "react-icons/pi";
 
 import {
   Chart as ChartJS,
@@ -39,6 +42,7 @@ ChartJS.register(
 export default function DashboardPage() {
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true); //estado para abrir e fechar sidebar
   useEffect(() => setMounted(true), []);
   if (!mounted) return null;
 
@@ -133,6 +137,8 @@ export default function DashboardPage() {
     },
   };
 
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen); //função para abrir e fechar sidebar 
+
   // ---------------- Layout ----------------
   return (
     <div
@@ -140,73 +146,86 @@ export default function DashboardPage() {
         darkMode ? "bg-stone-900 text-stone-100" : "bg-white text-stone-950"
       }`}
     >
-      {/* Sidebar */}
-      <aside
-        className={`w-64 p-6 flex flex-col justify-between shadow-lg transition-colors duration-500 ${
-          darkMode ? "bg-stone-950" : "bg-stone-50"
-        }`}
-      >
-        <div>
-          <div className="flex items-center gap-3 mb-10">
-            <Image
-              src="/images/cowuai-logo.png"
-              alt="CowUai Logo"
-              width={100}
-              height={100}
-            />
-          </div>
+    {/* Sidebar */}
+  <aside
+    className={`flex flex-col justify-between shadow-lg transition-all duration-300 ${
+      darkMode ? "bg-stone-950" : "bg-stone-50"
+    } ${sidebarOpen ? "w-64 p-6" : "w-20 p-2"}`} //largura muda
+  >
+    <div>
+      {/* Logo + Toggle */}
+      <div className="flex items-center justify-between mb-10">
+        <Image
+          src="/images/cowuai-logo.png"
+          alt="CowUai Logo"
+          width={sidebarOpen ? 100 : 40} //logo diminui ao recolher
+          height={sidebarOpen ? 100 : 40}
+        />
+        <PiKeyReturn
+          size={30}
+          className="text-red-600 cursor-pointer"
+          onClick={toggleSidebar} //função para recolher a sidebar
+        />
+      </div>
 
-          <nav className="space-y-2">
-            <Link
-              href="/dashboard"
-              className={`block px-4 py-2 rounded-lg font-medium transition-colors duration-500 ${
-                darkMode
-                  ? "hover:bg-stone-800 text-stone-100"
-                  : "hover:bg-stone-200 text-stone-950"
-              }`}
-            >
-              Dashboard
-            </Link>
+      {/* Navegação */}
+      <nav className="space-y-2">
+        <Link
+          href="/dashboard"
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors duration-500 ${
+            darkMode
+              ? "hover:bg-stone-800 text-stone-100"
+              : "hover:bg-stone-200 text-stone-950"
+          }`}
+        >
+          <LuLayoutDashboard size={20} className="text-red-600" />
+          {sidebarOpen && <span>Dashboard</span>}
+        </Link>
 
-            <details className="group">
-              <summary
-                className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors duration-500 ${
-                  darkMode
-                    ? "hover:bg-stone-800 text-stone-100"
-                    : "hover:bg-stone-200 text-stone-950"
-                }`}
-              >
-                Animais
-              </summary>
-              <ul className="ml-6 mt-2 space-y-1 text-sm">
-                <li>
-                  <Link href="#">Cadastrar Animal</Link>
-                </li>
-                <li>
-                  <Link href="#">Atualizar Animal</Link>
-                </li>
-                <li>
-                  <Link href="#">Excluir Animal</Link>
-                </li>
-                <li>
-                  <Link href="#">Visualizar Animal</Link>
-                </li>
-              </ul>
-            </details>
+        <details className="group">
+          <summary
+            className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors duration-500 ${
+              darkMode
+                ? "hover:bg-stone-800 text-stone-100"
+                : "hover:bg-stone-200 text-stone-950"
+            }`}
+          >
+            <PiCow size={20} className="text-red-600" />
+            {sidebarOpen && <span>Gerenciar Animais</span>}
+          </summary>
+          {sidebarOpen && (
+            <ul className="ml-6 mt-2 space-y-1 text-sm">
+              <li>
+                <Link href="#">Cadastrar Animal</Link>
+              </li>
+              <li>
+                <Link href="#">Atualizar Animal</Link>
+              </li>
+              <li>
+                <Link href="#">Excluir Animal</Link>
+              </li>
+              <li>
+                <Link href="#">Visualizar Animal</Link>
+              </li>
+            </ul>
+          )}
+        </details>
 
-            <Link
-              href="#"
-              className={`block px-4 py-2 rounded-lg font-medium transition-colors duration-500 ${
-                darkMode
-                  ? "hover:bg-stone-800 text-stone-100"
-                  : "hover:bg-stone-200 text-stone-950"
-              }`}
-            >
-              Gerenciar Fazenda
-            </Link>
-          </nav>
-        </div>
-      </aside>
+        <Link
+          href="#"
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors duration-500 ${
+            darkMode
+              ? "hover:bg-stone-800 text-stone-100"
+              : "hover:bg-stone-200 text-stone-950"
+          }`}
+        >
+          <PiUsersThree size={20} className="text-red-600" />
+          {sidebarOpen && <span>Gerenciar Fazenda</span>}
+        </Link>
+      </nav>
+    </div>
+  </aside>
+
 
       {/* Conteúdo principal */}
       <main className="flex-1 p-10 transition-colors duration-500">
