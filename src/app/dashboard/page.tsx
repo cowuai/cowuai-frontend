@@ -55,14 +55,18 @@ export default function DashboardPage() {
       {
         label: "Natalidade",
         data: [10, 20, 15, 25],
-        borderColor: darkMode ? "#818CF8" : "#3B82F6",
+        borderColor: darkMode ? "#818CF8" : "#10B981",
         backgroundColor: "transparent",
+        tension: 0.4,
+        borderWidth: 2,
       },
       {
         label: "Mortalidade",
         data: [5, 10, 8, 12],
-        borderColor: darkMode ? "#F472B6" : "#EF4444",
+        borderColor: darkMode ? "#F97316" : "#F97316",
         backgroundColor: "transparent",
+        tension: 0.4,
+        borderWidth: 2,
       },
     ],
   };
