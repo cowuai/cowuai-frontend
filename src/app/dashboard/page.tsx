@@ -73,7 +73,7 @@ export default function DashboardPage() {
   };
 
   const areaData = {
-    labels: ["Jan", "Fev", "Mar", "Abr"],
+    labels: ["Janeiro", "Fevereiro", "Março", "Abril"],
     datasets: [
       {
         label: "Gastos com Ração",
