@@ -77,6 +77,8 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
+    --dashboard-primary: 20 90% 70%; 
+    --dashboard-primary-foreground: 0 0% 100%;
 }
 
 .dark {
@@ -111,6 +113,8 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+    --dashboard-primary: 240 60% 60%;
+    --dashboard-primary-foreground: 0 0% 100%;
 }
 
 @layer base {
