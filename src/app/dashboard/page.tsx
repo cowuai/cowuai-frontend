@@ -173,83 +173,40 @@ export default function DashboardPage() {
 
       {/* Navegação */}
       <nav className="space-y-2">
-        <Link
-          href="/dashboard"
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors duration-500 ${
-            darkMode
-          ? "bg-white border border-white text-stone-950"
-          : "hover:bg-red-200 text-stone-950" 
-          }`}
-        >
-          <LuLayoutDashboard size={20} className="text-red-600" />
-          {sidebarOpen && <span>Dashboard</span>}
-        </Link>
+  <Link
+    href="/dashboard"
+    className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors duration-500 bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+  >
+    <LuLayoutDashboard size={20} className="text-red-600" />
+    {sidebarOpen && <span>Dashboard</span>}
+  </Link>
 
-        <details className="group">
-          <summary
-            className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors duration-500 ${
-              darkMode
-            ? "bg-white border border-white text-stone-950"
-            : "hover:bg-red-200 text-stone-950" 
-            }`}
-          >
-            <PiCow size={20} className="text-red-600" />
-            {sidebarOpen && <span>Gerenciar Animais</span>}
-          <FaChevronRight
-            className="transition-transform duration-300 group-open:rotate-90 text-red-600" 
-          />
-          </summary>
-          {sidebarOpen && (
-            <ul className="mt-2 space-y-1 text-md bg-white border border-white rounded-md p-2">
-            <li className="hover:bg-red-200 rounded-md px-2 py-1">
-              <Link href="#">Cadastrar Animal</Link>
-            </li>
-            <li className="hover:bg-red-200 rounded-md px-2 py-1">
-              <Link href="#">Atualizar Animal</Link>
-            </li>
-            <li className="hover:bg-red-200 rounded-md px-2 py-1">
-              <Link href="#">Excluir Animal</Link>
-            </li>
-            <li className="hover:bg-red-200 rounded-md px-2 py-1">
-              <Link href="#">Visualizar Animal</Link>
-            </li>
-          </ul>
-          )}
-        </details>
+  <details className="group">
+    <summary className="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors duration-500 bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+      <PiCow size={20} className="text-red-600" />
+      {sidebarOpen && <span>Gerenciar Animais</span>}
+      <FaChevronRight className="transition-transform duration-300 group-open:rotate-90 text-red-600" />
+    </summary>
 
-        <details className="group">
-        <summary
-          className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors duration-500 ${
-            darkMode
-              ? "bg-white border border-white text-stone-950"
-              : "hover:bg-red-200 text-stone-950"
-          }`}
-        >
-          <PiUsersThree size={20} className="text-red-600" />
-          {sidebarOpen && <span>Gerenciar Fazenda</span>}
-          <FaChevronRight
-            className="transition-transform duration-300 group-open:rotate-90 text-red-600" 
-          />
-        </summary>
-        {sidebarOpen && (
-          <ul className="mt-2 space-y-1 text-md bg-white border border-white rounded-md p-2">
-            <li className="hover:bg-red-200 rounded-md px-2 py-1">
-              <Link href="#">Cadastrar Fazenda</Link>
-            </li>
-            <li className="hover:bg-red-200 rounded-md px-2 py-1">
-              <Link href="#">Atualizar Fazenda</Link>
-            </li>
-            <li className="hover:bg-red-200 rounded-md px-2 py-1">
-              <Link href="#">Excluir Fazenda</Link>
-            </li>
-            <li className="hover:bg-red-200 rounded-md px-2 py-1">
-              <Link href="#">Visualizar Fazenda</Link>
-            </li>
-          </ul>
-        )}
-</details>
+    {sidebarOpen && (
+      <ul className="mt-2 space-y-1 text-md bg-sidebar text-sidebar-foreground rounded-md p-2">
+        <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+          <Link href="#">Cadastrar Animal</Link>
+        </li>
+        <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+          <Link href="#">Atualizar Animal</Link>
+        </li>
+        <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+          <Link href="#">Excluir Animal</Link>
+        </li>
+        <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+          <Link href="#">Visualizar Animal</Link>
+        </li>
+      </ul>
+    )}
+  </details>
+</nav>
 
-      </nav>
     </div>
   </aside>
 
