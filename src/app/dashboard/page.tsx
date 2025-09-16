@@ -147,17 +147,14 @@ export default function DashboardPage() {
 
   // ---------------- Layout ----------------
   return (
-    <div
-      className={`flex min-h-screen transition-colors duration-500 ${
-        darkMode ? "bg-stone-900 text-stone-100" : "bg-white text-stone-950"
-      }`}
-    >
+    <div className="flex min-h-screen transition-colors duration-500 bg-background text-foreground">
+
     {/* Sidebar */}
   <aside
-    className={`flex flex-col justify-between shadow-lg transition-all duration-300 ${
-      darkMode ? "bg-stone-950" : "bg-stone-50"
-    } ${sidebarOpen ? "w-64 p-6" : "w-20 p-2"}`} //largura muda
-  >
+  className={`flex flex-col justify-between shadow-lg transition-all duration-300 bg-sidebar text-sidebar-foreground ${
+    sidebarOpen ? "w-64 p-6" : "w-20 p-2" //largura muda
+  }`}
+>
     <div>
       {/* Logo + Toggle */}
       <div className="flex items-center justify-between mb-10">
@@ -277,35 +274,33 @@ export default function DashboardPage() {
         </header>
 
         {/* Card principal */}
-        <div className="w-full mb-10 p-8 rounded-2xl shadow-lg bg-gradient-to-r from-orange-600/60 to-orange-600/60">
+        <div className="w-full mb-10 p-8 rounded-2xl shadow-lg bg-[hsl(var(--dashboard-primary))] text-[hsl(var(--dashboard-primary-foreground))]">
           <div className="flex gap-6 justify-start">
             {/* Card Animais Doentes */}
-            <div className="flex items-center p-4 rounded-xl shadow-md bg-orange-600/20 text-white w-52 h-24 gap-3">
-              <Cross size={30} strokeWidth={2} className="text-white" />
+            <div className="flex items-center p-4 rounded-xl shadow-md bg-[hsl(var(--dashboard-primary))] text-[hsl(var(--dashboard-primary-foreground))] w-52 h-24 gap-3">
+              <Cross size={30} strokeWidth={2} className="text-[hsl(var(--dashboard-primary-foreground))]" />
               <div className="flex flex-col justify-center flex-1 text-right">
-                <h2 className="text-lg font-medium leading-snug">
-                  Animais Doentes
-                </h2>
+                <h2 className="text-lg font-medium leading-snug">Animais Doentes</h2>
                 <p className="text-sm">13 casos</p>
               </div>
             </div>
 
             {/* Card Taxa Reprodução Efetiva */}
-            <div className="flex items-center p-4 rounded-xl shadow-md bg-orange-600/20 text-white w-52 h-24 gap-3">
-            <Image
-              src="/images/sperm.svg"
-              alt="Ícone de reprodução"
-              width={30}
-              height={30}
-            />
-            <div className="flex flex-col justify-center flex-1 text-right">
-              <h2 className="text-lg font-medium leading-snug">
-                Taxa de Reprodução <br />
-                Efetiva
-              </h2>
-              <p className="text-sm">85%</p>
+            <div className="flex items-center p-4 rounded-xl shadow-md bg-[hsl(var(--dashboard-primary))] text-[hsl(var(--dashboard-primary-foreground))] w-52 h-24 gap-3">
+              <Image
+                src="/images/sperm.svg"
+                alt="Ícone de reprodução"
+                width={30}
+                height={30}
+              />
+              <div className="flex flex-col justify-center flex-1 text-right">
+                <h2 className="text-lg font-medium leading-snug">
+                  Taxa de Reprodução <br />
+                  Efetiva
+                </h2>
+                <p className="text-sm">85%</p>
+              </div>
             </div>
-          </div>
           </div>
         </div>
 
