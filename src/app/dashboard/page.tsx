@@ -173,39 +173,63 @@ export default function DashboardPage() {
 
       {/* Navegação */}
       <nav className="space-y-2">
-  <Link
-    href="/dashboard"
-    className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors duration-500 bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-  >
-    <LuLayoutDashboard size={20} className="text-red-600" />
-    {sidebarOpen && <span>Dashboard</span>}
-  </Link>
+      <Link
+        href="/dashboard"
+        className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors duration-500 bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+      >
+        <LuLayoutDashboard size={20} className="text-red-600" />
+        {sidebarOpen && <span>Dashboard</span>}
+      </Link>
 
-  <details className="group">
-    <summary className="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors duration-500 bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-      <PiCow size={20} className="text-red-600" />
-      {sidebarOpen && <span>Gerenciar Animais</span>}
-      <FaChevronRight className="transition-transform duration-300 group-open:rotate-90 text-red-600" />
-    </summary>
+      <details className="group">
+        <summary className="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors duration-500 bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+          <PiCow size={20} className="text-red-600" />
+          {sidebarOpen && <span>Gerenciar Animais</span>}
+          <FaChevronRight className="transition-transform duration-300 group-open:rotate-90 text-red-600" />
+        </summary>
 
-    {sidebarOpen && (
-      <ul className="mt-2 space-y-1 text-md bg-sidebar text-sidebar-foreground rounded-md p-2">
-        <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-          <Link href="#">Cadastrar Animal</Link>
-        </li>
-        <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-          <Link href="#">Atualizar Animal</Link>
-        </li>
-        <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-          <Link href="#">Excluir Animal</Link>
-        </li>
-        <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-          <Link href="#">Visualizar Animal</Link>
-        </li>
-      </ul>
-    )}
-  </details>
-</nav>
+        {sidebarOpen && (
+          <ul className="mt-2 space-y-1 text-md bg-sidebar text-sidebar-foreground rounded-md p-2">
+            <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <Link href="#">Cadastrar Animal</Link>
+            </li>
+            <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <Link href="#">Atualizar Animal</Link>
+            </li>
+            <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <Link href="#">Excluir Animal</Link>
+            </li>
+            <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <Link href="#">Visualizar Animal</Link>
+            </li>
+          </ul>
+        )}
+      </details>
+      <details className="group mt-2">
+      <summary className="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors duration-500 bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+        <PiUsersThree size={20} className="text-red-600" />
+        {sidebarOpen && <span>Gerenciar Fazendas</span>}
+        <FaChevronRight className="transition-transform duration-300 group-open:rotate-90 text-red-600" />
+      </summary>
+
+      {sidebarOpen && (
+        <ul className="mt-2 space-y-1 text-md bg-sidebar text-sidebar-foreground rounded-md p-2">
+          <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+            <Link href="#">Cadastrar Fazenda</Link>
+          </li>
+          <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+            <Link href="#">Atualizar Fazenda</Link>
+          </li>
+          <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+            <Link href="#">Excluir Fazenda</Link>
+          </li>
+          <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+            <Link href="#">Visualizar Fazenda</Link>
+          </li>
+        </ul>
+      )}
+    </details>
+    </nav>
 
     </div>
   </aside>
@@ -215,7 +239,9 @@ export default function DashboardPage() {
       <main className="flex-1 p-10 transition-colors duration-500">
         {/* Header */}
         <header className="flex justify-between items-start mb-8">
-          <h1 className="text-3xl text-red-900 font-title mb-6">Dashboard</h1>
+          <h1 className={`text-3xl font-title mb-6 ${darkMode ? "text-white" : "text-red-900"}`}>
+            Dashboard
+          </h1>
 
           <div className="flex items-center gap-4 mt-4">
             <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-stone-400">
@@ -269,9 +295,10 @@ export default function DashboardPage() {
               darkMode ? "bg-stone-950" : "bg-white"
             }`}
           >
-            <h2 className="text-center text-red-800 mb-2">
+            <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>
               Taxa de Natalidade e Mortalidade da Fazenda
             </h2>
+
             <div className="h-40 flex justify-center items-center">
               <Line data={lineData} options={chartOptions} />
             </div>
@@ -283,9 +310,9 @@ export default function DashboardPage() {
               darkMode ? "bg-stone-950" : "bg-white"
             }`}
           >
-            <h2 className="text-center text-red-800 mb-2">
-              Gastos com Ração Mensalmente
-            </h2>
+           <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>
+            Gastos com Ração Mensalmente
+          </h2>
             <div className="h-40 flex justify-center items-center">
               <Line data={areaData} options={chartOptions} />
             </div>
@@ -297,7 +324,9 @@ export default function DashboardPage() {
               darkMode ? "bg-stone-950" : "bg-white"
             }`}
           >
-            <h2 className="text-center text-red-800 mb-2">Animais por Setor</h2>
+            <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>
+              Animais por Setor
+            </h2>
             <div className="h-40 flex justify-center items-center">
               <Bar data={barData} options={chartOptions} />
             </div>
@@ -309,7 +338,7 @@ export default function DashboardPage() {
               darkMode ? "bg-stone-950" : "bg-white"
             }`}
           >
-            <h2 className="mb-2 text-center text-red-800">
+            <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>
               Tipos de Criações na Fazenda
             </h2>
             <div className="h-64 w-64 mx-auto flex justify-center items-center">
