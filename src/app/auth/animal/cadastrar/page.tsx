@@ -86,7 +86,7 @@ export default function CadastrarAnimalPage() {
                             {sidebarOpen && (
                                 <ul className="mt-2 space-y-1 text-md bg-sidebar text-sidebar-foreground rounded-md p-2">
                                     <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-                                        <Link href="/animal/cadastrar">Cadastrar Animal</Link>
+                                        <Link href="/auth/animal/cadastrar">Cadastrar Animal</Link>
                                     </li>
                                     <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                                         <Link href="#">Atualizar Animal</Link>
