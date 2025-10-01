@@ -150,10 +150,10 @@ export default function CadastrarFazendaPage() {
               {sidebarOpen && (
                 <ul className="mt-2 space-y-1 text-md bg-sidebar text-sidebar-foreground rounded-md p-2">
                   <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-                    <Link href="/fazenda/cadastrar">Cadastrar Fazenda</Link>
+                     <Link href="/auth/fazenda/cadastrar">Cadastrar Fazenda</Link>
                   </li>
                   <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-                    <Link href="/fazenda/listar">Listar Fazendas</Link>
+                    <Link href="/auth/fazenda/listar">Listar Fazendas</Link>
                   </li>
                   <li className="rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                     <Link href="#">Atualizar Fazenda</Link>
