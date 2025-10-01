@@ -204,7 +204,7 @@ export default function ListarFazendasPage() {
                 {/* Header */}
                 <header className="flex justify-between items-start mb-8">
                     <h1
-                        className={`${tsukimi.className} text-3xl font-semibold ${darkMode ? "text-white" : "text-red-900"
+                        className={`${tsukimi.className} text-3xl ${darkMode ? "text-white" : "text-red-900"
                             }`}
                     >
                         Listar Fazendas
@@ -232,7 +232,7 @@ export default function ListarFazendasPage() {
                     {/* Tabela (mantendo cores do head/bordas em vermelho) */}
                     <div className="w-full overflow-x-auto rounded-md border border-red-900">
                         <Table>
-                            <TableHeader className="bg-red-50/60 dark:bg-red-950/30">
+                            <TableHeader className="bg-red-700/10 dark:bg-red-950/30">
                                 <TableRow className="hover:bg-transparent border-b border-red-900/70">
                                     <TableHead className="text-red-900 dark:text-red-300">Nome</TableHead>
                                     <TableHead className="text-red-900 dark:text-red-300">Endereço</TableHead>
@@ -251,7 +251,7 @@ export default function ListarFazendasPage() {
                                 {farms.map((f) => (
                                     <TableRow
                                         key={f.id}
-                                        className="hover:bg-muted/40 border-b last:border-0 border-red-900/30"
+                                        className="hover:bg-muted/80 border-b last:border-0 border-red-900/30"
                                     >
                                         <TableCell className="font-medium">
                                             {f.farmName}
