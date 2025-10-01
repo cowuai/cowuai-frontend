@@ -277,7 +277,7 @@ export default function ListarFazendasPage() {
                                                     onClick={() => handleEdit(f.id)}
                                                     className="inline-flex items-center justify-center w-8 h-8 rounded-md
                                                     text-stone-500 hover:text-stone-700 hover:bg-stone-300
-                                                    dark:text-stone-400 dark:hover:text-red-300 dark:hover:bg-stone-900
+                                                    dark:text-stone-400 dark:hover:text-red-300 dark:hover:bg-stone-700
                                                     transition-colors"
                                                     aria-label={`Editar ${f.farmName}`}
                                                     title="Editar"
@@ -291,7 +291,7 @@ export default function ListarFazendasPage() {
                                                     onClick={() => handleDelete(f.id)}
                                                     className="inline-flex items-center justify-center w-8 h-8 rounded-md
                                                     text-stone-500 hover:text-red-700  hover:bg-stone-300
-                                                    dark:text-stone-400 dark:hover:text-red-400 dark:hover:bg-stone-900
+                                                    dark:text-stone-400 dark:hover:text-red-400 dark:hover:bg-stone-700
                                                     transition-colors"
                                                     aria-label={`Excluir ${f.farmName}`}
                                                     title="Excluir"
