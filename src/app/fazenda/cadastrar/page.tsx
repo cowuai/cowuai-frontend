@@ -87,18 +87,20 @@ export default function CadastrarFazendaPage() {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="relative w-[1000px] rounded-lg overflow-hidden shadow-lg"
+          className="w-full max-w-[900px] px-4 rounded-lg overflow-hidden"
         >
-          {/* Top bar com seta */}
-          <div className="absolute top-4 left-4 z-10">
-            <Link href="/cadastro" className="text-black hover:text-red-900 transition-colors">
+          {/* Card estreito, centralizado e RELATIVE (a seta fica ancorada nele) */}
+        <Card className="relative w-full max-w-[700px] mx-auto bg-red-900 text-white border-0 shadow-lg max-h-[80vh] overflow-y-auto">
+            {/* Seta dentro do Card */}
+            <Link
+              href="/cadastro"
+              className="absolute top-10 left-3 text-white hover:text-red-200 transition-colors"
+              aria-label="Voltar"
+            >
               <ArrowLeft className="w-7 h-7" strokeWidth={1} />
             </Link>
-          </div>
 
-          {/* Card full-width (estilo da coluna vermelha) */}
-          <Card className="w-full bg-red-900 text-white border-0 shadow-none">
-            <CardHeader className="pt-14 text-center">
+            <CardHeader className="pt-4 text-center">
               <CardTitle className={`${tsukimi.className} text-3xl font-semibold`}>
                 Cadastrar Fazenda
               </CardTitle>
@@ -107,7 +109,7 @@ export default function CadastrarFazendaPage() {
               </CardDescription>
             </CardHeader>
 
-            <CardContent className="space-y-5 px-8 pb-2">
+            <CardContent className="space-y-6 px-12 pb-">
               {/* Nome da Fazenda */}
               <FormField
                 control={form.control}
@@ -122,7 +124,6 @@ export default function CadastrarFazendaPage() {
                         className="bg-transparent text-white placeholder:text-white/70 border-white/70 focus:border-white"
                       />
                     </FormControl>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -267,9 +268,10 @@ export default function CadastrarFazendaPage() {
                     <FormItem>
                       <FormLabel className="text-white">Tipo de Afixo</FormLabel>
                       <FormControl>
+                        {/* nesse select estava o erro */}
                         <Select
-                          value={field.value ?? ""}
-                          onValueChange={(v) => field.onChange(v === "" ? null : v)}
+                          value={field.value ?? "none"}
+                          onValueChange={(v) => field.onChange(v === "none" ? null : v)}
                         >
                           <SelectTrigger className="w-full data-[placeholder]:text-white/70 [&_svg:not([class*='text-'])]:text-white border-white/70 focus:border-white">
                             <SelectValue placeholder="Selecione (opcional)" />
@@ -277,9 +279,10 @@ export default function CadastrarFazendaPage() {
                           <SelectContent>
                             <SelectItem value="preffix">Prefixo</SelectItem>
                             <SelectItem value="suffix">Sufixo</SelectItem>
-                            <SelectItem value="">— Nenhum —</SelectItem>
+                            <SelectItem value="none">— Nenhum —</SelectItem> {/* ✅ não-vazio */}
                           </SelectContent>
                         </Select>
+
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -288,10 +291,10 @@ export default function CadastrarFazendaPage() {
               </div>
             </CardContent>
 
-            <CardFooter className="p-8">
+            <CardFooter className="px-12 pb-8 flex justify-end">
               <Button
                 type="submit"
-                className="w-40 ml-auto border border-white text-white bg-red-900 hover:bg-red-800 transition-colors flex items-center justify-center"
+                className="w-40 border border-white text-white bg-red-900 hover:bg-red-800 transition-colors flex items-center justify-center"
               >
                 Salvar <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
