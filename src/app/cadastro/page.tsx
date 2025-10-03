@@ -88,9 +88,6 @@ const schema = z
         email: z.string().email("E-mail inválido"),
         password: z.string().min(6, "Mínimo 6 caracteres"),
         confirm: z.string().min(6, "Confirme a senha"),
-        terms: z.boolean().refine((v) => v, {message: "Aceite os termos de uso"}),
-
-        // 👇 novos
         cpf: z
             .string()
             .min(11, "Informe o CPF")
@@ -98,11 +95,10 @@ const schema = z
         birthDate: z
             .string()
             .refine((v) => isValidBirthDateStr(v), "Data de nascimento inválida"),
-
         farmName: z.string().min(3, "Informe o nome da fazenda"),
         address: z.string().min(5, "Informe o endereço"),
         city: z.string().min(2, "Informe a cidade"),
-        state: z.string().min(5, "Informe o estado"),
+        state: z.string().min(2, "Informe o estado"),
         country: z.string().min(5, "Informe o país"),
         size: z.number().min(1, "Informe o porte da fazenda"),
         affix: z.string().max(55, "Informe o afixo da fazenda"),
@@ -125,17 +121,13 @@ export default function CadastroPage() {
             email: "",
             password: "",
             confirm: "",
-            terms: false,
-
-            // 👇 novos
             cpf: "",
             birthDate: "",
-
             farmName: "",
             address: "",
             city: "",
             state: "",
-            country: "",
+            country: "Brasil",
             size: 1,
             affix: "",
             affixType: null,
@@ -165,7 +157,15 @@ export default function CadastroPage() {
         <main className="flex items-center justify-center min-h-screen">
             <Form {...form}>
                 <form
-                    onSubmit={form.handleSubmit(onSubmit)}
+                    onSubmit={form.handleSubmit(
+                        (values) => {
+                            console.log("Submit passou:", values);
+                            onSubmit(values);
+                        },
+                        (errors) => {
+                            console.log("Erros:", errors);
+                        }
+                    )}
                     className="flex w-8/12 h-auto rounded-lg overflow-hidden shadow-lg bg-card"
                 >
                     <div className="flex items-start justify-center bg-card">
@@ -306,28 +306,6 @@ export default function CadastroPage() {
                                             </FormItem>
                                         )}
                                     />
-
-                                    {/* <FormField
-                    control={form.control}
-                    name="terms"
-                    render={({ field }) => (
-                      <FormItem className="flex items-start gap-2">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            className=" border-red-900 focus-visible:ring-0 focus:border-red-90"
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel className="font-normal">
-                            Aceito os termos de uso
-                          </FormLabel>
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  /> */}
                                 </div>
                             </CardContent>
                         </Card>
