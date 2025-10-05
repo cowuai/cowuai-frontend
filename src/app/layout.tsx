@@ -1,20 +1,12 @@
 import type {Metadata} from "next";
-import {Ubuntu_Sans, Tsukimi_Rounded} from "next/font/google";
 import "./globals.css";
 import {SwitchThemeBox} from "@/components/ui/switch-theme-box";
-import {ThemeProvider} from "@/components/theme-provider"
-
-const ubuntu = Ubuntu_Sans({
-    variable: "--font-ubuntu",
-    subsets: ["latin"],
-    weight: ["400", "600", "700"],
-});
-
-const tsukimiRounded = Tsukimi_Rounded({
-    variable: "--font-tsukimi-rounded",
-    subsets: ["latin"],
-    weight: ["400", "700"],
-});
+import {ThemeProvider} from "@/app/providers/theme-provider"
+import React from "react";
+import LogoutButton from "@/components/ui/logout-button";
+import {HeaderActions} from "@/components/ui/header-actions";
+import {AuthProvider} from "@/app/providers/AuthProvider";
+import {Toaster} from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
     title: "CowUai",
@@ -27,19 +19,19 @@ export default function RootLayout({children}: RootLayoutProps) {
     return (
         <>
             <html lang="pt-BR" suppressHydrationWarning>
-            <head/>
-            <body className={`${ubuntu.variable} ${tsukimiRounded.variable} antialiased`}>
-            <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-            >
-          <div className="fixed top-0 right-0 w-auto flex items-center justify-end z-50 p-4">
-            <SwitchThemeBox />
-          </div>
-                {children}
-            </ThemeProvider>
+            <body className={`antialiased`}>
+            <AuthProvider>
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme="system"
+                    enableSystem
+                    disableTransitionOnChange
+                >
+                    <HeaderActions/>
+                    {children}
+                    <Toaster />
+                </ThemeProvider>
+            </AuthProvider>
             </body>
             </html>
         </>
