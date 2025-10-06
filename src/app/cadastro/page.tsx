@@ -1,6 +1,6 @@
 "use client";
 
-import { undefined, z } from "zod";
+import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -27,7 +27,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
 
 import { Tsukimi_Rounded } from "next/font/google";
 import {
@@ -38,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
+// Assumindo que Estado e Municipio são tipos definidos no seu projeto
 import { Estado } from "@/types/Estado";
 import { getUFS } from "@/actions/get-ufs";
 import { Municipio } from "@/types/Municipio";
@@ -48,8 +48,8 @@ const tsukimi = Tsukimi_Rounded({
   weight: ["300", "400", "600"],
 });
 
-// --- helpers de validação ---
-const onlyDigits = (s: string) => s.replace(/\D/g, "");
+// --- helpers de validação (Tipagem corrigida) ---
+const onlyDigits = (s: string): string => s.replace(/\D/g, "");
 
 function isValidCPF(cpfRaw: string): boolean {
   const cpf = onlyDigits(cpfRaw);
@@ -57,7 +57,7 @@ function isValidCPF(cpfRaw: string): boolean {
   if (/^(\d)\1{10}$/.test(cpf)) return false; // todos iguais
 
   // dígitos verificadores
-  const calcDigit = (base: string, factorStart: number) => {
+  const calcDigit = (base: string, factorStart: number): number => {
     let sum = 0,
       factor = factorStart;
     for (const ch of base) sum += parseInt(ch, 10) * factor--;
@@ -94,25 +94,32 @@ const schema = z
     email: z.string().email("E-mail inválido"),
     password: z.string().min(6, "Mínimo 6 caracteres"),
     confirm: z.string().min(6, "Confirme a senha"),
-    cpf: z
-      .string()
-      .min(11, "Informe o CPF")
-      .refine((v) => isValidCPF(v), "CPF inválido"),
+    cpf: z.string().refine((v) => isValidCPF(v), "CPF inválido"),
     birthDate: z
       .string()
       .refine((v) => isValidBirthDateStr(v), "Data de nascimento inválida"),
     farmName: z.string().min(3, "Informe o nome da fazenda"),
     address: z.string().min(5, "Informe o endereço"),
-    city: z.string().min(2, "Informe a cidade"),
+    city: z.string().optional(),
     state: z.string().min(2, "Informe o estado"),
     country: z.string().min(5, "Informe o país"),
     size: z.number().min(1, "Informe o porte da fazenda"),
     affix: z.string().max(55, "Informe o afixo da fazenda"),
-    affixType: z.enum(["preffix", "suffix"]).nullable(),
+    affixType: z.enum(["preffix", "suffix"]).nullable().optional(),
   })
   .refine((data) => data.password === data.confirm, {
     path: ["confirm"],
     message: "As senhas não conferem",
+  })
+  .superRefine((data, ctx) => {
+    // Validação condicional para a cidade, se o estado estiver preenchido.
+    if (data.state && (!data.city || data.city.length < 2)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Informe a cidade",
+        path: ["city"],
+      });
+    }
   });
 
 type FormValues = z.infer<typeof schema>;
@@ -120,6 +127,7 @@ type FormValues = z.infer<typeof schema>;
 export default function CadastroPage() {
   const [estados, setEstados] = useState<Estado[]>([]);
   const [municipios, setMunicipios] = useState<Municipio[]>([]);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -131,48 +139,53 @@ export default function CadastroPage() {
       birthDate: "",
       farmName: "",
       address: "",
-      city: "",
+      city: undefined,
       state: "",
       country: "Brasil",
       size: 1,
       affix: "",
-      affixType: null,
+      affixType: undefined,
     },
-
     mode: "onSubmit",
   });
-const porteEnum: { [key: number]: string } = {
-  1: "PEQUENO",
-  2: "MEDIO",
-  3: "GRANDE"
-};
 
-async function onSubmit(values: FormValues) {
-  try {
-    const res = await fetch("http://localhost:3000/api/cadastro", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        cpf: values.cpf,
-        nome: values.name,
-        email: values.email,
-        senha: values.password,
-        dataNascimento: values.birthDate,
-        ativo: true,
-        fazenda: {
-          nome: values.farmName,
-          endereco: values.address,
-          cidade: values.city,
-          estado: values.state,
-          pais: values.country,
-          porte: porteEnum[values.size], // <-- ajuste aqui!
-          afixo: values.affix,
-          tipoAfixo: values.affixType,
-        },
-      }),
-    });
+  const porteEnum: { [key: number]: string } = {
+    1: "PEQUENO",
+    2: "MEDIO",
+    3: "GRANDE",
+  };
 
-      if (!res.ok) throw new Error("Erro ao cadastrar");
+  async function onSubmit(values: FormValues) {
+    try {
+      const res = await fetch("http://localhost:3000/api/cadastro", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cpf: onlyDigits(values.cpf),
+          nome: values.name,
+          email: values.email,
+          senha: values.password,
+          dataNascimento: values.birthDate,
+          ativo: true,
+          fazenda: {
+            nome: values.farmName,
+            endereco: values.address,
+            cidade: values.city,
+            estado: values.state,
+            pais: values.country,
+            porte: porteEnum[values.size as keyof typeof porteEnum],
+            afixo: values.affix,
+            tipoAfixo: values.affixType,
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        const errorMessage =
+          errorData.message || "Erro ao cadastrar. Tente novamente.";
+        throw new Error(errorMessage);
+      }
 
       const data = await res.json();
       console.log("Cadastro realizado:", data);
@@ -182,19 +195,26 @@ async function onSubmit(values: FormValues) {
 
       // Redirecionar para dashboard
       window.location.href = "/dashboard";
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Erro:", err);
-      toast.error("Erro ao cadastrar usuário/fazenda!");
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Erro inesperado ao cadastrar!");
+      }
     }
   }
 
   useEffect(() => {
-    // carregar lista de estados
     getUFS().then(setEstados).catch(console.error);
   }, []);
 
   useEffect(() => {
-    const uf = form.getValues("state");
+    const uf = form.watch("state");
+    // Se o UF mudar, resetamos a cidade para que o usuário precise re-selecionar
+    form.setValue("city", undefined);
+    setMunicipios([]); // Limpa a lista de municípios
+
     if (uf?.length === 2) {
       getMunicipios(uf).then(setMunicipios).catch(console.error);
     }
@@ -358,7 +378,6 @@ async function onSubmit(values: FormValues) {
             </Card>
           </div>
 
-          {/* ... conteúdo da coluna direita ... */}
           <div className="flex w-1/2 p-8 items-stretch">
             <Card className="w-full h-full bg-red-900 text-white flex flex-col border-0 shadow-none p-4">
               <CardHeader>
@@ -444,22 +463,34 @@ async function onSubmit(values: FormValues) {
                         <Select
                           value={field.value}
                           onValueChange={field.onChange}
+                          disabled={
+                            !form.getValues("state") || estados.length === 0
+                          }
                         >
                           <SelectTrigger className="w-auto data-[placeholder]:text-white [&_svg:not([class*='text-'])]:text-white">
                             <SelectValue placeholder="Selecione a cidade" />
                           </SelectTrigger>
                           <SelectContent>
-                            {municipios.length > 0 ? (
-                              municipios.map((m) => (
+                            {[
+                              // Mapeia os municípios se existirem
+                              ...municipios.map((m) => (
                                 <SelectItem key={m.id} value={m.nome}>
                                   {m.nome}
                                 </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem value={"todos"}>
-                                Selecione o estado primeiro
-                              </SelectItem>
-                            )}
+                              )),
+                              // Adiciona o item de fallback se a lista de municípios estiver vazia
+                              ...(municipios.length === 0
+                                ? [
+                                    <SelectItem
+                                      key="empty"
+                                      value="empty"
+                                      disabled
+                                    >
+                                      Selecione o estado primeiro
+                                    </SelectItem>,
+                                  ]
+                                : []),
+                            ]}
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -473,14 +504,15 @@ async function onSubmit(values: FormValues) {
                   render={({ field: { value, onChange } }) => (
                     <FormItem>
                       <FormLabel className="text-white">
-                        Defina o porte
+                        Defina o porte: **
+                        {porteEnum[value as keyof typeof porteEnum]}**
                       </FormLabel>
                       <FormControl>
                         <div className="flex items-center gap-2 p-4">
                           <span className="text-white/80 text-sm">Pequeno</span>
                           <Slider
-                            value={[value ?? 1]} // controla pelo form
-                            onValueChange={(v) => onChange(v[0])} // salva como number
+                            value={[value ?? 1]}
+                            onValueChange={(v) => onChange(v[0])}
                             min={1}
                             max={3}
                             step={1}
@@ -522,21 +554,13 @@ async function onSubmit(values: FormValues) {
                       <FormLabel>Tipo de afixo</FormLabel>
                       <FormControl>
                         <Select
-                          value={
-                            field.value === null
-                              ? "Selecione o tipo"
-                              : field.value
+                          value={field.value || ""}
+                          onValueChange={(value) =>
+                            field.onChange(value || undefined)
                           }
-                          onValueChange={field.onChange}
                         >
                           <SelectTrigger className="w-auto data-[placeholder]:text-white [&_svg:not([class*='text-'])]:text-white">
-                            <SelectValue>
-                              {field.value === null
-                                ? "Selecione o tipo"
-                                : field.value === "preffix"
-                                ? "Prefixo"
-                                : "Sufixo"}
-                            </SelectValue>
+                            <SelectValue placeholder="Selecione o tipo" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="preffix">Prefixo</SelectItem>
@@ -554,8 +578,10 @@ async function onSubmit(values: FormValues) {
                 <Button
                   type="submit"
                   className="w-1/3 mx-auto border border-white text-white bg-red-900 hover:bg-red-800 transition-colors flex items-center justify-center"
+                  disabled={form.formState.isSubmitting}
                 >
-                  Cadastrar <ArrowRight className="ml-2 h-4 w-4" />
+                  {form.formState.isSubmitting ? "Carregando..." : "Cadastrar"}
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardFooter>
             </Card>
