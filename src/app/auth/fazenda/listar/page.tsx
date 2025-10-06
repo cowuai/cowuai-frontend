@@ -33,6 +33,16 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination";
 
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+    DialogClose,
+} from "@/components/ui/dialog"
+
 // Fonte do título (igual às outras páginas)
 const tsukimi = Tsukimi_Rounded({
     subsets: ["latin"],
@@ -110,15 +120,15 @@ export default function ListarFazendasPage() {
 
     // 🔁 PAGINAÇÃO — hooks PRECISAM vir antes do early return
     const [page, setPage] = useState(1);
-    const pageSize = 1; //Aqui indica quantas linhas por página
+    const pageSize = 5; //Aqui indica quantas linhas por página
     const totalPages = Math.max(1, Math.ceil(farms.length / pageSize));
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
     const pageData = farms.slice(start, end);
-
     useEffect(() => {
         setPage(1);
     }, [farms.length]);
+
 
     function handleEdit(id: string) {
         router.push(`/auth/fazenda/editar/${id}`);
@@ -129,6 +139,24 @@ export default function ListarFazendasPage() {
         if (!ok) return;
         console.log("Excluir fazenda:", id);
     }
+
+// ======== DIALOG DE EDIÇÃO ========
+  const [isEditOpen, setIsEditOpen] = useState(false);
+
+  type EditableFarm = {
+    id: string;
+    farmName: string;
+    address: string;
+    state: string;
+    city: string;
+    size: 1 | 2 | 3;
+    affix: string;
+    affixType: "" | "preffix" | "suffix";
+    createdAt?: string;
+  };
+
+  const [selectedFarm, setSelectedFarm] = useState<EditableFarm | null>(null);
+  // ===================================
 
     // ✅ Agora o early return pode vir, depois de TODOS os hooks
     if (!mounted) return null;
@@ -290,19 +318,35 @@ export default function ListarFazendasPage() {
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                {/* Editar */}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleEdit(f.id)}
-                                                    className="inline-flex items-center justify-center w-8 h-8 rounded-md
-                                text-stone-500 hover:text-stone-700 hover:bg-stone-300
-                                dark:text-stone-400 dark:hover:text-red-300 dark:hover:bg-stone-700
-                                transition-colors"
-                                                    aria-label={`Editar ${f.farmName}`}
-                                                    title="Editar"
-                                                >
-                                                    <Pencil className="w-4 h-4" />
-                                                </button>
+                                                {/* Editar — abre o Dialog preenchido */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedFarm({
+                              id: f.id,
+                              farmName: f.farmName,
+                              address: f.address,
+                              state: f.state,
+                              city: f.city,
+                              size: f.size,
+                              affix: f.affix ?? "",
+                              affixType: (f.affixType ?? "") as
+                                | ""
+                                | "preffix"
+                                | "suffix",
+                              createdAt: f.createdAt,
+                            });
+                            setIsEditOpen(true);
+                          }}
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-md
+                            text-stone-500 hover:text-stone-700 hover:bg-stone-300
+                            dark:text-stone-400 dark:hover:text-red-300 dark:hover:bg-stone-700
+                            transition-colors"
+                          aria-label={`Editar ${f.farmName}`}
+                          title="Editar"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
 
                                                 {/* Excluir */}
                                                 <button
@@ -336,33 +380,7 @@ export default function ListarFazendasPage() {
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                {/* Editar */}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleEdit(f.id)}
-                                                    className="inline-flex items-center justify-center w-8 h-8 rounded-md
-                                text-stone-500 hover:text-stone-700 hover:bg-stone-300
-                                dark:text-stone-400 dark:hover:text-red-300 dark:hover:bg-stone-900
-                                transition-colors"
-                                                    aria-label={`Editar ${f.farmName}`}
-                                                    title="Editar"
-                                                >
-                                                    <Pencil className="w-4 h-4" />
-                                                </button>
-
-                                                {/* Excluir */}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleDelete(f.id)}
-                                                    className="inline-flex items-center justify-center w-8 h-8 rounded-md
-                                text-stone-500 hover:text-red-700  hover:bg-stone-300
-                                dark:text-stone-400 dark:hover:text-red-400 dark:hover:bg-stone-900
-                                transition-colors"
-                                                    aria-label={`Excluir ${f.farmName}`}
-                                                    title="Excluir"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+                                               
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -436,6 +454,196 @@ export default function ListarFazendasPage() {
                     </div>
 
                 </div>
+                 {/* ======== DIALOG: Editar Fazenda ======== */}
+        <Dialog
+          open={isEditOpen}
+          onOpenChange={(open) => {
+            setIsEditOpen(open);
+            if (!open) setSelectedFarm(null); // limpa o estado ao fechar
+          }}
+        >
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle className={`${tsukimi.className} text-red-900 dark:text-red-300`}>
+                Editar fazenda
+              </DialogTitle>
+              <DialogDescription>
+                Atualize as informações necessárias. Campos bloqueados não podem ser editados.
+              </DialogDescription>
+            </DialogHeader>
+
+            {selectedFarm && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  // TODO: chamar sua API (PUT /farms/:id) com selectedFarm
+                  console.log("Salvar alterações:", selectedFarm);
+                  setIsEditOpen(false);
+                }}
+                className="space-y-4"
+              >
+                {/* ID (não editável) */}
+                <div>
+                  <label className="block text-sm font-medium mb-1 opacity-70">ID</label>
+                  <input
+                    type="text"
+                    value={selectedFarm.id}
+                    disabled
+                    className="w-full border rounded-md p-2 text-black disabled:bg-stone-100 dark:disabled:bg-stone-900 dark:text-foreground"
+                  />
+                </div>
+
+                {/* Nome da Fazenda */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Nome da Fazenda</label>
+                  <input
+                    type="text"
+                    value={selectedFarm.farmName}
+                    onChange={(e) =>
+                      setSelectedFarm({ ...selectedFarm, farmName: e.target.value })
+                    }
+                    className="w-full border rounded-md p-2 text-black dark:text-foreground"
+                    required
+                  />
+                </div>
+
+                {/* Endereço */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Endereço / Localidade</label>
+                  <input
+                    type="text"
+                    value={selectedFarm.address}
+                    onChange={(e) =>
+                      setSelectedFarm({ ...selectedFarm, address: e.target.value })
+                    }
+                    className="w-full border rounded-md p-2 text-black dark:text-foreground"
+                    required
+                  />
+                </div>
+
+                {/* UF + Cidade */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Estado (UF)</label>
+                    <input
+                      type="text"
+                      value={selectedFarm.state}
+                      onChange={(e) =>
+                        setSelectedFarm({
+                          ...selectedFarm,
+                          state: e.target.value.toUpperCase().slice(0, 2),
+                        })
+                      }
+                      className="w-full border rounded-md p-2 text-black dark:text-foreground uppercase"
+                      placeholder="Ex.: MG"
+                      maxLength={2}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Cidade</label>
+                    <input
+                      type="text"
+                      value={selectedFarm.city}
+                      onChange={(e) =>
+                        setSelectedFarm({ ...selectedFarm, city: e.target.value })
+                      }
+                      className="w-full border rounded-md p-2 text-black dark:text-foreground"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Porte (1..3) */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Porte</label>
+                  <select
+                    value={selectedFarm.size}
+                    onChange={(e) =>
+                      setSelectedFarm({
+                        ...selectedFarm,
+                        size: Number(e.target.value) as 1 | 2 | 3,
+                      })
+                    }
+                    className="w-full border rounded-md p-2 text-black dark:text-foreground"
+                  >
+                    <option value={1}>Pequena</option>
+                    <option value={2}>Média</option>
+                    <option value={3}>Grande</option>
+                  </select>
+                </div>
+
+                {/* Afixo + Tipo */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Afixo (opcional)</label>
+                    <input
+                      type="text"
+                      value={selectedFarm.affix}
+                      onChange={(e) =>
+                        setSelectedFarm({ ...selectedFarm, affix: e.target.value })
+                      }
+                      className="w-full border rounded-md p-2 text-black dark:text-foreground"
+                      placeholder="Ex.: Boa Esperança"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Tipo de Afixo</label>
+                    <select
+                      value={selectedFarm.affixType}
+                      onChange={(e) =>
+                        setSelectedFarm({
+                          ...selectedFarm,
+                          affixType: e.target.value as "" | "preffix" | "suffix",
+                        })
+                      }
+                      className="w-full border rounded-md p-2 text-black dark:text-foreground"
+                    >
+                      <option value="">— Nenhum —</option>
+                      <option value="preffix">Prefixo</option>
+                      <option value="suffix">Sufixo</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Criada em (não editável) */}
+                <div>
+                  <label className="block text-sm font-medium mb-1 opacity-70">Criada em</label>
+                  <input
+                    type="text"
+                    value={
+                      selectedFarm.createdAt
+                        ? new Date(selectedFarm.createdAt).toLocaleDateString("pt-BR")
+                        : "—"
+                    }
+                    disabled
+                    className="w-full border rounded-md p-2 text-black disabled:bg-stone-100 dark:disabled:bg-stone-900 dark:text-foreground"
+                  />
+                </div>
+
+                <DialogFooter className="mt-4">
+                  <DialogClose asChild>
+                    <button
+                      type="button"
+                      className="px-4 py-2 rounded-md border bg-transparent hover:bg-stone-100 dark:hover:bg-stone-800"
+                    >
+                      Cancelar
+                    </button>
+                  </DialogClose>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded-md bg-red-900 text-white hover:bg-red-800"
+                  >
+                    Salvar
+                  </button>
+                </DialogFooter>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
+        {/* ======== /DIALOG ======== */}
             </main>
         </div>
     );
