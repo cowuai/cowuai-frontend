@@ -110,7 +110,7 @@ export default function ListarFazendasPage() {
 
     // 🔁 PAGINAÇÃO — hooks PRECISAM vir antes do early return
     const [page, setPage] = useState(1);
-    const pageSize = 5;
+    const pageSize = 1; //Aqui indica quantas linhas por página
     const totalPages = Math.max(1, Math.ceil(farms.length / pageSize));
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
@@ -395,11 +395,12 @@ export default function ListarFazendasPage() {
                                             e.preventDefault();
                                             setPage((p) => Math.max(1, p - 1));
                                         }}
-                                        className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                                        className={`text-stone-500 hover:text-stone-500 hover:bg-stone-100
+                      dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-700
+                      ${page === 1 ? "pointer-events-none opacity-50" : ""}`}
                                     />
                                 </PaginationItem>
 
-                                {/* páginas numeradas simples (1..total) — se preferir janela com elipses, falo abaixo */}
                                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
                                     <PaginationItem key={n}>
                                         <PaginationLink
@@ -409,10 +410,9 @@ export default function ListarFazendasPage() {
                                                 setPage(n);
                                             }}
                                             aria-current={page === n ? "page" : undefined}
-                                            className={`
-            ${page === n ? "border-3 text-stone-500 hover:text-stone-500 hover:bg-stone-100" : ""}
-            dark:${page === n ? "border-stone-400 text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-700" : ""}
-            `}
+                                            className={`text-stone-500 hover:text-stone-500 hover:bg-stone-100
+                        dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-700
+                        ${page === n ? "border-3" : ""}`}
                                         >
                                             {n}
                                         </PaginationLink>
@@ -426,15 +426,15 @@ export default function ListarFazendasPage() {
                                             e.preventDefault();
                                             setPage((p) => Math.min(totalPages, p + 1));
                                         }}
-                                        className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+                                        className={`text-stone-500 hover:text-stone-500 hover:bg-stone-100
+                      dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-700
+                      ${page === totalPages ? "pointer-events-none opacity-50" : ""}`}
                                     />
                                 </PaginationItem>
                             </PaginationContent>
                         </Pagination>
-
-
-
                     </div>
+
                 </div>
             </main>
         </div>
