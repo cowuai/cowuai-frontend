@@ -23,6 +23,16 @@ import {
     TableRow,
 } from "@/components/ui/table";
 
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
+
 // Fonte do título (igual às outras páginas)
 const tsukimi = Tsukimi_Rounded({
     subsets: ["latin"],
@@ -88,31 +98,40 @@ export default function ListarFazendasPage() {
     const { theme } = useTheme();
     const [mounted, setMounted] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const router = useRouter();
 
     useEffect(() => setMounted(true), []);
+
     const darkMode = theme === "dark";
     const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-    if (!mounted) return null;
-
+    // --- seus dados (mock)
     const farms = farmsMock;
 
-    const router = useRouter();
+    // 🔁 PAGINAÇÃO — hooks PRECISAM vir antes do early return
+    const [page, setPage] = useState(1);
+    const pageSize = 5;
+    const totalPages = Math.max(1, Math.ceil(farms.length / pageSize));
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    const pageData = farms.slice(start, end);
+
+    useEffect(() => {
+        setPage(1);
+    }, [farms.length]);
+
     function handleEdit(id: string) {
-        // Se você ainda não tem a página de edição, isso pode ser um TODO:
         router.push(`/auth/fazenda/editar/${id}`);
     }
 
     async function handleDelete(id: string) {
         const ok = window.confirm("Tem certeza que deseja excluir esta fazenda?");
         if (!ok) return;
-
-        // TODO: chame sua API de deleção aqui (DELETE /farms/:id)
         console.log("Excluir fazenda:", id);
-        // Após deletar, atualize a lista (refetch ou state local)
     }
 
-
+    // ✅ Agora o early return pode vir, depois de TODOS os hooks
+    if (!mounted) return null;
     return (
         <div className="flex min-h-screen transition-colors duration-500 bg-background text-foreground">
             {/* Sidebar */}
@@ -230,10 +249,10 @@ export default function ListarFazendasPage() {
                 >
 
                     {/* Tabela (mantendo cores do head/bordas em vermelho) */}
-                    <div className="w-full overflow-x-auto rounded-md border border-red-900">
+                    <div className="w-full overflow-x-auto rounded-md border border-red-900/20">
                         <Table>
                             <TableHeader className="bg-red-700/10 dark:bg-red-950/30">
-                                <TableRow className="hover:bg-transparent border-b border-red-900/70">
+                                <TableRow className="hover:bg-transparent border-b border-red-900/20">
                                     <TableHead className="text-red-900 dark:text-red-300">Nome</TableHead>
                                     <TableHead className="text-red-900 dark:text-red-300">Endereço</TableHead>
                                     <TableHead className="text-red-900 dark:text-red-300">UF</TableHead>
@@ -248,7 +267,7 @@ export default function ListarFazendasPage() {
 
 
                             <TableBody>
-                                {farms.map((f) => (
+                                {pageData.map((f) => (
                                     <TableRow
                                         key={f.id}
                                         className="hover:bg-muted/80 border-b last:border-0 border-red-900/30"
@@ -276,9 +295,9 @@ export default function ListarFazendasPage() {
                                                     type="button"
                                                     onClick={() => handleEdit(f.id)}
                                                     className="inline-flex items-center justify-center w-8 h-8 rounded-md
-                                                    text-stone-500 hover:text-stone-700 hover:bg-stone-300
-                                                    dark:text-stone-400 dark:hover:text-red-300 dark:hover:bg-stone-700
-                                                    transition-colors"
+                                text-stone-500 hover:text-stone-700 hover:bg-stone-300
+                                dark:text-stone-400 dark:hover:text-red-300 dark:hover:bg-stone-700
+                                transition-colors"
                                                     aria-label={`Editar ${f.farmName}`}
                                                     title="Editar"
                                                 >
@@ -290,9 +309,9 @@ export default function ListarFazendasPage() {
                                                     type="button"
                                                     onClick={() => handleDelete(f.id)}
                                                     className="inline-flex items-center justify-center w-8 h-8 rounded-md
-                                                    text-stone-500 hover:text-red-700  hover:bg-stone-300
-                                                    dark:text-stone-400 dark:hover:text-red-400 dark:hover:bg-stone-700
-                                                    transition-colors"
+                                text-stone-500 hover:text-red-700  hover:bg-stone-300
+                                dark:text-stone-400 dark:hover:text-red-400 dark:hover:bg-stone-700
+                                transition-colors"
                                                     aria-label={`Excluir ${f.farmName}`}
                                                     title="Excluir"
                                                 >
@@ -322,9 +341,9 @@ export default function ListarFazendasPage() {
                                                     type="button"
                                                     onClick={() => handleEdit(f.id)}
                                                     className="inline-flex items-center justify-center w-8 h-8 rounded-md
-                                                    text-stone-500 hover:text-stone-700 hover:bg-stone-300
-                                                    dark:text-stone-400 dark:hover:text-red-300 dark:hover:bg-stone-900
-                                                    transition-colors"
+                                text-stone-500 hover:text-stone-700 hover:bg-stone-300
+                                dark:text-stone-400 dark:hover:text-red-300 dark:hover:bg-stone-900
+                                transition-colors"
                                                     aria-label={`Editar ${f.farmName}`}
                                                     title="Editar"
                                                 >
@@ -336,9 +355,9 @@ export default function ListarFazendasPage() {
                                                     type="button"
                                                     onClick={() => handleDelete(f.id)}
                                                     className="inline-flex items-center justify-center w-8 h-8 rounded-md
-                                                    text-stone-500 hover:text-red-700  hover:bg-stone-300
-                                                    dark:text-stone-400 dark:hover:text-red-400 dark:hover:bg-stone-900
-                                                    transition-colors"
+                                text-stone-500 hover:text-red-700  hover:bg-stone-300
+                                dark:text-stone-400 dark:hover:text-red-400 dark:hover:bg-stone-900
+                                transition-colors"
                                                     aria-label={`Excluir ${f.farmName}`}
                                                     title="Excluir"
                                                 >
@@ -350,6 +369,7 @@ export default function ListarFazendasPage() {
                                 )}
                             </TableBody>
                         </Table>
+
                     </div>
 
                     {/* Ações (bottom do card) */}
@@ -358,14 +378,63 @@ export default function ListarFazendasPage() {
                             Total: {farms.length} fazenda(s)
                         </span>
 
-                        <Link
-                            href="/auth/fazenda/cadastrar"
-                            className="inline-flex items-center justify-center mt-1 h-9 px-4 rounded-md bg-red-900 hover:bg-red-800 text-white text-sm font-medium transition-colors"
-                        >
-                            Cadastrar fazenda
-                        </Link>
+                        <span className="flex items-center text-sm opacity-70 whitespace-nowrap">
+                            Exibindo {farms.length === 0 ? 0 : start + 1}–{Math.min(end, farms.length)} de {farms.length}
+                        </span>
+
                     </div>
 
+                    {/* Paginação */}
+                    <div className="flex items-center justify-between">
+                        <Pagination>
+                            <PaginationContent>
+                                <PaginationItem>
+                                    <PaginationPrevious
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setPage((p) => Math.max(1, p - 1));
+                                        }}
+                                        className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                                    />
+                                </PaginationItem>
+
+                                {/* páginas numeradas simples (1..total) — se preferir janela com elipses, falo abaixo */}
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                                    <PaginationItem key={n}>
+                                        <PaginationLink
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setPage(n);
+                                            }}
+                                            aria-current={page === n ? "page" : undefined}
+                                            className={`
+            ${page === n ? "border-3 text-stone-500 hover:text-stone-500 hover:bg-stone-100" : ""}
+            dark:${page === n ? "border-stone-400 text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-700" : ""}
+            `}
+                                        >
+                                            {n}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                ))}
+
+                                <PaginationItem>
+                                    <PaginationNext
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setPage((p) => Math.min(totalPages, p + 1));
+                                        }}
+                                        className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+                                    />
+                                </PaginationItem>
+                            </PaginationContent>
+                        </Pagination>
+
+
+
+                    </div>
                 </div>
             </main>
         </div>
