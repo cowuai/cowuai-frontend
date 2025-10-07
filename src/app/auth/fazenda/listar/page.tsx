@@ -10,7 +10,7 @@ import { LuLayoutDashboard } from "react-icons/lu";
 import { PiUsersThree, PiKeyReturn } from "react-icons/pi";
 import { FaChevronRight } from "react-icons/fa";
 import { Tsukimi_Rounded } from "next/font/google";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Eye } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -143,17 +143,22 @@ export default function ListarFazendasPage() {
 // ======== DIALOG DE EDIÇÃO ========
   const [isEditOpen, setIsEditOpen] = useState(false);
 
-  type EditableFarm = {
-    id: string;
-    farmName: string;
-    address: string;
-    state: string;
-    city: string;
-    size: 1 | 2 | 3;
-    affix: string;
-    affixType: "" | "preffix" | "suffix";
-    createdAt?: string;
-  };
+  // dialog de visualização
+const [isViewOpen, setIsViewOpen] = useState(false);
+
+type EditableFarm = {
+  id: string;
+  farmName: string;
+  address: string;
+  state: string;
+  city: string;
+  size: 1 | 2 | 3;
+  affix: string;
+  affixType: "" | "preffix" | "suffix";
+  createdAt?: string;
+  updatedAt?: string; 
+};
+
 
   const [selectedFarm, setSelectedFarm] = useState<EditableFarm | null>(null);
   // ===================================
@@ -163,7 +168,7 @@ export default function ListarFazendasPage() {
     return (
         <div className="flex min-h-screen transition-colors duration-500 bg-background text-foreground">
             {/* Sidebar */}
-            <aside
+            {/* <aside
                 className={`flex flex-col justify-between shadow-lg transition-all duration-300 bg-sidebar text-sidebar-foreground ${sidebarOpen ? "w-64 p-6" : "w-20 p-2"
                     }`}
             >
@@ -181,10 +186,10 @@ export default function ListarFazendasPage() {
                             onClick={toggleSidebar}
                             title={sidebarOpen ? "Recolher" : "Expandir"}
                         />
-                    </div>
+                    </div> */}
 
                     {/* Navegação */}
-                    <nav className="space-y-2">
+                    {/* <nav className="space-y-2">
                         <Link
                             href="/dashboard"
                             className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors duration-500 bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -244,7 +249,7 @@ export default function ListarFazendasPage() {
                         </details>
                     </nav>
                 </div>
-            </aside>
+            </aside> */}
 
             {/* Conteúdo principal */}
             <main className="flex-1 p-10 transition-colors duration-500">
@@ -318,35 +323,64 @@ export default function ListarFazendasPage() {
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-2">
+                                              {/* Visualizar — abre o Dialog somente leitura */}
+                                                <button
+                                                  type="button"
+                                                  onClick={() => {
+                                                    setSelectedFarm({
+                                                      id: f.id,
+                                                      farmName: f.farmName,
+                                                      address: f.address,
+                                                      state: f.state,
+                                                      city: f.city,
+                                                      size: f.size,
+                                                      affix: f.affix ?? "",
+                                                      affixType: (f.affixType ?? "") as "" | "preffix" | "suffix",
+                                                      createdAt: f.createdAt,
+                                                      // se tiver updatedAt na API, passe aqui também:
+                                                      // updatedAt: f.updatedAt,
+                                                    });
+                                                    setIsViewOpen(true);
+                                                  }}
+                                                  className="inline-flex items-center justify-center w-8 h-8 rounded-md
+                                                    text-stone-500 hover:text-stone-700 hover:bg-stone-300
+                                                    dark:text-stone-400 dark:hover:text-red-300 dark:hover:bg-stone-700
+                                                    transition-colors"
+                                                  aria-label={`Visualizar ${f.farmName}`}
+                                                  title="Visualizar"
+                                                >
+                                                  <Eye className="w-4 h-4" />
+                                                </button>
+
                                                 {/* Editar — abre o Dialog preenchido */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedFarm({
-                              id: f.id,
-                              farmName: f.farmName,
-                              address: f.address,
-                              state: f.state,
-                              city: f.city,
-                              size: f.size,
-                              affix: f.affix ?? "",
-                              affixType: (f.affixType ?? "") as
-                                | ""
-                                | "preffix"
-                                | "suffix",
-                              createdAt: f.createdAt,
-                            });
-                            setIsEditOpen(true);
-                          }}
-                          className="inline-flex items-center justify-center w-8 h-8 rounded-md
-                            text-stone-500 hover:text-stone-700 hover:bg-stone-300
-                            dark:text-stone-400 dark:hover:text-red-300 dark:hover:bg-stone-700
-                            transition-colors"
-                          aria-label={`Editar ${f.farmName}`}
-                          title="Editar"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  setSelectedFarm({
+                                                    id: f.id,
+                                                    farmName: f.farmName,
+                                                    address: f.address,
+                                                    state: f.state,
+                                                    city: f.city,
+                                                    size: f.size,
+                                                    affix: f.affix ?? "",
+                                                    affixType: (f.affixType ?? "") as
+                                                      | ""
+                                                      | "preffix"
+                                                      | "suffix",
+                                                    createdAt: f.createdAt,
+                                                  });
+                                                  setIsEditOpen(true);
+                                                }}
+                                                className="inline-flex items-center justify-center w-8 h-8 rounded-md
+                                                  text-stone-500 hover:text-stone-700 hover:bg-stone-300
+                                                  dark:text-stone-400 dark:hover:text-red-300 dark:hover:bg-stone-700
+                                                  transition-colors"
+                                                aria-label={`Editar ${f.farmName}`}
+                                                title="Editar"
+                                              >
+                                                <Pencil className="w-4 h-4" />
+                                              </button>
 
                                                 {/* Excluir */}
                                                 <button
@@ -454,196 +488,372 @@ export default function ListarFazendasPage() {
                     </div>
 
                 </div>
-                 {/* ======== DIALOG: Editar Fazenda ======== */}
-        <Dialog
-          open={isEditOpen}
-          onOpenChange={(open) => {
-            setIsEditOpen(open);
-            if (!open) setSelectedFarm(null); // limpa o estado ao fechar
-          }}
-        >
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle className={`${tsukimi.className} text-red-900 dark:text-red-300`}>
-                Editar fazenda
-              </DialogTitle>
-              <DialogDescription>
-                Atualize as informações necessárias. Campos bloqueados não podem ser editados.
-              </DialogDescription>
-            </DialogHeader>
+        
+{/* ======== DIALOG: Visualizar Fazenda (read-only) ======== */}
+<Dialog
+  open={isViewOpen}
+  onOpenChange={(open) => {
+    setIsViewOpen(open);
+    if (!open) setSelectedFarm(null);
+  }}
+>
+  <DialogContent className="sm:max-w-lg">
+    <DialogHeader className="items-center text-center">
+      <DialogTitle className={`${tsukimi.className} text-red-900 dark:text-red-500`}>
+        Visualizar fazenda
+      </DialogTitle>
+    </DialogHeader>
 
-            {selectedFarm && (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  // TODO: chamar sua API (PUT /farms/:id) com selectedFarm
-                  console.log("Salvar alterações:", selectedFarm);
-                  setIsEditOpen(false);
-                }}
-                className="space-y-4"
-              >
-                {/* ID (não editável) */}
-                <div>
-                  <label className="block text-sm font-medium mb-1 opacity-70">ID</label>
-                  <input
-                    type="text"
-                    value={selectedFarm.id}
-                    disabled
-                    className="w-full border rounded-md p-2 text-black disabled:bg-stone-100 dark:disabled:bg-stone-900 dark:text-foreground"
-                  />
-                </div>
+    {selectedFarm && (
+      <div className="space-y-4">
+        {/* ID */}
+        <div>
+          <label className="block text-sm font-medium mb-1 opacity-70">ID</label>
+          <input
+            type="text"
+            value={selectedFarm.id}
+            disabled
+            className="w-full border rounded-md p-2 text-black dark:text-foreground disabled:bg-stone-300/80 dark:disabled:bg-stone-900/20"
+          />
+        </div>
 
-                {/* Nome da Fazenda */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">Nome da Fazenda</label>
-                  <input
-                    type="text"
-                    value={selectedFarm.farmName}
-                    onChange={(e) =>
-                      setSelectedFarm({ ...selectedFarm, farmName: e.target.value })
-                    }
-                    className="w-full border rounded-md p-2 text-black dark:text-foreground"
-                    required
-                  />
-                </div>
+        {/* Nome da Fazenda */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Nome da Fazenda</label>
+          <input
+            type="text"
+            value={selectedFarm.farmName}
+            disabled
+            readOnly
+            className="w-full border rounded-md p-2 text-black dark:text-foreground disabled:bg-stone-300/80 dark:disabled:bg-stone-900/20"
+          />
+        </div>
 
-                {/* Endereço */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">Endereço / Localidade</label>
-                  <input
-                    type="text"
-                    value={selectedFarm.address}
-                    onChange={(e) =>
-                      setSelectedFarm({ ...selectedFarm, address: e.target.value })
-                    }
-                    className="w-full border rounded-md p-2 text-black dark:text-foreground"
-                    required
-                  />
-                </div>
+        {/* Endereço */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Endereço / Localidade</label>
+          <input
+            type="text"
+            value={selectedFarm.address}
+            disabled
+            readOnly
+            className="w-full border rounded-md p-2 text-black dark:text-foreground disabled:bg-stone-300/80 dark:disabled:bg-stone-900/20"
+          />
+        </div>
 
-                {/* UF + Cidade */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Estado (UF)</label>
-                    <input
-                      type="text"
-                      value={selectedFarm.state}
-                      onChange={(e) =>
-                        setSelectedFarm({
-                          ...selectedFarm,
-                          state: e.target.value.toUpperCase().slice(0, 2),
-                        })
-                      }
-                      className="w-full border rounded-md p-2 text-black dark:text-foreground uppercase"
-                      placeholder="Ex.: MG"
-                      maxLength={2}
-                      required
-                    />
-                  </div>
+        {/* UF + Cidade */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Estado (UF)</label>
+            <input
+              type="text"
+              value={selectedFarm.state}
+              disabled
+              readOnly
+              className="w-full border rounded-md p-2 text-black dark:text-foreground disabled:bg-stone-300/80 dark:disabled:bg-stone-900/20"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Cidade</label>
+            <input
+              type="text"
+              value={selectedFarm.city}
+              disabled
+              readOnly
+              className="w-full border rounded-md p-2 text-black dark:text-foreground disabled:bg-stone-300/80 dark:disabled:bg-stone-900/20"
+            />
+          </div>
+        </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Cidade</label>
-                    <input
-                      type="text"
-                      value={selectedFarm.city}
-                      onChange={(e) =>
-                        setSelectedFarm({ ...selectedFarm, city: e.target.value })
-                      }
-                      className="w-full border rounded-md p-2 text-black dark:text-foreground"
-                      required
-                    />
-                  </div>
-                </div>
+        {/* Porte */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Porte</label>
+          <input
+            type="text"
+            value={sizeLabel(selectedFarm.size)}
+            disabled
+            readOnly
+            className="w-full border rounded-md p-2 text-black dark:text-foreground disabled:bg-stone-300/80 dark:disabled:bg-stone-900/20"
+          />
+        </div>
 
-                {/* Porte (1..3) */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">Porte</label>
-                  <select
-                    value={selectedFarm.size}
-                    onChange={(e) =>
-                      setSelectedFarm({
-                        ...selectedFarm,
-                        size: Number(e.target.value) as 1 | 2 | 3,
-                      })
-                    }
-                    className="w-full border rounded-md p-2 text-black dark:text-foreground"
-                  >
-                    <option value={1}>Pequena</option>
-                    <option value={2}>Média</option>
-                    <option value={3}>Grande</option>
-                  </select>
-                </div>
+        {/* Afixo + Tipo */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Afixo</label>
+            <input
+              type="text"
+              value={selectedFarm.affix || "—"}
+              disabled
+              readOnly
+              className="w-full border rounded-md p-2 text-black dark:text-foreground disabled:bg-stone-300/80 dark:disabled:bg-stone-900/20"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Tipo de Afixo</label>
+            <input
+              type="text"
+              value={affixTypeLabel((selectedFarm.affixType || null) as Farm["affixType"])}
+              disabled
+              readOnly
+              className="w-full border rounded-md p-2 text-black dark:text-foreground disabled:bg-stone-300/80 dark:disabled:bg-stone-900/20"
+            />
+          </div>
+        </div>
 
-                {/* Afixo + Tipo */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Afixo (opcional)</label>
-                    <input
-                      type="text"
-                      value={selectedFarm.affix}
-                      onChange={(e) =>
-                        setSelectedFarm({ ...selectedFarm, affix: e.target.value })
-                      }
-                      className="w-full border rounded-md p-2 text-black dark:text-foreground"
-                      placeholder="Ex.: Boa Esperança"
-                    />
-                  </div>
+        {/* Criada / Atualizada em */}
+        <div>
+          <label className="block text-sm font-medium mb-1 opacity-70">Criada em</label>
+          <input
+            type="text"
+            value={
+              selectedFarm.createdAt
+                ? new Date(selectedFarm.createdAt).toLocaleString("pt-BR")
+                : "—"
+            }
+            disabled
+            readOnly
+            className="w-full border rounded-md p-2 text-black dark:text-foreground disabled:bg-stone-300/80 dark:disabled:bg-stone-900/20"
+          />
+        </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Tipo de Afixo</label>
-                    <select
-                      value={selectedFarm.affixType}
-                      onChange={(e) =>
-                        setSelectedFarm({
-                          ...selectedFarm,
-                          affixType: e.target.value as "" | "preffix" | "suffix",
-                        })
-                      }
-                      className="w-full border rounded-md p-2 text-black dark:text-foreground"
-                    >
-                      <option value="">— Nenhum —</option>
-                      <option value="preffix">Prefixo</option>
-                      <option value="suffix">Sufixo</option>
-                    </select>
-                  </div>
-                </div>
+        <div>
+          <label className="block text-sm font-medium mb-1 opacity-70">Atualizada em</label>
+          <input
+            type="text"
+            value={
+              selectedFarm.updatedAt
+                ? new Date(selectedFarm.updatedAt).toLocaleString("pt-BR")
+                : "—"
+            }
+            disabled
+            readOnly
+            className="w-full border rounded-md p-2 text-black dark:text-foreground disabled:bg-stone-300/80 dark:disabled:bg-stone-900/20"
+          />
+        </div>
 
-                {/* Criada em (não editável) */}
-                <div>
-                  <label className="block text-sm font-medium mb-1 opacity-70">Criada em</label>
-                  <input
-                    type="text"
-                    value={
-                      selectedFarm.createdAt
-                        ? new Date(selectedFarm.createdAt).toLocaleDateString("pt-BR")
-                        : "—"
-                    }
-                    disabled
-                    className="w-full border rounded-md p-2 text-black disabled:bg-stone-100 dark:disabled:bg-stone-900 dark:text-foreground"
-                  />
-                </div>
+        <DialogFooter className="mt-2">
+          <DialogClose asChild>
+            <button
+              type="button"
+              className="px-4 py-2 rounded-md text-red-900 border-3 border-red-900 bg-transparent hover:bg-stone-300 dark:hover:bg-stone-800 dark:text-white"
+            >
+              Fechar
+            </button>
+          </DialogClose>
+        </DialogFooter>
+      </div>
+    )}
+  </DialogContent>
+</Dialog>
+{/* ======== /DIALOG ======== */}
 
-                <DialogFooter className="mt-4">
-                  <DialogClose asChild>
-                    <button
-                      type="button"
-                      className="px-4 py-2 rounded-md border bg-transparent hover:bg-stone-100 dark:hover:bg-stone-800"
-                    >
-                      Cancelar
-                    </button>
-                  </DialogClose>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 rounded-md bg-red-900 text-white hover:bg-red-800"
-                  >
-                    Salvar
-                  </button>
-                </DialogFooter>
-              </form>
-            )}
-          </DialogContent>
-        </Dialog>
-        {/* ======== /DIALOG ======== */}
+
+        {/* ======== DIALOG: Editar Fazenda ======== */}
+<Dialog
+  open={isEditOpen}
+  onOpenChange={(open) => {
+    setIsEditOpen(open);
+    if (!open) setSelectedFarm(null); // limpa o estado ao fechar
+  }}
+>
+  <DialogContent className="sm:max-w-lg">
+    <DialogHeader className="items-center text-center">
+      <DialogTitle className={`${tsukimi.className} text-red-900 dark:text-red-500`}>
+        Editar fazenda
+      </DialogTitle>
+      {/* Se quiser uma descrição curta, descomente: */}
+      {/* <DialogDescription>Atualize as informações necessárias.</DialogDescription> */}
+    </DialogHeader>
+
+    {selectedFarm && (
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          // TODO: chamar sua API (PUT /farms/:id) com selectedFarm
+          console.log("Salvar alterações:", selectedFarm);
+          setIsEditOpen(false);
+        }}
+        className="space-y-4"
+      >
+        {/* ID (não editável) */}
+        <div>
+          <label className="block text-sm font-medium mb-1 opacity-70">ID</label>
+          <input
+            type="text"
+            value={selectedFarm.id}
+            disabled
+            className="w-full border rounded-md p-2 text-black dark:text-foreground disabled:bg-stone-300/80 dark:disabled:bg-stone-900/20"
+          />
+        </div>
+
+        {/* Nome da Fazenda (editável) */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Nome da Fazenda</label>
+          <input
+            type="text"
+            value={selectedFarm.farmName}
+            onChange={(e) =>
+              setSelectedFarm({ ...selectedFarm, farmName: e.target.value })
+            }
+            className="w-full border rounded-md p-2 text-black dark:text-foreground bg-white dark:bg-stone-900"
+            required
+          />
+        </div>
+
+        {/* Endereço (editável) */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Endereço / Localidade</label>
+          <input
+            type="text"
+            value={selectedFarm.address}
+            onChange={(e) =>
+              setSelectedFarm({ ...selectedFarm, address: e.target.value })
+            }
+            className="w-full border rounded-md p-2 text-black dark:text-foreground bg-white dark:bg-stone-900"
+            required
+          />
+        </div>
+
+        {/* UF + Cidade (editáveis) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Estado (UF)</label>
+            <input
+              type="text"
+              value={selectedFarm.state}
+              onChange={(e) =>
+                setSelectedFarm({
+                  ...selectedFarm,
+                  state: e.target.value.toUpperCase().slice(0, 2),
+                })
+              }
+              className="w-full border rounded-md p-2 text-black dark:text-foreground uppercase bg-white dark:bg-stone-900"
+              placeholder="Ex.: MG"
+              maxLength={2}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Cidade</label>
+            <input
+              type="text"
+              value={selectedFarm.city}
+              onChange={(e) =>
+                setSelectedFarm({ ...selectedFarm, city: e.target.value })
+              }
+              className="w-full border rounded-md p-2 text-black dark:text-foreground bg-white dark:bg-stone-900"
+              required
+            />
+          </div>
+        </div>
+
+        {/* Porte (editável) */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Porte</label>
+          <select
+            value={selectedFarm.size}
+            onChange={(e) =>
+              setSelectedFarm({
+                ...selectedFarm,
+                size: Number(e.target.value) as 1 | 2 | 3,
+              })
+            }
+            className="w-full border rounded-md p-2 text-black dark:text-foreground bg-white dark:bg-stone-900"
+          >
+            <option value={1}>Pequena</option>
+            <option value={2}>Média</option>
+            <option value={3}>Grande</option>
+          </select>
+        </div>
+
+        {/* Afixo + Tipo (editáveis) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Afixo (opcional)</label>
+            <input
+              type="text"
+              value={selectedFarm.affix}
+              onChange={(e) =>
+                setSelectedFarm({ ...selectedFarm, affix: e.target.value })
+              }
+              className="w-full border rounded-md p-2 text-black dark:text-foreground bg-white dark:bg-stone-900"
+              placeholder="Ex.: Boa Esperança"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Tipo de Afixo</label>
+            <select
+              value={selectedFarm.affixType}
+              onChange={(e) =>
+                setSelectedFarm({
+                  ...selectedFarm,
+                  affixType: e.target.value as "" | "preffix" | "suffix",
+                })
+              }
+              className="w-full border rounded-md p-2 text-black dark:text-foreground bg-white dark:bg-stone-900"
+            >
+              <option value="">— Nenhum —</option>
+              <option value="preffix">Prefixo</option>
+              <option value="suffix">Sufixo</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Criada em (não editável) */}
+        <div>
+          <label className="block text-sm font-medium mb-1 opacity-70">Criada em</label>
+          <input
+            type="text"
+            value={
+              selectedFarm.createdAt
+                ? new Date(selectedFarm.createdAt).toLocaleString("pt-BR") // data + hora
+                : "—"
+            }
+            disabled
+            className="w-full border rounded-md p-2 text-black dark:text-foreground   disabled:bg-stone-300/80 dark:disabled:bg-stone-900/20"
+          />
+        </div>
+
+        {/* Atualizada em (não editável) */}
+        <div>
+          <label className="block text-sm font-medium mb-1 opacity-70">Atualizada em</label>
+          <input
+            type="text"
+            value={
+              selectedFarm.updatedAt
+                ? new Date(selectedFarm.updatedAt).toLocaleString("pt-BR")
+                : "—"
+            }
+            disabled
+            className="w-full border rounded-md p-2 text-black dark:text-foreground disabled:bg-stone-300/80 dark:disabled:bg-stone-900/20"
+          />
+        </div>
+
+        <DialogFooter className="mt-4">
+          <DialogClose asChild>
+            <button
+              type="button"
+              className="px-4 py-2 rounded-md  text-red-900 border-3 border-red-900 bg-transparent hover:bg-stone-300 dark:hover:bg-stone-800 dark:text-white"
+            >
+              Cancelar
+            </button>
+          </DialogClose>
+          <button
+            type="submit"
+            className="px-4 py-2 rounded-md bg-red-900 text-white hover:bg-red-800"
+          >
+            Salvar
+          </button>
+        </DialogFooter>
+      </form>
+    )}
+  </DialogContent>
+</Dialog>
+{/* ======== /DIALOG ======== */}
+
             </main>
         </div>
     );
