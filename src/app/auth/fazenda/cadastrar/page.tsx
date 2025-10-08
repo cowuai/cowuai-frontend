@@ -93,18 +93,6 @@ export default function CadastrarFazendaPage() {
           >
             Cadastrar Fazenda
           </h1>
-
-          <div className="flex items-center gap-4 mt-4">
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-stone-400">
-              <Image
-                src="/images/user-photo.png"
-                alt="Foto do usuário"
-                width={40}
-                height={40}
-                className="object-cover"
-              />
-            </div>
-          </div>
         </header>
 
         {/* Card do formulário (padrão do animal) */}
