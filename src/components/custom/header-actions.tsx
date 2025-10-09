@@ -1,8 +1,8 @@
 'use client';
 
 import {usePathname} from "next/navigation";
-import {SwitchThemeBox} from "@/components/ui/switch-theme-box";
-import LogoutButton from "@/components/ui/logout-button";
+import {SwitchThemeBox} from "@/components/custom/switch-theme-box";
+import LogoutButton from "@/components/custom/logout-button";
 import Image from "next/image";
 
 export function HeaderActions() {

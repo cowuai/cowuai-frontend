@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React, {useState} from "react";
 import { useRouter } from "next/navigation";
-import {useAuth} from "@/app/providers/AuthProvider";
+import {useAuth} from "@/app/providers/auth-provider";
 import {toast} from "sonner";
 
 export default function LoginPage() {

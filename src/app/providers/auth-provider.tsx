@@ -6,8 +6,8 @@ import DeviceInfo from "@/helpers/DeviceInfo";
 interface AuthContextType {
     accessToken: string | null;
     setAccessToken: (token: string | null) => void;
-    idUsuario?: string | null;
-    setIdUsuario?: (id: string) => void;
+    usuario?: Usuario | null;
+    setUsuario?: (usuario: Usuario | null) => void;
     login: (email: string, senha: string) => Promise<boolean>;
     logout: (idUsuario: string) => Promise<boolean>;
 }
@@ -16,7 +16,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({children}: { children: ReactNode }) {
     const [accessToken, setAccessToken] = useState<string | null>(null);
-    const [idUsuario, setIdUsuario] = useState<string | null>(null);
+    const [usuario, setUsuario] = useState<Usuario | null>(null);
     const dispositivo = DeviceInfo();
 
     const login = async (email: string, senha: string): Promise<boolean> => {
@@ -31,7 +31,7 @@ export function AuthProvider({children}: { children: ReactNode }) {
 
         const data = await res.json();
         setAccessToken(data.accessToken);
-        setIdUsuario(data.user.id);
+        setUsuario(data.user);
         return true;
     };
 
@@ -50,7 +50,7 @@ export function AuthProvider({children}: { children: ReactNode }) {
         return true;
     }
 
-    return <AuthContext.Provider value={{accessToken, setAccessToken, idUsuario, setIdUsuario, login, logout}}>{children}</AuthContext.Provider>;
+    return <AuthContext.Provider value={{accessToken, setAccessToken, usuario, setUsuario, login, logout}}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => {

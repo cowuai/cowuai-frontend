@@ -1,4 +1,4 @@
-import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuth } from "@/app/providers/auth-provider";
 
 export async function apiFetch(url: string, options: RequestInit = {}) {
     const { accessToken, setAccessToken } = useAuth();

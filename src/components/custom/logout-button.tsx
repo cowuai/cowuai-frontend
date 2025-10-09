@@ -1,22 +1,9 @@
 import {LogOut} from "lucide-react";
 import React from "react";
-import {useAuth} from "@/app/providers/AuthProvider";
-import {redirect} from "next/navigation";
+import {useLogout} from "@/hooks/use-logout";
 
 export default function LogoutButton() {
-    const {logout, idUsuario} = useAuth();
-
-    const handleLogout = async () => {
-        if (idUsuario) {
-            console.log("Fazendo logout do usuário:", idUsuario);
-            const success = await logout(idUsuario);
-            if (success) {
-                redirect('/login');
-            } else {
-                console.error("Falha no logout.");
-            }
-        }
-    }
+    const handleLogout = useLogout();
 
     return (
         <button

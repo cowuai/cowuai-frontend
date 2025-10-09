@@ -1,20 +1,23 @@
 "use client";
 
-import Sidebar from "@/components/ui/sidebar";
+import {Sidebar, SidebarProvider, SidebarTrigger} from "@/components/ui/sidebar";
 import { ReactNode, useState } from "react";
+import AppSidebar from "@/components/custom/app-sidebar";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-
   return (
-    <div className="flex min-h-screen transition-colors duration-500 bg-background text-foreground">
-      <Sidebar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-      <main className="flex-1 transition-colors duration-500">{children}</main>
-    </div>
+      <>
+          <SidebarProvider>
+              <AppSidebar />
+              <main className={"flex-1 transition-colors duration-500"}>
+                  <SidebarTrigger className={"text-accent-red-triangulo ml-1 mt-1 size-10!"} title={"Esconder"}/>
+                  {children}
+              </main>
+          </SidebarProvider>
+      </>
   );
 }
