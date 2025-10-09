@@ -1,11 +1,11 @@
 import type {Metadata} from "next";
 import "./globals.css";
-import {SwitchThemeBox} from "@/components/ui/switch-theme-box";
+import {SwitchThemeBox} from "@/components/custom/switch-theme-box";
 import {ThemeProvider} from "@/app/providers/theme-provider"
 import React from "react";
-import LogoutButton from "@/components/ui/logout-button";
-import {HeaderActions} from "@/components/ui/header-actions";
-import {AuthProvider} from "@/app/providers/AuthProvider";
+import LogoutButton from "@/components/custom/logout-button";
+import {HeaderActions} from "@/components/custom/header-actions";
+import {AuthProvider} from "@/app/providers/auth-provider";
 import {Toaster} from "@/components/ui/sonner";
 
 export const metadata: Metadata = {

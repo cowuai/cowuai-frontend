@@ -9,15 +9,12 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-
   return (
       <>
           <SidebarProvider>
               <AppSidebar />
               <main className={"flex-1 transition-colors duration-500"}>
-                  <SidebarTrigger/>
+                  <SidebarTrigger className={"text-accent-red-triangulo ml-1 mt-1 size-10!"} title={"Esconder"}/>
                   {children}
               </main>
           </SidebarProvider>

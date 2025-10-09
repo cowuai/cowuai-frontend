@@ -2,24 +2,34 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import {useState} from "react";
+import React, {useState} from "react";
 import {PiCow, PiUsersThree, PiKeyReturn, PiFarm, PiUser} from "react-icons/pi";
+import {usePathname} from "next/navigation";
 import {LuLayoutDashboard} from "react-icons/lu";
-import {FaChevronRight} from "react-icons/fa";
 import {
     Sidebar,
     SidebarContent, SidebarFooter,
     SidebarGroup,
     SidebarGroupContent,
     SidebarGroupLabel, SidebarHeader,
-    SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubItem
+    SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem
 } from "@/components/ui/sidebar";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
-import {ChevronRight, ChevronUp, User2} from "lucide-react";
+import {ChevronRight, ChevronUp} from "lucide-react";
 import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/ui/collapsible";
+import {useLogout} from "@/hooks/use-logout";
+import {Button} from "@/components/ui/button";
+
+type MenuItem = {
+    title: string;
+    url: string;
+    icon: React.ComponentType<any>;
+    subItems?: { title: string; url: string }[];
+    isActive?: boolean;
+}
 
 // Menu items.
-const items = [
+const items: MenuItem[] = [
     {
         title: "Dashboard",
         url: "/auth/dashboard",
@@ -46,7 +56,7 @@ const items = [
 ]
 
 // Dropdown Footer items
-const footerItems = [
+const footerItems: MenuItem[] = [
     {
         title: "Perfil",
         url: "#",
@@ -59,7 +69,18 @@ const footerItems = [
     }
 ]
 
+function isActive(url: string, subItems?: { url: string }[], currentPath?: string) {
+    if (url !== "#" && currentPath === url) return true;
+    if (subItems) {
+        return subItems.some(sub => currentPath === sub.url);
+    }
+    return false;
+}
+
 export default function AppSidebar() {
+    const currentPath = usePathname();
+    const handleLogout = useLogout();
+
     return (
         <Sidebar collapsible={"icon"}>
             <SidebarHeader>
@@ -79,41 +100,50 @@ export default function AppSidebar() {
                     <SidebarGroupLabel>Plataforma</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                                {items.map((item) => (
+                            {items.map((item) => (
                                 item.subItems ? (
                                     <Collapsible key={item.title}
                                                  asChild
-                                                 defaultOpen={false}
+                                                 defaultOpen={isActive(item.url, item.subItems, currentPath)}
                                                  className="group/collapsible"
                                     >
                                         <SidebarMenuItem>
-                                        <CollapsibleTrigger asChild>
-                                            <SidebarMenuButton asChild>
-                                                <a href={item.url}>
-                                                    <item.icon />
-                                                    <span>{item.title}</span>
-                                                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                                                </a>
-                                            </SidebarMenuButton>
-                                        </CollapsibleTrigger>
-                                        <CollapsibleContent>
-                                            <SidebarMenuSub>
+                                            <CollapsibleTrigger asChild>
+                                                <SidebarMenuButton size={"lg"} asChild>
+                                                    <Link href={item.url}>
+                                                        <span
+                                                            className={isActive(item.url, item.subItems, currentPath) ? "bg-accent-red-triangulo text-white rounded p-1" : "p-1"}>
+                                                            <item.icon className="w-5 h-5"/>
+                                                        </span>
+                                                        <span>{item.title}</span>
+                                                        <ChevronRight
+                                                            className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"/>
+                                                    </Link>
+                                                </SidebarMenuButton>
+                                            </CollapsibleTrigger>
+                                            <CollapsibleContent>
+                                                <SidebarMenuSub className={"ml-5"}>
                                                     {item.subItems.map((subItem) => (
-                                                    <SidebarMenuSubItem key={subItem.title}>
-                                                        <Link href={subItem.url}>
-                                                            {subItem.title}
-                                                        </Link>
-                                                    </SidebarMenuSubItem>
-                                                ))}
-                                            </SidebarMenuSub>
-                                        </CollapsibleContent>
-                                    </SidebarMenuItem>
-                            </Collapsible>
+                                                        <SidebarMenuSubItem className={"ml-4"} key={subItem.title}>
+                                                            <SidebarMenuSubButton asChild>
+                                                                <Link href={subItem.url}>
+                                                                    {subItem.title}
+                                                                </Link>
+                                                            </SidebarMenuSubButton>
+                                                        </SidebarMenuSubItem>
+                                                    ))}
+                                                </SidebarMenuSub>
+                                            </CollapsibleContent>
+                                        </SidebarMenuItem>
+                                    </Collapsible>
                                 ) : (
                                     <SidebarMenuItem key={item.title}>
-                                        <SidebarMenuButton asChild>
+                                        <SidebarMenuButton size={"lg"} asChild>
                                             <a href={item.url}>
-                                                <item.icon/>
+                                                <span
+                                                    className={isActive(item.url, item.subItems, currentPath) ? "bg-accent-red-triangulo text-white rounded p-1" : "p-1"}>
+                                                    <item.icon className="w-5 h-5"/>
+                                                </span>
                                                 <span>{item.title}</span>
                                             </a>
                                         </SidebarMenuButton>
@@ -139,10 +169,17 @@ export default function AppSidebar() {
                             >
                                 {footerItems.map((item) => (
                                     <DropdownMenuItem key={item.title} asChild>
-                                        <a href={item.url} className={"flex items-center w-full"}>
-                                            <item.icon className={"mr-2"}/>
-                                            {item.title}
-                                        </a>
+                                        {item.title === "Sair" ? (
+                                            <Button onClick={handleLogout} className="w-full bg-transparent text-foreground justify-start">
+                                                <item.icon />
+                                                {item.title}
+                                            </Button>
+                                        ) : (
+                                            <Link href={item.url} className="flex items-center gap-2 w-full ml-1">
+                                                <item.icon />
+                                                {item.title}
+                                            </Link>
+                                        )}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>

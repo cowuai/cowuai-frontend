@@ -5,7 +5,7 @@ import {useTheme} from "next-themes";
 import {useEffect, useState} from "react";
 import {Line, Bar, Pie} from "react-chartjs-2";
 import {Cross} from "lucide-react"; //cruz do card de animais doentes
-import BreadcrumbArea from "@/components/ui/breadcrumb-area";
+import BreadcrumbArea from "@/components/custom/breadcrumb-area";
 
 import {
     Chart as ChartJS,
