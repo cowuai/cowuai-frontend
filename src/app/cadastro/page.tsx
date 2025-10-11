@@ -1,6 +1,6 @@
 "use client";
 
-import { z } from "zod";
+import { undefined, z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -27,6 +27,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import { Tsukimi_Rounded } from "next/font/google";
 import {
@@ -37,11 +38,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
-// Assumindo que Estado e Municipio são tipos definidos no seu projeto
 import { Estado } from "@/types/Estado";
 import { getUFS } from "@/actions/get-ufs";
 import { Municipio } from "@/types/Municipio";
 import { getMunicipios } from "@/actions/get-municipios";
+import { useRouter } from "next/navigation";
 
 const tsukimi = Tsukimi_Rounded({
   subsets: ["latin"],
@@ -57,7 +58,7 @@ function isValidCPF(cpfRaw: string): boolean {
   if (/^(\d)\1{10}$/.test(cpf)) return false; // todos iguais
 
   // dígitos verificadores
-  const calcDigit = (base: string, factorStart: number): number => {
+  const calcDigit = (base: string, factorStart: number) => {
     let sum = 0,
       factor = factorStart;
     for (const ch of base) sum += parseInt(ch, 10) * factor--;
@@ -94,40 +95,33 @@ const schema = z
     email: z.string().email("E-mail inválido"),
     password: z.string().min(6, "Mínimo 6 caracteres"),
     confirm: z.string().min(6, "Confirme a senha"),
-    cpf: z.string().refine((v) => isValidCPF(v), "CPF inválido"),
+    cpf: z
+      .string()
+      .min(11, "Informe o CPF")
+      .refine((v) => isValidCPF(v), "CPF inválido"),
     birthDate: z
       .string()
       .refine((v) => isValidBirthDateStr(v), "Data de nascimento inválida"),
     farmName: z.string().min(3, "Informe o nome da fazenda"),
     address: z.string().min(5, "Informe o endereço"),
-    city: z.string().optional(),
+    city: z.string().min(2, "Informe a cidade"),
     state: z.string().min(2, "Informe o estado"),
     country: z.string().min(5, "Informe o país"),
     size: z.number().min(1, "Informe o porte da fazenda"),
     affix: z.string().max(55, "Informe o afixo da fazenda"),
-    affixType: z.enum(["preffix", "suffix"]).nullable().optional(),
+    affixType: z.enum(["preffix", "suffix"]).nullable(),
   })
   .refine((data) => data.password === data.confirm, {
     path: ["confirm"],
     message: "As senhas não conferem",
-  })
-  .superRefine((data, ctx) => {
-    // Validação condicional para a cidade, se o estado estiver preenchido.
-    if (data.state && (!data.city || data.city.length < 2)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Informe a cidade",
-        path: ["city"],
-      });
-    }
   });
 
 type FormValues = z.infer<typeof schema>;
 
 export default function CadastroPage() {
+  const router = useRouter();
   const [estados, setEstados] = useState<Estado[]>([]);
   const [municipios, setMunicipios] = useState<Municipio[]>([]);
-
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -139,16 +133,16 @@ export default function CadastroPage() {
       birthDate: "",
       farmName: "",
       address: "",
-      city: undefined,
+      city: "",
       state: "",
       country: "Brasil",
       size: 1,
       affix: "",
-      affixType: undefined,
+      affixType: null,
     },
+
     mode: "onSubmit",
   });
-
   const porteEnum: { [key: number]: string } = {
     1: "PEQUENO",
     2: "MEDIO",
@@ -157,64 +151,86 @@ export default function CadastroPage() {
 
   async function onSubmit(values: FormValues) {
     try {
-      const res = await fetch("http://localhost:3000/api/cadastro", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cpf: onlyDigits(values.cpf),
-          nome: values.name,
-          email: values.email,
-          senha: values.password,
-          dataNascimento: values.birthDate,
-          ativo: true,
-          fazenda: {
-            nome: values.farmName,
-            endereco: values.address,
-            cidade: values.city,
-            estado: values.state,
-            pais: values.country,
-            porte: porteEnum[values.size as keyof typeof porteEnum],
-            afixo: values.affix,
-            tipoAfixo: values.affixType,
-          },
-        }),
-      });
+      // 1. Montar o corpo da requisição no formato esperado pelo backend
+      const requestBody = {
+        // Dados do usuário
+        cpf: values.cpf,
+        nome: values.name,
+        email: values.email,
+        senha: values.password,
+        dataNascimento: values.birthDate,
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        const errorMessage =
-          errorData.message || "Erro ao cadastrar. Tente novamente.";
+        // Objeto aninhado com os dados da fazenda
+        fazenda: {
+          nome: values.farmName,
+          endereco: values.address,
+          cidade: values.city,
+          estado: values.state,
+          pais: values.country,
+          porte: porteEnum[values.size],
+          afixo: values.affix || null,
+          sufixo: values.affixType === "suffix" ? true : null,
+          prefixo: values.affixType === "preffix" ? true : null,
+        },
+      };
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/cadastro`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      // Verifica o tipo de conteúdo da resposta ANTES de tentar ler JSON
+      const contentType = response.headers.get("content-type");
+      const isJson = contentType && contentType.includes("application/json");
+
+      // 3. Checar se a resposta foi bem-sucedida (CORREÇÃO DE ERRO APLICADA AQUI)
+      if (!response.ok) {
+        let errorMessage = `Erro ${response.status} ao realizar cadastro.`;
+
+        if (isJson) {
+          // Tenta ler o erro como JSON (apenas se prometeu ser JSON)
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } else {
+          // Se não for JSON (provavelmente HTML que causa o SyntaxError), lê como texto
+          const errorText = await response.text();
+          console.error("Resposta de erro não é JSON (HTML/Texto):", errorText);
+          errorMessage = `Erro ${response.status}: Resposta inesperada do servidor. Verifique a URL e o console.`;
+        }
+
         throw new Error(errorMessage);
       }
 
-      const data = await res.json();
-      console.log("Cadastro realizado:", data);
-
-      // Salvar token em localStorage
-      localStorage.setItem("token", data.token);
-
-      // Redirecionar para dashboard
-      window.location.href = "/dashboard";
-    } catch (err: unknown) {
-      console.error("Erro:", err);
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error("Erro inesperado ao cadastrar!");
+      // 4. Se a resposta foi bem-sucedida, garante que é JSON
+      if (!isJson) {
+        throw new Error(
+          "Cadastro bem-sucedido, mas o servidor retornou formato inesperado (não-JSON)."
+        );
       }
+
+      const responseData = await response.json();
+      console.log("Cadastro unificado realizado!", responseData);
+
+      // 5. Salvar o token retornado e redirecionar para o dashboard
+      localStorage.setItem("token", responseData.accessToken);
+      router.push("/dashboard");
+    } catch (err: any) {
+      console.error("Erro no processo de cadastro:", err);
+      toast.error(err.message || "Erro inesperado ao cadastrar!");
     }
   }
 
   useEffect(() => {
+    // carregar lista de estados
     getUFS().then(setEstados).catch(console.error);
   }, []);
 
   useEffect(() => {
-    const uf = form.watch("state");
-    // Se o UF mudar, resetamos a cidade para que o usuário precise re-selecionar
-    form.setValue("city", undefined);
-    setMunicipios([]); // Limpa a lista de municípios
-
+    const uf = form.getValues("state");
     if (uf?.length === 2) {
       getMunicipios(uf).then(setMunicipios).catch(console.error);
     }
@@ -378,6 +394,7 @@ export default function CadastroPage() {
             </Card>
           </div>
 
+          {/* ... conteúdo da coluna direita ... */}
           <div className="flex w-1/2 p-8 items-stretch">
             <Card className="w-full h-full bg-red-900 text-white flex flex-col border-0 shadow-none p-4">
               <CardHeader>
@@ -463,34 +480,22 @@ export default function CadastroPage() {
                         <Select
                           value={field.value}
                           onValueChange={field.onChange}
-                          disabled={
-                            !form.getValues("state") || estados.length === 0
-                          }
                         >
                           <SelectTrigger className="w-auto data-[placeholder]:text-white [&_svg:not([class*='text-'])]:text-white">
                             <SelectValue placeholder="Selecione a cidade" />
                           </SelectTrigger>
                           <SelectContent>
-                            {[
-                              // Mapeia os municípios se existirem
-                              ...municipios.map((m) => (
+                            {municipios.length > 0 ? (
+                              municipios.map((m) => (
                                 <SelectItem key={m.id} value={m.nome}>
                                   {m.nome}
                                 </SelectItem>
-                              )),
-                              // Adiciona o item de fallback se a lista de municípios estiver vazia
-                              ...(municipios.length === 0
-                                ? [
-                                    <SelectItem
-                                      key="empty"
-                                      value="empty"
-                                      disabled
-                                    >
-                                      Selecione o estado primeiro
-                                    </SelectItem>,
-                                  ]
-                                : []),
-                            ]}
+                              ))
+                            ) : (
+                              <SelectItem value={"todos"}>
+                                Selecione o estado primeiro
+                              </SelectItem>
+                            )}
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -504,15 +509,14 @@ export default function CadastroPage() {
                   render={({ field: { value, onChange } }) => (
                     <FormItem>
                       <FormLabel className="text-white">
-                        Defina o porte: **
-                        {porteEnum[value as keyof typeof porteEnum]}**
+                        Defina o porte
                       </FormLabel>
                       <FormControl>
                         <div className="flex items-center gap-2 p-4">
                           <span className="text-white/80 text-sm">Pequeno</span>
                           <Slider
-                            value={[value ?? 1]}
-                            onValueChange={(v) => onChange(v[0])}
+                            value={[value ?? 1]} // controla pelo form
+                            onValueChange={(v) => onChange(v[0])} // salva como number
                             min={1}
                             max={3}
                             step={1}
@@ -554,13 +558,21 @@ export default function CadastroPage() {
                       <FormLabel>Tipo de afixo</FormLabel>
                       <FormControl>
                         <Select
-                          value={field.value || ""}
-                          onValueChange={(value) =>
-                            field.onChange(value || undefined)
+                          value={
+                            field.value === null
+                              ? "Selecione o tipo"
+                              : field.value
                           }
+                          onValueChange={field.onChange}
                         >
                           <SelectTrigger className="w-auto data-[placeholder]:text-white [&_svg:not([class*='text-'])]:text-white">
-                            <SelectValue placeholder="Selecione o tipo" />
+                            <SelectValue>
+                              {field.value === null
+                                ? "Selecione o tipo"
+                                : field.value === "preffix"
+                                ? "Prefixo"
+                                : "Sufixo"}
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="preffix">Prefixo</SelectItem>
@@ -578,10 +590,8 @@ export default function CadastroPage() {
                 <Button
                   type="submit"
                   className="w-1/3 mx-auto border border-white text-white bg-red-900 hover:bg-red-800 transition-colors flex items-center justify-center"
-                  disabled={form.formState.isSubmitting}
                 >
-                  {form.formState.isSubmitting ? "Carregando..." : "Cadastrar"}
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  Cadastrar <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardFooter>
             </Card>
