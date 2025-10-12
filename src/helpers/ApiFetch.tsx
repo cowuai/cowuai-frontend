@@ -1,29 +1,34 @@
-import { useAuth } from "@/app/providers/auth-provider";
+export async function apiFetch(
+  url: string,
+  init: RequestInit = {},
+  accessToken?: string
+) {
+  const headers = new Headers(init.headers || {});
+  if (accessToken) {
+    headers.set("Authorization", `Bearer ${accessToken}`);
+  }
+  if (!headers.has("Content-Type") && init.body) {
+    headers.set("Content-Type", "application/json");
+  }
 
-export async function apiFetch(url: string, options: RequestInit = {}) {
-    const { accessToken, setAccessToken } = useAuth();
+  const res = await fetch(url, { ...init, headers });
 
-    let headers: any = options.headers || {};
-    if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
-
-    let res = await fetch(url, { ...options, headers, credentials: "include" });
-
-    if (res.status === 401) {
-        // tenta renovar
-        const refreshRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
-            method: "POST",
-            credentials: "include",
-        });
-
-        if (!refreshRes.ok) throw new Error("Sessão expirada");
-
-        const data = await refreshRes.json();
-        setAccessToken(data.accessToken);
-
-        // repete request original
-        headers["Authorization"] = `Bearer ${data.accessToken}`;
-        res = await fetch(url, { ...options, headers, credentials: "include" });
+  if (!res.ok) {
+    // tenta extrair mensagem amigável do back
+    let message = res.statusText;
+    try {
+      const data = await res.json();
+      message = (data?.message || data?.error || message) as string;
+    } catch {
+      // keep default
     }
+    throw new Error(message);
+  }
 
-    return res.json();
+  // tenta parsear json; se não for json, retorna vazio
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
 }
