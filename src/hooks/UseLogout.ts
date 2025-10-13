@@ -1,4 +1,4 @@
-import {useAuth} from "@/app/providers/auth-provider";
+import {useAuth} from "@/app/providers/AuthProvider";
 import {redirect} from "next/navigation";
 
 export function useLogout() {

@@ -38,8 +38,8 @@ import {
 } from "@/components/ui/dialog"
 
 // 🔐 Auth + fetch helper (sem hooks dentro)
-import { useAuth } from "@/app/providers/auth-provider";
-import { apiFetch } from "@/helpers/ApiFetch";
+import { useAuth } from "@/app/providers/AuthProvider";
+import { apiFetch } from "@/helpers/api-fetch";
 
 // Fonte do título (igual às outras páginas)
 const tsukimi = Tsukimi_Rounded({

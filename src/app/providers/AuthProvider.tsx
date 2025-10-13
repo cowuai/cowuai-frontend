@@ -10,6 +10,7 @@ interface AuthContextType {
     setUsuario?: (usuario: Usuario | null) => void;
     login: (email: string, senha: string) => Promise<boolean>;
     logout: (idUsuario: string) => Promise<boolean>;
+    refresh: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,7 +51,22 @@ export function AuthProvider({children}: { children: ReactNode }) {
         return true;
     }
 
-    return <AuthContext.Provider value={{accessToken, setAccessToken, usuario, setUsuario, login, logout}}>{children}</AuthContext.Provider>;
+    const refresh = async (): Promise<boolean> => {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({dispositivo}),
+            credentials: 'include'
+        });
+
+        if (!res.ok) return false;
+        const data = await res.json();
+        setAccessToken(data.accessToken);
+        setUsuario(data.user);
+        return true;
+    }
+
+    return <AuthContext.Provider value={{accessToken, setAccessToken, usuario, setUsuario, login, logout, refresh}}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => {

@@ -1,6 +1,6 @@
 import {LogOut} from "lucide-react";
 import React from "react";
-import {useLogout} from "@/hooks/use-logout";
+import {useLogout} from "@/hooks/UseLogout";
 
 export default function LogoutButton() {
     const handleLogout = useLogout();
