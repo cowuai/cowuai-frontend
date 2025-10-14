@@ -1,7 +1,9 @@
-import { Animal } from "@/types/animal";
+import { Animal } from "@/types/Animal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Syringe, User, FileText } from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {BiPlus} from "react-icons/bi";
 
 interface HealthTabProps {
     animal: Animal;
@@ -30,6 +32,10 @@ export const HealthTab = ({ animal }: HealthTabProps) => {
                 <Badge variant="outline" className="text-sm">
                     {animal.vaccines.length} {animal.vaccines.length === 1 ? 'vacina' : 'vacinas'} registrada(s)
                 </Badge>
+                <Button variant={"secondary"} size={"sm"} className={"gap-2"} >
+                    <BiPlus/>
+                    Adicionar Vacina
+                </Button>
             </div>
 
             <div className="grid gap-4">

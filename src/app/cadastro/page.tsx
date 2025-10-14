@@ -43,6 +43,7 @@ import {getUfs} from "@/actions/getUfs";
 import {Municipio} from "@/types/Municipio";
 import {getMunicipios} from "@/actions/getMunicipios";
 import {useRouter} from "next/navigation";
+import {apiFetch} from "@/helpers/ApiFetch";
 
 const tsukimi = Tsukimi_Rounded({
     subsets: ["latin"],
@@ -176,7 +177,7 @@ export default function CadastroPage() {
             };
 
             // 2. Fazer a chamada para a rota /api/cadastro
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cadastro`, {
+            const response = await apiFetch(`${process.env.NEXT_PUBLIC_API_URL}/cadastro`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(requestBody),

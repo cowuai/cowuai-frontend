@@ -1,11 +1,14 @@
-import { Animal } from "@/types/animal";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {Animal} from "@/types/Animal";
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
+import {BiMale} from "react-icons/bi";
+import {CgGenderFemale, CgGenderMale} from "react-icons/cg";
+import {ArcherContainer, ArcherElement} from "react-archer";
 
 interface GenealogyTabProps {
     animal: Animal;
 }
 
-export const GenealogyTab = ({ animal }: GenealogyTabProps) => {
+export const GenealogyTab = ({animal}: GenealogyTabProps) => {
     return (
         <div className="space-y-6">
             <div className="text-center py-4">
@@ -14,10 +17,10 @@ export const GenealogyTab = ({ animal }: GenealogyTabProps) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="border-2 border-primary/20">
-                    <CardHeader className="bg-primary/5">
+                <Card className="border-2 bg-accent-blue/4 border-accent-blue/20">
+                    <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <span className="text-2xl">👨</span>
+                            <CgGenderMale size={22}/>
                             Pai
                         </CardTitle>
                     </CardHeader>
@@ -39,10 +42,10 @@ export const GenealogyTab = ({ animal }: GenealogyTabProps) => {
                     </CardContent>
                 </Card>
 
-                <Card className="border-2 border-accent/20">
-                    <CardHeader className="bg-accent/5">
+                <Card className="border-2 bg-accent-yellow/5 border-accent-yellow/20">
+                    <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <span className="text-2xl">👩</span>
+                            <CgGenderFemale size={22}/>
                             Mãe
                         </CardTitle>
                     </CardHeader>
@@ -70,24 +73,60 @@ export const GenealogyTab = ({ animal }: GenealogyTabProps) => {
                     <CardTitle>Árvore Genealógica</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex flex-col items-center space-y-4 py-4">
-                        <div className="text-center p-4 bg-primary/10 rounded-lg border-2 border-primary/30 min-w-[200px]">
-                            <p className="font-bold">{animal.name}</p>
-                            <p className="text-sm text-muted-foreground">{animal.tag}</p>
-                        </div>
+                    <div className="flex flex-col items-center">
 
-                        <div className="w-px h-8 bg-border"></div>
+                        <ArcherContainer
+                            strokeWidth={2}
+                            endMarker={false}
+                            lineStyle="curve"
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                            }}
+                        >
+                            {/* Linha dos pais */}
+                            <div className="flex justify-center gap-12 mb-16">
+                                <ArcherElement id="father">
+                                    <div className="text-center p-4 bg-accent-blue/5 rounded-lg border border-accent-blue/10 min-w-[180px]">
+                                        <p className="font-semibold">{animal.father?.name || "Desconhecido"}</p>
+                                        <p className="text-sm text-muted-foreground">{animal.father?.tag || "-"}</p>
+                                    </div>
+                                </ArcherElement>
 
-                        <div className="grid grid-cols-2 gap-8">
-                            <div className="text-center p-4 bg-primary/5 rounded-lg border border-primary/20 min-w-[180px]">
-                                <p className="font-semibold">{animal.father?.name || "Desconhecido"}</p>
-                                <p className="text-sm text-muted-foreground">{animal.father?.tag || "-"}</p>
+                                <ArcherElement id="mother">
+                                    <div className="text-center p-4 bg-accent-yellow/5 rounded-lg border  border-accent-yellow/20 min-w-[180px]">
+                                        <p className="font-semibold">{animal.mother?.name || "Desconhecido"}</p>
+                                        <p className="text-sm text-muted-foreground">{animal.mother?.tag || "-"}</p>
+                                    </div>
+                                </ArcherElement>
                             </div>
-                            <div className="text-center p-4 bg-accent/5 rounded-lg border border-accent/20 min-w-[180px]">
-                                <p className="font-semibold">{animal.mother?.name || "Desconhecido"}</p>
-                                <p className="text-sm text-muted-foreground">{animal.mother?.tag || "-"}</p>
-                            </div>
-                        </div>
+
+                            {/* Filho */}
+                            <ArcherElement
+                                id="child"
+                                relations={[
+                                    {
+                                        targetId: "father",
+                                        sourceAnchor: "top",
+                                        targetAnchor: "bottom",
+                                        style: { strokeColor: "#3b82f6" },
+                                    },
+                                    {
+                                        targetId: "mother",
+                                        sourceAnchor: "top",
+                                        targetAnchor: "bottom",
+                                        style: { strokeColor: "#fbbf24" },
+                                    },
+                                ]}
+                            >
+                                <div className="text-center p-4 bg-primary/10 rounded-lg border-2 border-primary/30 min-w-[200px]">
+                                    <p className="font-bold">{animal.name}</p>
+                                    <p className="text-sm text-muted-foreground">{animal.tag}</p>
+                                </div>
+                            </ArcherElement>
+                        </ArcherContainer>
                     </div>
                 </CardContent>
             </Card>

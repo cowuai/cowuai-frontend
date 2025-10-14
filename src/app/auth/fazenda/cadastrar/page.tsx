@@ -1,13 +1,7 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import {useTheme} from "next-themes";
 import {useEffect, useState} from "react";
-import {PiCow} from "react-icons/pi";
-import {LuLayoutDashboard} from "react-icons/lu";
-import {PiUsersThree, PiKeyReturn} from "react-icons/pi";
-import {FaChevronRight} from "react-icons/fa";
 import {Slider} from "@/components/ui/slider";
 
 import {Estado} from "@/types/Estado";
@@ -15,7 +9,7 @@ import {Municipio} from "@/types/Municipio";
 import {getUfs} from "@/actions/getUfs";
 import {getMunicipios} from "@/actions/getMunicipios";
 
-import {apiFetch} from "@/helpers/api-fetch";
+import {apiFetch} from "@/helpers/ApiFetch";
 import {useAuth} from "@/app/providers/AuthProvider";
 import {useRouter} from "next/navigation";
 

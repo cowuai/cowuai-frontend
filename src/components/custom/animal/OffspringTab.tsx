@@ -39,7 +39,7 @@ export const OffspringTab = ({ animal }: OffspringTabProps) => {
 
             <div className="grid gap-4">
                 {animal.offspring.map((offspring) => (
-                    <Card key={offspring.id} className="border-l-4 border-l-accent">
+                    <Card key={offspring.id} className="border-l-4 border-l-primary">
                         <CardHeader className="pb-3">
                             <CardTitle className="flex items-center justify-between text-lg">
                                 <div className="flex items-center gap-2">

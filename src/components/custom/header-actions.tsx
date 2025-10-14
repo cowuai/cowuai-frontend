@@ -6,15 +6,8 @@ import LogoutButton from "@/components/custom/logout-button";
 import Image from "next/image";
 
 export function HeaderActions() {
-    const pathname = usePathname();
-
-    // esconder na tela de login e cadastro
-    if (pathname === "/login" || pathname === "/cadastro") {
-        return null;
-    }
-
     return (
-        <div className="fixed top-0 right-0 w-auto flex items-center gap-6 justify-end z-50 p-4">
+        <div className="w-auto flex items-center gap-6 justify-end p-4">
             <SwitchThemeBox/>
             <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-sidebar-ring">
                 <Image

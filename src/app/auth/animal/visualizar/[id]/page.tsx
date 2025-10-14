@@ -10,6 +10,9 @@ import { GenealogyTab } from "@/components/custom/animal/GenealogyTab";
 import { HealthTab } from "@/components/custom/animal/HealthTab";
 import { OffspringTab } from "@/components/custom/animal/OffspringTab";
 import { cn } from "@/lib/utils";
+import {FcGenealogy} from "react-icons/fc";
+import {MdOutlineBloodtype} from "react-icons/md";
+import {FaCow} from "react-icons/fa6";
 
 type TabType = "details" | "genealogy" | "health" | "offspring";
 
@@ -33,9 +36,9 @@ const AnimalDetails = () => {
 
     const menuItems = [
         { id: "details" as TabType, label: "Detalhes", icon: FileText },
-        { id: "genealogy" as TabType, label: "Genealogia", icon: Users },
+        { id: "genealogy" as TabType, label: "Genealogia", icon: MdOutlineBloodtype },
         { id: "health" as TabType, label: "Saúde", icon: HeartPulse },
-        { id: "offspring" as TabType, label: "Descendentes", icon: Baby },
+        { id: "offspring" as TabType, label: "Descendentes", icon: FaCow },
     ];
 
     return (
