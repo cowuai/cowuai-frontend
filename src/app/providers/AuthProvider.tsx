@@ -1,21 +1,21 @@
 'use client';
 
-import React, {createContext, useContext, useState, ReactNode} from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import DeviceInfo from "@/helpers/DeviceInfo";
 
 interface AuthContextType {
     accessToken: string | null;
     setAccessToken: (token: string | null) => void;
-    usuario?: Usuario | null;
-    setUsuario?: (usuario: Usuario | null) => void;
+    usuario: Usuario | null;
+    setUsuario: (usuario: Usuario | null) => void;
     login: (email: string, senha: string) => Promise<boolean>;
-    logout: (idUsuario: string) => Promise<boolean>;
+    logout: () => Promise<boolean>;
     refresh: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({children}: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
     const [accessToken, setAccessToken] = useState<string | null>(null);
     const [usuario, setUsuario] = useState<Usuario | null>(null);
     const dispositivo = DeviceInfo();
@@ -23,8 +23,8 @@ export function AuthProvider({children}: { children: ReactNode }) {
     const login = async (email: string, senha: string): Promise<boolean> => {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({email, senha, dispositivo}),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, senha, dispositivo }),
             credentials: 'include'
         });
 
@@ -36,26 +36,32 @@ export function AuthProvider({children}: { children: ReactNode }) {
         return true;
     };
 
-    const logout = async (idUsuario: string): Promise<boolean> => {
+    const logout = async (): Promise<boolean> => {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({idUsuario}),
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
+            },
             credentials: 'include'
         });
 
-        console.log(res);
+        if (!res.ok) {
+            setAccessToken(null);
+            setUsuario(null);
+            return false;
+        }
 
-        if (!res.ok) return false;
         setAccessToken(null);
+        setUsuario(null);
         return true;
     }
 
     const refresh = async (): Promise<boolean> => {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({dispositivo}),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dispositivo }),
             credentials: 'include'
         });
 
@@ -66,7 +72,7 @@ export function AuthProvider({children}: { children: ReactNode }) {
         return true;
     }
 
-    return <AuthContext.Provider value={{accessToken, setAccessToken, usuario, setUsuario, login, logout, refresh}}>{children}</AuthContext.Provider>;
+    return <AuthContext.Provider value={{ accessToken, setAccessToken, usuario, setUsuario, login, logout, refresh }}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => {

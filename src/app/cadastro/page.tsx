@@ -1,15 +1,15 @@
 "use client";
 
-import {undefined, z} from "zod";
-import {useForm} from "react-hook-form";
-import {zodResolver} from "@hookform/resolvers/zod";
-import {toast} from "sonner";
+import { undefined, z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import Link from "next/link";
-import {ArrowLeft, ArrowRight} from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
-import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {Slider} from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 
 import {
     Card,
@@ -27,9 +27,9 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import {Checkbox} from "@/components/ui/checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
 
-import {Tsukimi_Rounded} from "next/font/google";
+import { Tsukimi_Rounded } from "next/font/google";
 import {
     Select,
     SelectContent,
@@ -37,13 +37,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import {useEffect, useState} from "react";
-import {Estado} from "@/types/Estado";
-import {getUfs} from "@/actions/getUfs";
-import {Municipio} from "@/types/Municipio";
-import {getMunicipios} from "@/actions/getMunicipios";
-import {useRouter} from "next/navigation";
-import {apiFetch} from "@/helpers/ApiFetch";
+import { useEffect, useState } from "react";
+import { Estado } from "@/types/Estado";
+import { getUfs } from "@/actions/getUfs";
+import { Municipio } from "@/types/Municipio";
+import { getMunicipios } from "@/actions/getMunicipios";
+import { useRouter } from "next/navigation";
+import { apiFetch } from "@/helpers/ApiFetch";
+import { useAuth } from "../providers/AuthProvider";
 
 const tsukimi = Tsukimi_Rounded({
     subsets: ["latin"],
@@ -121,6 +122,7 @@ type FormValues = z.infer<typeof schema>;
 
 export default function CadastroPage() {
     const router = useRouter();
+    const { setAccessToken, setUsuario } = useAuth();
     const [estados, setEstados] = useState<Estado[]>([]);
     const [municipios, setMunicipios] = useState<Municipio[]>([]);
     const form = useForm<FormValues>({
@@ -179,22 +181,22 @@ export default function CadastroPage() {
             // 2. Fazer a chamada para a rota /api/cadastro
             const response = await apiFetch(`${process.env.NEXT_PUBLIC_API_URL}/cadastro`, {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(requestBody),
             });
 
             // 3. Checar se a resposta foi bem-sucedida
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || "Erro ao realizar cadastro");
+                // Se apiFetch já retorna o JSON, use response diretamente
+                throw new Error(response.message || "Erro ao realizar cadastro");
             }
 
-            const responseData = await response.json();
-            console.log("Cadastro unificado realizado!", responseData);
+            console.log("Cadastro unificado realizado!", response);
 
             // 4. Salvar o token retornado e redirecionar para o dashboard
-            localStorage.setItem("token", responseData.accessToken);
-            router.push("/dashboard");
+            setAccessToken(response.accessToken);
+            setUsuario(response.user);
+            router.push("/auth/dashboard");
 
         } catch (err: any) {
             console.error("Erro no processo de cadastro:", err);
@@ -234,7 +236,7 @@ export default function CadastroPage() {
                             href="/login"
                             className="mt-13 ml-6 hover:text-red-900 transition-colors"
                         >
-                            <ArrowLeft className="w-7 h-7" strokeWidth={1}/>
+                            <ArrowLeft className="w-7 h-7" strokeWidth={1} />
                         </Link>
                     </div>
 
@@ -255,7 +257,7 @@ export default function CadastroPage() {
                                     <FormField
                                         control={form.control}
                                         name="name"
-                                        render={({field}) => (
+                                        render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel className="text-red-900 ">
                                                     Nome completo
@@ -267,7 +269,7 @@ export default function CadastroPage() {
                                                         className=" border-red-900 focus-visible:ring-0 focus:border-red-900"
                                                     />
                                                 </FormControl>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -275,7 +277,7 @@ export default function CadastroPage() {
                                     <FormField
                                         control={form.control}
                                         name="cpf"
-                                        render={({field}) => (
+                                        render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel className="text-red-900">CPF</FormLabel>
                                                 <FormControl>
@@ -285,7 +287,7 @@ export default function CadastroPage() {
                                                         className=" border-red-900 focus-visible:ring-0 focus:border-red-900"
                                                     />
                                                 </FormControl>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -294,7 +296,7 @@ export default function CadastroPage() {
                                     <FormField
                                         control={form.control}
                                         name="birthDate"
-                                        render={({field}) => (
+                                        render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel className="text-red-900">
                                                     Data de Nascimento
@@ -306,7 +308,7 @@ export default function CadastroPage() {
                                                         className="border-red-900 focus-visible:ring-0 focus:border-red-900"
                                                     />
                                                 </FormControl>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -314,7 +316,7 @@ export default function CadastroPage() {
                                     <FormField
                                         control={form.control}
                                         name="email"
-                                        render={({field}) => (
+                                        render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel className="text-red-900 ">E-mail</FormLabel>
                                                 <FormControl>
@@ -325,14 +327,14 @@ export default function CadastroPage() {
                                                         className=" border-red-900 focus-visible:ring-0 focus:border-red-900"
                                                     />
                                                 </FormControl>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
                                     <FormField
                                         control={form.control}
                                         name="password"
-                                        render={({field}) => (
+                                        render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel className="text-red-900 ">Senha</FormLabel>
                                                 <FormControl>
@@ -343,14 +345,14 @@ export default function CadastroPage() {
                                                         className=" border-red-900 focus-visible:ring-0 focus:border-red-900"
                                                     />
                                                 </FormControl>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
                                     <FormField
                                         control={form.control}
                                         name="confirm"
-                                        render={({field}) => (
+                                        render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel className="text-red-900">
                                                     Confirmar senha
@@ -363,7 +365,7 @@ export default function CadastroPage() {
                                                         className=" border-red-900 focus-visible:ring-0 focus:border-red-90"
                                                     />
                                                 </FormControl>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -390,7 +392,7 @@ export default function CadastroPage() {
                                 <FormField
                                     control={form.control}
                                     name="farmName"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Nome da Fazenda</FormLabel>
                                             <FormControl>
@@ -400,14 +402,14 @@ export default function CadastroPage() {
                                                     {...field}
                                                 />
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 <FormField
                                     control={form.control}
                                     name="address"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Endereço / Localidade</FormLabel>
                                             <FormControl>
@@ -417,14 +419,14 @@ export default function CadastroPage() {
                                                     {...field}
                                                 />
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 <FormField
                                     control={form.control}
                                     name="state"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Estado</FormLabel>
                                             <FormControl>
@@ -434,7 +436,7 @@ export default function CadastroPage() {
                                                 >
                                                     <SelectTrigger
                                                         className="w-auto data-[placeholder]:text-white [&_svg:not([class*='text-'])]:text-white">
-                                                        <SelectValue placeholder="Selecione o estado"/>
+                                                        <SelectValue placeholder="Selecione o estado" />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         {estados.map((estado) => (
@@ -445,14 +447,14 @@ export default function CadastroPage() {
                                                     </SelectContent>
                                                 </Select>
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 <FormField
                                     control={form.control}
                                     name="city"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Cidade</FormLabel>
                                             <FormControl>
@@ -462,7 +464,7 @@ export default function CadastroPage() {
                                                 >
                                                     <SelectTrigger
                                                         className="w-auto data-[placeholder]:text-white [&_svg:not([class*='text-'])]:text-white">
-                                                        <SelectValue placeholder="Selecione a cidade"/>
+                                                        <SelectValue placeholder="Selecione a cidade" />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         {municipios.length > 0 ? (
@@ -479,14 +481,14 @@ export default function CadastroPage() {
                                                     </SelectContent>
                                                 </Select>
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 <FormField
                                     control={form.control}
                                     name="size"
-                                    render={({field: {value, onChange}}) => (
+                                    render={({ field: { value, onChange } }) => (
                                         <FormItem>
                                             <FormLabel className="text-white">
                                                 Defina o porte
@@ -508,7 +510,7 @@ export default function CadastroPage() {
                                                     <span className="text-white/80 text-sm">Grande</span>
                                                 </div>
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
@@ -516,7 +518,7 @@ export default function CadastroPage() {
                                 <FormField
                                     control={form.control}
                                     name="affix"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Afixo da Fazenda</FormLabel>
                                             <FormControl>
@@ -526,14 +528,14 @@ export default function CadastroPage() {
                                                     {...field}
                                                 />
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 <FormField
                                     control={form.control}
                                     name="affixType"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem className="flex justify-between">
                                             <FormLabel>Tipo de afixo</FormLabel>
                                             <FormControl>
@@ -561,7 +563,7 @@ export default function CadastroPage() {
                                                     </SelectContent>
                                                 </Select>
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
@@ -572,7 +574,7 @@ export default function CadastroPage() {
                                     type="submit"
                                     className="w-1/3 mx-auto border border-white text-white bg-red-900 hover:bg-red-800 transition-colors flex items-center justify-center"
                                 >
-                                    Cadastrar <ArrowRight className="ml-2 h-4 w-4"/>
+                                    Cadastrar <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
                             </CardFooter>
                         </Card>

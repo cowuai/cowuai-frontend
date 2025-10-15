@@ -39,7 +39,7 @@ import {
 
 // 🔐 Auth + fetch helper (sem hooks dentro)
 import { useAuth } from "@/app/providers/AuthProvider";
-import { apiFetch } from "@/helpers/api-fetch";
+import { apiFetch } from "@/helpers/ApiFetch";
 
 // Fonte do título (igual às outras páginas)
 const tsukimi = Tsukimi_Rounded({

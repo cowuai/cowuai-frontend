@@ -1,10 +1,10 @@
 import type {Metadata} from "next";
 import "./globals.css";
-import {SwitchThemeBox} from "@/components/custom/switch-theme-box";
+import {SwitchThemeBox} from "@/components/custom/SwitchThemeBox";
 import {ThemeProvider} from "@/app/providers/ThemeProvider"
 import React from "react";
-import LogoutButton from "@/components/custom/logout-button";
-import {HeaderActions} from "@/components/custom/header-actions";
+import LogoutButton from "@/components/custom/LogoutButton";
+import {HeaderActions} from "@/components/custom/HeaderActions";
 import {AuthProvider} from "@/app/providers/AuthProvider";
 import {Toaster} from "@/components/ui/sonner";
 

@@ -1,18 +1,19 @@
 import {useAuth} from "@/app/providers/AuthProvider";
-import {redirect} from "next/navigation";
+import { useRouter } from "next/navigation"; // Use o useRouter para navegação em client components
 
 export function useLogout() {
-    const { logout, usuario } = useAuth();
+    const { logout } = useAuth();
+    const router = useRouter();
 
     return async () => {
-        if (usuario) {
-            console.log("Fazendo logout do usuário:", usuario.id);
-            const success = await logout(usuario.id);
-            if (success) {
-                redirect("/login");
-            } else {
-                console.error("Falha no logout.");
-            }
+        const success = await logout();
+        if (success) {
+            router.push("/login");
+        } else {
+            console.error("Falha no logout.");
+            // Mesmo com falha, redireciona para o login
+            // para forçar uma nova autenticação.
+            router.push("/login");
         }
     };
 }
