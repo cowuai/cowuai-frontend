@@ -1,6 +1,7 @@
+// src/app/cadastro/page.tsx
 "use client";
 
-import { undefined, z } from "zod";
+import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -12,30 +13,29 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 
 import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-    CardContent,
-    CardFooter,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
 } from "@/components/ui/card";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
-
 import { Tsukimi_Rounded } from "next/font/google";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { Estado } from "@/types/Estado";
@@ -47,76 +47,76 @@ import { apiFetch } from "@/helpers/ApiFetch";
 import { useAuth } from "../providers/AuthProvider";
 
 const tsukimi = Tsukimi_Rounded({
-    subsets: ["latin"],
-    weight: ["300", "400", "600"],
+  subsets: ["latin"],
+  weight: ["300", "400", "600"],
 });
 
 // --- helpers de validação ---
 const onlyDigits = (s: string) => s.replace(/\D/g, "");
 
 function isValidCPF(cpfRaw: string): boolean {
-    const cpf = onlyDigits(cpfRaw);
-    if (!/^\d{11}$/.test(cpf)) return false;
-    if (/^(\d)\1{10}$/.test(cpf)) return false; // todos iguais
+  const cpf = onlyDigits(cpfRaw);
+  if (!/^\d{11}$/.test(cpf)) return false;
+  if (/^(\d)\1{10}$/.test(cpf)) return false; // todos iguais
 
-    // dígitos verificadores
-    const calcDigit = (base: string, factorStart: number) => {
-        let sum = 0,
-            factor = factorStart;
-        for (const ch of base) sum += parseInt(ch, 10) * factor--;
-        const rest = sum % 11;
-        return rest < 2 ? 0 : 11 - rest;
-    };
+  // dígitos verificadores
+  const calcDigit = (base: string, factorStart: number) => {
+    let sum = 0,
+      factor = factorStart;
+    for (const ch of base) sum += parseInt(ch, 10) * factor--;
+    const rest = sum % 11;
+    return rest < 2 ? 0 : 11 - rest;
+  };
 
-    const d1 = calcDigit(cpf.slice(0, 9), 10);
-    const d2 = calcDigit(cpf.slice(0, 9) + d1.toString(), 11);
-    return cpf.endsWith(`${d1}${d2}`);
+  const d1 = calcDigit(cpf.slice(0, 9), 10);
+  const d2 = calcDigit(cpf.slice(0, 9) + d1.toString(), 11);
+  return cpf.endsWith(`${d1}${d2}`);
 }
 
 function isValidBirthDateStr(s: string): boolean {
-    // espera "YYYY-MM-DD"
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
-    const d = new Date(s + "T00:00:00");
-    if (Number.isNaN(d.getTime())) return false;
+  // espera "YYYY-MM-DD"
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const d = new Date(s + "T00:00:00");
+  if (Number.isNaN(d.getTime())) return false;
 
-    const today = new Date();
-    // não pode ser no futuro
-    if (d > today) return false;
+  const today = new Date();
+  // não pode ser no futuro
+  if (d > today) return false;
 
-    // idade máxima (ex.: 120 anos)
-    const oldest = new Date();
-    oldest.setFullYear(oldest.getFullYear() - 120);
-    if (d < oldest) return false;
+  // idade máxima (ex.: 120 anos)
+  const oldest = new Date();
+  oldest.setFullYear(oldest.getFullYear() - 120);
+  if (d < oldest) return false;
 
-    return true;
+  return true;
 }
 
 const schema = z
-    .object({
-        name: z.string().min(3, "Informe seu nome completo"),
-        email: z.string().email("E-mail inválido"),
-        password: z.string().min(6, "Mínimo 6 caracteres"),
-        confirm: z.string().min(6, "Confirme a senha"),
-        cpf: z
-            .string()
-            .min(11, "Informe o CPF")
-            .refine((v) => isValidCPF(v), "CPF inválido"),
-        birthDate: z
-            .string()
-            .refine((v) => isValidBirthDateStr(v), "Data de nascimento inválida"),
-        farmName: z.string().min(3, "Informe o nome da fazenda"),
-        address: z.string().min(5, "Informe o endereço"),
-        city: z.string().min(2, "Informe a cidade"),
-        state: z.string().min(2, "Informe o estado"),
-        country: z.string().min(5, "Informe o país"),
-        size: z.number().min(1, "Informe o porte da fazenda"),
-        affix: z.string().max(55, "Informe o afixo da fazenda"),
-        affixType: z.enum(["preffix", "suffix"]).nullable(),
-    })
-    .refine((data) => data.password === data.confirm, {
-        path: ["confirm"],
-        message: "As senhas não conferem",
-    });
+  .object({
+    name: z.string().min(3, "Informe seu nome completo"),
+    email: z.string().email("E-mail inválido"),
+    password: z.string().min(6, "Mínimo 6 caracteres"),
+    confirm: z.string().min(6, "Confirme a senha"),
+    cpf: z
+      .string()
+      .min(11, "Informe o CPF")
+      .refine((v) => isValidCPF(v), "CPF inválido"),
+    birthDate: z
+      .string()
+      .refine((v) => isValidBirthDateStr(v), "Data de nascimento inválida"),
+    farmName: z.string().min(3, "Informe o nome da fazenda"),
+    address: z.string().min(5, "Informe o endereço"),
+    city: z.string().min(2, "Informe a cidade"),
+    state: z.string().min(2, "Informe o estado"),
+    country: z.string().min(5, "Informe o país"),
+    size: z.number().min(1, "Informe o porte da fazenda"),
+    affix: z.string().max(55, "Informe o afixo da fazenda"),
+    affixType: z.enum(["preffix", "suffix"]).nullable(),
+  })
+  .refine((data) => data.password === data.confirm, {
+    path: ["confirm"],
+    message: "As senhas não conferem",
+  });
 
 type FormValues = z.infer<typeof schema>;
 
@@ -143,16 +143,28 @@ export default function CadastroPage() {
             affix: "",
             affixType: null,
         },
+      };
 
-        mode: "onSubmit",
-    });
-    const porteEnum: { [key: number]: string } = {
-        1: "PEQUENO",
-        2: "MEDIO",
-        3: "GRANDE"
-    };
+      // 2. Fazer a chamada para a rota /api/cadastro
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL; // ex.: http://localhost:3333/api
+      if (!API_BASE) {
+        throw new Error(
+          "API base não configurada. Defina NEXT_PUBLIC_API_URL no .env.local"
+        );
+      }
 
-    async function onSubmit(values: FormValues) {
+      // 🔗 CHAMA O BACKEND (sem token; cadastro costuma ser público)
+      const data = await apiFetch(
+        `${API_BASE}/cadastro`,
+        {
+          method: "POST",
+          body: JSON.stringify(requestBody),
+        },
+        undefined // sem Authorization
+      );
+
+      // 3. Checar/usar o retorno
+      if (data?.accessToken) {
         try {
             // 1. Montar o corpo da requisição no formato esperado pelo backend
             //    com os dados do usuário no nível principal e os da fazenda em um objeto aninhado.
@@ -202,6 +214,14 @@ export default function CadastroPage() {
             console.error("Erro no processo de cadastro:", err);
             toast.error(err.message || "Erro inesperado ao cadastrar!");
         }
+      }
+
+      // 4. Feedback + redirecionar (mantém seu design/comentários)
+      toast.success("Cadastro realizado com sucesso!");
+      router.push("/login"); // ou "/auth/dashboard", conforme seu fluxo
+    } catch (err: any) {
+      console.error("Erro no processo de cadastro:", err);
+      toast.error(err?.message || "Erro inesperado ao cadastrar!");
     }
 
     useEffect(() => {
@@ -229,12 +249,136 @@ export default function CadastroPage() {
                             console.log("Erros:", errors);
                         }
                     )}
-                    className="flex w-8/12 h-auto rounded-lg overflow-hidden shadow-lg bg-card"
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-red-900 ">Senha</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Digite sua senha..."
+                            {...field}
+                            className=" border-red-900 focus-visible:ring-0 focus:border-red-900"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="confirm"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-red-900">
+                          Confirmar senha
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Digite novamente sua senha..."
+                            {...field}
+                            className=" border-red-900 focus-visible:ring-0 focus:border-red-90"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* ... conteúdo da coluna direita ... */}
+          <div className="flex w-1/2 p-8 items-stretch">
+            <Card className="w-full h-full bg-red-900 text-white flex flex-col border-0 shadow-none p-4">
+              <CardHeader>
+                <CardTitle
+                  className={`${tsukimi.className} text-2xl font-normal text-white items-center justify-center text-center`}
                 >
-                    <div className="flex items-start justify-center bg-card">
-                        <Link
-                            href="/login"
-                            className="mt-13 ml-6 hover:text-red-900 transition-colors"
+                  Dados da Fazenda
+                </CardTitle>
+                <CardDescription className="text-[12px] !text-white  text-center">
+                  Preencha os campos com os dados da sua fazenda
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="flex-1 space-y-4">
+                <FormField
+                  control={form.control}
+                  name="farmName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome da Fazenda</FormLabel>
+                      <FormControl>
+                        <Input
+                          className=" text-white placeholder:text-white/80 focus:border-white"
+                          placeholder="Digite o nome da fazenda..."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Endereço / Localidade</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="text-white placeholder:text-white/80 focus:border-white"
+                          placeholder="Digite o endereço da fazenda..."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="state"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Estado</FormLabel>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className="w-auto data-[placeholder]:text-white [&_svg:not([class*='text-'])]:text-white">
+                            <SelectValue placeholder="Selecione o estado" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {estados.map((estado) => (
+                              <SelectItem key={estado.id} value={estado.sigla}>
+                                {estado.nome} ({estado.sigla})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cidade</FormLabel>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
                         >
                             <ArrowLeft className="w-7 h-7" strokeWidth={1} />
                         </Link>
