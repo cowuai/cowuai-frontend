@@ -17,7 +17,7 @@ import {
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 import {ChevronRight, ChevronUp} from "lucide-react";
 import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/ui/collapsible";
-import {useLogout} from "@/hooks/use-logout";
+import {useLogout} from "@/hooks/UseLogout";
 import {Button} from "@/components/ui/button";
 
 type MenuItem = {

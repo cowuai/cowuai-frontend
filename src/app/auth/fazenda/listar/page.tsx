@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/dialog"
 
 // 🔐 Auth + fetch helper (sem hooks dentro)
-import { useAuth } from "@/app/providers/auth-provider";
+import { useAuth } from "@/app/providers/AuthProvider";
 import { apiFetch } from "@/helpers/ApiFetch";
 
 // Fonte do título (igual às outras páginas)
