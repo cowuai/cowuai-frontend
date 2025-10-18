@@ -39,9 +39,9 @@ import {
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { Estado } from "@/types/Estado";
-import { getUFS } from "@/actions/get-ufs";
+import { getUfs } from "@/actions/getUfs";
 import { Municipio } from "@/types/Municipio";
-import { getMunicipios } from "@/actions/get-municipios";
+import { getMunicipios } from "@/actions/getMunicipios";
 import { useRouter } from "next/navigation";
 
 // 🔗 helper de rede (puro, sem hooks dentro)
@@ -219,7 +219,7 @@ export default function CadastroPage() {
 
   useEffect(() => {
     // carregar lista de estados
-    getUFS().then(setEstados).catch(console.error);
+    getUfs().then(setEstados).catch(console.error);
   }, []);
 
   useEffect(() => {
