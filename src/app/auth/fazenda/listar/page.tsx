@@ -57,8 +57,8 @@ import {
 // ✅ TIPOS/AÇÕES para UF/município (mesmo padrão do cadastrar)
 import { Estado } from "@/types/Estado";
 import { Municipio } from "@/types/Municipio";
-import { getUFS } from "@/actions/get-ufs";
-import { getMunicipios } from "@/actions/get-municipios";
+import { getUfs as getUFS } from "@/actions/getUfs";
+import { getMunicipios } from "@/actions/getMunicipios";
 
 // Fonte do título (igual às outras páginas)
 const tsukimi = Tsukimi_Rounded({
