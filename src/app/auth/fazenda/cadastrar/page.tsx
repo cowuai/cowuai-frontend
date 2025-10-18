@@ -1,3 +1,4 @@
+// src/app/auth/fazenda/cadastrar/page.tsx
 "use client";
 
 import {useTheme} from "next-themes";
