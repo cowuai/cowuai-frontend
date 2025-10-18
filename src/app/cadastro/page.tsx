@@ -142,8 +142,8 @@ export default function CadastroPage() {
             size: 1,
             affix: "",
             affixType: null,
-        },
-      };
+                },
+        });
 
       // 2. Fazer a chamada para a rota /api/cadastro
       const API_BASE = process.env.NEXT_PUBLIC_API_URL; // ex.: http://localhost:3333/api

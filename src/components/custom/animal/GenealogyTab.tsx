@@ -2,7 +2,7 @@ import {Animal} from "@/types/Animal";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {BiMale} from "react-icons/bi";
 import {CgGenderFemale, CgGenderMale} from "react-icons/cg";
-import {ArcherContainer, ArcherElement} from "react-archer";
+import {ArcherContainer, ArcherElement} from "@gitii/react-archer";
 
 interface GenealogyTabProps {
     animal: Animal;

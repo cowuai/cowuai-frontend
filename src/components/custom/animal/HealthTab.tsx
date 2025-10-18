@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Syringe, User, FileText } from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {BiPlus} from "react-icons/bi";
+import AddVaccineModal from "../vacinacao/AddVaccineModal";
 
 interface HealthTabProps {
     animal: Animal;
@@ -32,10 +33,7 @@ export const HealthTab = ({ animal }: HealthTabProps) => {
                 <Badge variant="outline" className="text-sm">
                     {animal.vaccines.length} {animal.vaccines.length === 1 ? 'vacina' : 'vacinas'} registrada(s)
                 </Badge>
-                <Button variant={"secondary"} size={"sm"} className={"gap-2"} >
-                    <BiPlus/>
-                    Adicionar Vacina
-                </Button>
+                <AddVaccineModal idAnimal={BigInt(animal.id)} />
             </div>
 
             <div className="grid gap-4">
