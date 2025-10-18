@@ -41,6 +41,25 @@ import {
 import { useAuth } from "@/app/providers/auth-provider";
 import { apiFetch } from "@/helpers/ApiFetch";
 
+// ⚠️ CONFIRMAÇÃO COM SHADCN (substitui window.confirm)
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+// ✅ TIPOS/AÇÕES para UF/município (mesmo padrão do cadastrar)
+import { Estado } from "@/types/Estado";
+import { Municipio } from "@/types/Municipio";
+import { getUFS } from "@/actions/get-ufs";
+import { getMunicipios } from "@/actions/get-municipios";
+
 // Fonte do título (igual às outras páginas)
 const tsukimi = Tsukimi_Rounded({
   subsets: ["latin"],
@@ -109,7 +128,8 @@ export default function ListarFazendasPage() {
   const router = useRouter();
 
   // 🔐 pega token/usuário do provider (dentro do componente é ok)
-  const { accessToken } = useAuth();
+  // const { accessToken } = useAuth();
+  const { usuario, accessToken } = useAuth();
 
   useEffect(() => setMounted(true), []);
   const darkMode = theme === "dark";
@@ -133,53 +153,104 @@ export default function ListarFazendasPage() {
   }, [farms.length]);
 
   // ======== 🔗 LOAD (GET /fazendas) ========
-  async function loadFarms() {
-    if (!accessToken) return;
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Obs: o backend pode retornar array puro ou { items: [], total }
-      const data = await apiFetch(`${apiBase}/fazendas`, {}, accessToken ?? undefined);
-      const list: FarmApi[] = Array.isArray(data) ? data : (data?.items ?? []);
-
-      // mapeia Back → UI (mantendo seu shape)
-      const mapped: Farm[] = list.map((b) => ({
-        id: String(b.id),
-        farmName: b.nome,
-        address: b.endereco,
-        state: b.estado,
-        city: b.cidade,
-        size: porteToSize(b.porte),
-        affix: b.afixo ?? null,
-        affixType: affixTypeFromFlags(b.prefixo, b.sufixo),
-        createdAt: b.dataCadastro,
-        updatedAt: b.dataAtualizacao,
-      }));
-
-      setFarms(mapped);
-    } catch (e: any) {
-      setError(e?.message ?? "Falha ao carregar fazendas");
-    } finally {
-      setLoading(false);
-    }
+async function loadFarms() {
+  // precisa do token e do id do usuário logado
+  if (!accessToken || !usuario?.id) {
+    console.log("Sem token ou sem usuario.id ainda. accessToken?", !!accessToken, "usuario?", usuario);
+    return;
   }
 
+  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
+  const userIdStr = String(usuario.id);
+
+  console.log("API BASE:", apiBase);
+  console.log("USER ID:", userIdStr);
+  console.log("GET URL (byPath):", `${apiBase}/fazendas/proprietario/${userIdStr}`);
+  console.log("GET URL (byQuery):", `${apiBase}/fazendas?idProprietario=${userIdStr}`);
+
+  try {
+    setLoading(true);
+    setError(null);
+
+    // 1) tenta a rota REST específica
+    const urlByPath = `${apiBase}/fazendas/proprietario/${userIdStr}`;
+    // 2) fallback por query param
+    const urlByQuery = `${apiBase}/fazendas?idProprietario=${userIdStr}`;
+
+    let data: any;
+
+    try {
+      data = await apiFetch(urlByPath, {}, accessToken);
+    } catch (errPath: any) {
+      // se 404/rota indisponível, tenta query
+      try {
+        data = await apiFetch(urlByQuery, {}, accessToken);
+      } catch (errQuery: any) {
+        const msg = String(errQuery?.message || errPath?.message || "");
+        if (msg.toLowerCase().includes("nenhuma fazenda")) {
+          setFarms([]);
+          setError(null);
+          return;
+        }
+        throw errQuery;
+      }
+    }
+
+    // pode vir array ou {items:[], total}
+    const rawList: any[] = Array.isArray(data) ? data : (data?.items ?? []);
+
+    // filtra no cliente por segurança
+    const filtered = rawList.filter((b) => String(b?.idProprietario) === userIdStr);
+
+   const mapped = filtered.map((b) => ({
+  id: String(b.id),
+  farmName: b.nome,
+  address: b.endereco,
+  state: b.estado,
+  city: b.cidade,
+  // 👇 mantém sua lógica atual, só "diz" pro TS que é 1|2|3
+  size: (b.porte === "PEQUENO" ? 1 : b.porte === "MEDIO" ? 2 : 3) as 1 | 2 | 3,
+  affix: b.afixo ?? null,
+  affixType: b.prefixo ? "preffix" : b.sufixo ? "suffix" : null,
+  createdAt: b.dataCadastro,
+  updatedAt: b.dataAtualizacao,
+})) as Farm[];
+
+setFarms(mapped);
+  } catch (e: any) {
+    setError(e?.message ?? "Falha ao carregar fazendas");
+  } finally {
+    setLoading(false);
+  }
+}
+
+
+
+  // useEffect(() => {
+  //   // carrega ao ter token
+  //   loadFarms();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [accessToken]);
   useEffect(() => {
-    // carrega ao ter token
-    loadFarms();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken]);
+  loadFarms();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [accessToken, usuario?.id]);
 
   function handleEdit(id: string) {
     router.push(`/auth/fazenda/editar/${id}`);
   }
 
-  // ======== 🗑️ DELETE (DELETE /fazendas/:id) ========
-  async function handleDelete(id: string) {
-    const ok = window.confirm("Tem certeza que deseja excluir esta fazenda?");
-    if (!ok || !accessToken) return;
+  // ======== 🗑️ DELETE (DELETE /fazendas/:id) com AlertDialog ========
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  async function confirmDelete(id: string) {
+    setDeleteId(id);
+    setIsDeleteOpen(true);
+  }
+
+  async function doDelete(id: string) {
+    if (!accessToken) return;
     try {
       // otimista: remove local
       setFarms((curr) => curr.filter((f) => f.id !== id));
@@ -189,7 +260,11 @@ export default function ListarFazendasPage() {
     } catch (e: any) {
       // rollback e aviso
       await loadFarms();
-      alert(e?.message ?? "Erro ao excluir");
+      // aqui você pode usar sonner/toast se quiser
+      console.error(e?.message ?? "Erro ao excluir");
+    } finally {
+      setIsDeleteOpen(false);
+      setDeleteId(null);
     }
   }
 
@@ -212,6 +287,29 @@ export default function ListarFazendasPage() {
   };
 
   const [selectedFarm, setSelectedFarm] = useState<EditableFarm | null>(null);
+
+  // ======== 🔽 ESTADO/CIDADE no diálogo de edição (mesmo padrão do cadastro) ========
+  const [estados, setEstados] = useState<Estado[]>([]);
+  const [municipios, setMunicipios] = useState<Municipio[]>([]);
+
+  // Carrega UFs ao montar a página (uma única vez)
+  useEffect(() => {
+    getUFS().then(setEstados).catch(console.error);
+  }, []);
+
+  // Quando abrir o diálogo de edição OU quando a UF mudar, carrega os municípios
+  useEffect(() => {
+    const uf = selectedFarm?.state;
+    if (isEditOpen && uf && uf.length === 2) {
+      getMunicipios(uf)
+        .then((list) => {
+          setMunicipios(list);
+        })
+        .catch(console.error);
+    } else {
+      setMunicipios([]);
+    }
+  }, [isEditOpen, selectedFarm?.state]);
 
   // ======== 💾 SALVAR EDIÇÃO (PUT /fazendas/:id) ========
   async function saveEdit() {
@@ -246,6 +344,7 @@ export default function ListarFazendasPage() {
       setSelectedFarm(null);
       await loadFarms();
     } catch (e: any) {
+      // aqui você pode usar sonner/toast se preferir
       alert(e?.message ?? "Erro ao salvar alterações");
     }
   }
@@ -276,17 +375,7 @@ export default function ListarFazendasPage() {
             Listar Fazendas
           </h1>
 
-          <div className="flex items-center gap-4 mt-1">
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-stone-400">
-              <Image
-                src="/images/user-photo.png"
-                alt="Foto do usuário"
-                width={40}
-                height={40}
-                className="object-cover"
-              />
-            </div>
-          </div>
+         
         </header>
 
         {/* Card central com a Tabela */}
@@ -404,10 +493,10 @@ export default function ListarFazendasPage() {
                           <Pencil className="w-4 h-4" />
                         </button>
 
-                        {/* Excluir */}
+                        {/* Excluir (abre o AlertDialog) */}
                         <button
                           type="button"
-                          onClick={() => handleDelete(f.id)}
+                          onClick={() => confirmDelete(f.id)}
                           className="inline-flex items-center justify-center w-8 h-8 rounded-md
                                 text-stone-500 hover:text-red-700  hover:bg-stone-300
                                 dark:text-stone-400 dark:hover:text-red-400 dark:hover:bg-stone-700
@@ -417,6 +506,33 @@ export default function ListarFazendasPage() {
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
+
+                        {/* AlertDialog posicionado aqui para cada linha, controlado por estado */}
+                        <AlertDialog
+                          open={isDeleteOpen && deleteId === f.id}
+                          onOpenChange={(open: boolean) => {
+                            setIsDeleteOpen(open);
+                            if (!open) setDeleteId(null);
+                          }}
+                        >
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir fazenda</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Tem certeza que deseja excluir <b>{f.farmName}</b>? Essa ação não pode ser desfeita.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => doDelete(f.id)}
+                                className="bg-red-900 text-white hover:bg-red-800"
+                              >
+                                Excluir
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -725,37 +841,56 @@ export default function ListarFazendasPage() {
                   />
                 </div>
 
-                {/* UF + Cidade (editáveis) */}
+                {/* UF + Cidade (editáveis) - agora com SELECTS e carregamento dinâmico */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">Estado (UF)</label>
-                    <input
-                      type="text"
+                    <select
                       value={selectedFarm.state}
-                      onChange={(e) =>
-                        setSelectedFarm({
-                          ...selectedFarm,
-                          state: e.target.value.toUpperCase().slice(0, 2),
-                        })
-                      }
-                      className="w-full border rounded-md p-2 text-black dark:text-foreground uppercase bg-white dark:bg-stone-900"
-                      placeholder="Ex.: MG"
-                      maxLength={2}
+                      onChange={(e) => {
+                        const uf = e.target.value.toUpperCase().slice(0, 2);
+                        // ao trocar UF, zera cidade local
+                        setSelectedFarm((prev) =>
+                          prev ? { ...prev, state: uf, city: "" } : prev
+                        );
+                        // municipios serão carregados pelo useEffect acima
+                      }}
+                      className="w-full border rounded-md p-2 text-black dark:text-foreground bg-white dark:bg-stone-900"
                       required
-                    />
+                    >
+                      <option value="">Selecione a UF</option>
+                      {estados.map((estado) => (
+                        <option key={estado.id} value={estado.sigla}>
+                          {estado.nome} ({estado.sigla})
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium mb-1">Cidade</label>
-                    <input
-                      type="text"
+                    <select
                       value={selectedFarm.city}
                       onChange={(e) =>
-                        setSelectedFarm({ ...selectedFarm, city: e.target.value })
+                        setSelectedFarm((prev) =>
+                          prev ? { ...prev, city: e.target.value } : prev
+                        )
                       }
                       className="w-full border rounded-md p-2 text-black dark:text-foreground bg-white dark:bg-stone-900"
                       required
-                    />
+                      disabled={municipios.length === 0}
+                    >
+                      <option value="">
+                        {municipios.length === 0
+                          ? "Selecione a UF primeiro"
+                          : "Selecione a cidade"}
+                      </option>
+                      {municipios.map((m) => (
+                        <option key={m.id} value={m.nome}>
+                          {m.nome}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

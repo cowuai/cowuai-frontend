@@ -1,3 +1,4 @@
+// src/app/auth/fazenda/cadastrar/page.tsx
 "use client";
 
 import Image from "next/image";
@@ -9,6 +10,9 @@ import { LuLayoutDashboard } from "react-icons/lu";
 import { PiUsersThree, PiKeyReturn } from "react-icons/pi";
 import { FaChevronRight } from "react-icons/fa";
 import { Slider } from "@/components/ui/slider";
+
+// ✅ toasts
+import { toast } from "sonner";
 
 import { Estado } from "@/types/Estado";
 import { Municipio } from "@/types/Municipio";
@@ -116,7 +120,8 @@ function toPayload(form: typeof formData, idUsuario?: string | null): FazendaPay
 
   try {
     if (!usuario?.id) {
-      alert("Sessão expirada. Faça login novamente.");
+      // 🔁 trocado de alert() → toast.error()
+      toast.error("Sessão expirada. Faça login novamente.");
       return;
     }
 
@@ -137,11 +142,13 @@ const data = await apiFetch(
     // opcional: redirecionar para a lista
     // router.push("/auth/fazenda/listar");
 
-    alert("Fazenda cadastrada com sucesso!");
+    // 🔁 trocado de alert() → toast.success()
+    toast.success("Fazenda cadastrada com sucesso!");
     console.log("Fazenda criada:", data);
   } catch (err: any) {
     console.error(err);
-    alert(err?.message ?? "Erro ao cadastrar fazenda");
+    // 🔁 trocado de alert() → toast.error()
+    toast.error(err?.message ?? "Erro ao cadastrar fazenda");
   }
 };
 
