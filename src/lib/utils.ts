@@ -22,7 +22,7 @@ export function calculaProximaDose(dataAplicacao: string, frequencia: Frequencia
   let result: Date | null = null;
   switch (frequencia) {
     case FrequenciaVacina.DOSE_UNICA:
-      return "";
+      return "N/D";
     case FrequenciaVacina.ANUAL:
       result = new Date(dt.getFullYear() + 1, dt.getMonth(), dt.getDate());
       break;
@@ -43,10 +43,10 @@ export function calculaProximaDose(dataAplicacao: string, frequencia: Frequencia
       result.setDate(result.getDate() + 21);
       break;
     default:
-      return "";
+      return "N/D";
   }
 
-  if (!result) return "";
+  if (!result) return "N/D";
   return formatDateLocal(result);
 }
 

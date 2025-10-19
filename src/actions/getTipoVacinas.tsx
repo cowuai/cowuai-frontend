@@ -15,5 +15,6 @@ export async function getTipoVacinas(accessToken: string) {
     if (!res.ok) {
         throw new Error(`Failed to fetch tipos de vacina: ${res.status} ${res.statusText}`);
     }
+
     return await res.json() as TipoVacina[];
 }

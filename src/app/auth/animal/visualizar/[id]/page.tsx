@@ -54,7 +54,7 @@ const AnimalDetails = () => {
                         Voltar para listagem
                     </Button>
                     <div>
-                        <h1 className="text-3xl font-bold">{animal.name}</h1>
+                        <h1 className="text-3xl font-bold font-tsukimi-rounded text-accent-red-triangulo">{animal.name}</h1>
                         <p className="text-muted-foreground">{animal.tag} • {animal.breed}</p>
                     </div>
                 </div>
