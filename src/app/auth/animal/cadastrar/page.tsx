@@ -4,7 +4,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/helpers/ApiFetch";
-import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuth } from "@/app/providers/auth-provider";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
