@@ -79,7 +79,7 @@ interface Animal {
 
   // Campos extras usados no mock para visualização, ajustar se vierem da API:
 
-  numeroBrinco: string;
+  numeroParticularProprietario: string;
 
   dataEntrada: string;
 
@@ -641,7 +641,7 @@ export default function ListarAnimaisPage() {
                       className="border-b last:border-0 border-red-900/30 odd:bg-white even:bg-red-50/50 hover:bg-red-100/60 transition-colors"
                     >
                       <TableCell className="font-medium text-gray-700 p-3">
-                        {animal.numeroBrinco}
+                        {animal.numeroParticularProprietario}
                       </TableCell>
 
                       <TableCell className="font-medium text-gray-700 p-3">
@@ -787,7 +787,7 @@ export default function ListarAnimaisPage() {
 
                   <Input
                     disabled
-                    value={selectedAnimal.numeroBrinco}
+                    value={selectedAnimal.numeroParticularProprietario}
                     className="bg-red-50/80 border-red-900/20 text-gray-700"
                   />
                 </div>
@@ -1051,9 +1051,12 @@ export default function ListarAnimaisPage() {
                     {/* Brinco EDITÁVEL */}
 
                     <Input
-                      value={selectedAnimal.numeroBrinco}
+                      value={selectedAnimal.numeroParticularProprietario}
                       onChange={(e) =>
-                        handleChange("numeroBrinco", e.target.value)
+                        handleChange(
+                          "numeroParticularProprietario",
+                          e.target.value
+                        )
                       }
                       className="border-red-900/20 text-gray-700"
                     />
