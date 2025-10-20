@@ -1,4 +1,4 @@
-// src/app/fazenda/cadastrar/page.tsx
+// src/app/auth/fazenda/cadastrar/page.tsx
 "use client";
 
 import Image from "next/image";
@@ -11,10 +11,17 @@ import { PiUsersThree, PiKeyReturn } from "react-icons/pi";
 import { FaChevronRight } from "react-icons/fa";
 import { Slider } from "@/components/ui/slider";
 
+// ✅ toasts
+import { toast } from "sonner";
+
 import { Estado } from "@/types/Estado";
 import { Municipio } from "@/types/Municipio";
-import { getUFS } from "@/actions/get-ufs";
-import { getMunicipios } from "@/actions/get-municipios";
+import { getUfs as getUFS } from "@/actions/getUfs";
+import {getMunicipios} from "@/actions/getMunicipios";
+
+import { apiFetch } from "@/helpers/ApiFetch";
+import {useAuth} from "@/app/providers/AuthProvider";
+import { useRouter } from "next/navigation";
 
 type FarmForm = {
   farmName: string;
@@ -45,6 +52,43 @@ export default function CadastrarFazendaPage() {
     affixType: "",
   });
 
+  const router = useRouter();
+  const { usuario, accessToken } = useAuth();
+  
+
+  type FazendaPayload = {
+  idProprietario: number;
+  nome: string;
+  endereco: string;
+  cidade: string;
+  estado: string;
+  pais: string;
+  porte: "PEQUENO" | "MEDIO" | "GRANDE";
+  afixo: string;
+  prefixo: boolean;
+  sufixo: boolean;
+};
+
+function toPayload(form: typeof formData, idUsuario?: string | null): FazendaPayload {
+  const porte = form.size === 1 ? "PEQUENO" : form.size === 2 ? "MEDIO" : "GRANDE";
+  const prefixo = form.affixType === "preffix";
+  const sufixo  = form.affixType === "suffix";
+
+  return {
+    idProprietario: idUsuario ? Number(idUsuario) : 0, // se 0, back deve validar
+    nome: form.farmName,
+    endereco: form.address,
+    cidade: form.city,
+    estado: form.state,
+    pais: "Brasil",
+    porte,
+    afixo: form.affix || "",
+    prefixo,
+    sufixo,
+  };
+}
+
+
   useEffect(() => setMounted(true), []);
   const darkMode = theme === "dark";
 
@@ -71,12 +115,42 @@ export default function CadastrarFazendaPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: enviar para sua API (POST /farms)
-    console.log("Fazenda cadastrada:", formData);
-    alert("Fazenda cadastrada com sucesso!");
-  };
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  try {
+    if (!usuario?.id) {
+      // 🔁 trocado de alert() → toast.error()
+      toast.error("Sessão expirada. Faça login novamente.");
+      return;
+    }
+
+    const body = toPayload(formData, usuario.id);
+
+   
+const data = await apiFetch(
+  `${process.env.NEXT_PUBLIC_API_URL}/fazendas`,
+  {
+    method: "POST",
+    body: JSON.stringify(body),
+  },
+  accessToken ?? undefined
+);
+
+
+    // sucesso: data deve conter a fazenda criada
+    // opcional: redirecionar para a lista
+    // router.push("/auth/fazenda/listar");
+
+    // 🔁 trocado de alert() → toast.success()
+    toast.success("Fazenda cadastrada com sucesso!");
+    console.log("Fazenda criada:", data);
+  } catch (err: any) {
+    console.error(err);
+    // 🔁 trocado de alert() → toast.error()
+    toast.error(err?.message ?? "Erro ao cadastrar fazenda");
+  }
+};
 
   if (!mounted) return null;
 

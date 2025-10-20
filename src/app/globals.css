@@ -90,6 +90,9 @@
     --accent-red-triangulo: #f63940;
     --accent-orange: #fb923c;
     --accent-yellow: #fde047;
+    --accent-blue: #2563eb;
+    --accent-cyan: #06b6d4;
+    --accent-pink: #ec4899;
 }
 
 .dark {
@@ -127,8 +130,11 @@
     --dashboard-primary: 240 60% 60%;
     --dashboard-primary-foreground: 0 0% 100%;
     --accent-red-triangulo: #f63940;
+    --accent-orange: #fb923c;
+    --accent-yellow: #fde047;
     --accent-blue: #2563eb;
     --accent-cyan: #06b6d4;
+    --accent-pink: #ec4899;
 }
 
 @layer base {

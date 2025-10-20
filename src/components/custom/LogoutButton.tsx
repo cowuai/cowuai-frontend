@@ -1,6 +1,6 @@
 import {LogOut} from "lucide-react";
 import React from "react";
-import {useLogout} from "@/hooks/use-logout";
+import {useLogout} from "@/hooks/UseLogout";
 
 export default function LogoutButton() {
     const handleLogout = useLogout();
@@ -13,7 +13,7 @@ export default function LogoutButton() {
             className="bg-transparent border-none p-0 m-0 cursor-pointer"
             style={{ display: 'flex', alignItems: 'center' }}
         >
-            <LogOut className="text-primary transition-transform duration-200 hover:scale-110" size={20} />
+            <LogOut className="text-accent-red-triangulo transition-transform duration-200 hover:scale-110" size={20} />
         </button>
     )
 }

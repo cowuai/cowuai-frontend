@@ -2,7 +2,7 @@
 
 import {Estado} from "@/types/Estado";
 
-export async function getUFS() {
+export async function getUfs() {
     const res = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados', {
         method: 'GET',
         cache: 'force-cache',
