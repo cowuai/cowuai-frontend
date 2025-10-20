@@ -126,6 +126,10 @@ const API_BASE_URL = "http://localhost:3000";
 
 const ANIMAL_ENDPOINT = `${API_BASE_URL}/api/animais`;
 
+const getAuthToken = () => {
+  // 💥💥💥 SEU TOKEN JWT VÁLIDO ESTÁ INSERIDO AQUI 💥💥💥
+  return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyMSIsImVtYWlsIjoidGVzdGUzLmNhZGFzdHJvQG5vdm91c2VyLmNvbSIsImlhdCI6MTc2MDkwODIyMywiZXhwIjoxNzYwOTExODIzfQ.rPlYQeMfPZaZvV-JG2RtFpQBXK4Gf40tYzwZ3zVweyk";
+};
 const fetchAnimals = async (
   page: number,
 
@@ -460,42 +464,63 @@ export default function ListarAnimaisPage() {
       setLoading(false);
     }
   };
-
   const confirmDelete = async () => {
     if (!animalIdToDelete) return;
 
-    console.log(`[INTEGRAÇÃO] Tentando deletar animal: ${animalIdToDelete}`);
+    // Pega o token de autenticação da função temporária
+    const AUTH_TOKEN = getAuthToken();
+
+    if (!AUTH_TOKEN || AUTH_TOKEN.length < 10) {
+      // Verifica se o token parece válido
+      // Interrompe se não houver token.
+      console.error("Token de autenticação ausente ou muito curto.");
+      setError("Token de autenticação ausente. Não é possível deletar.");
+      setIsConfirmModalOpen(false);
+      return;
+    }
+
+    console.log(
+      `[INTEGRAÇÃO REAL] Tentando deletar animal: ${animalIdToDelete}`
+    );
 
     setLoading(true);
 
     try {
-      // No mundo real, você faria a chamada DELETE aqui:
+      // 1. CONSTRÓI A URL DE DELETE com o ID
+      const url = `${ANIMAL_ENDPOINT}/${animalIdToDelete}`; // 2. REALIZA A CHAMADA DELETE REAL
+      const response = await fetch(url, {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json", // ✅ CORREÇÃO: Envia o token via cabeçalho Bearer
+          Authorization: `Bearer ${AUTH_TOKEN}`,
+        },
+      });
 
-      // const url = `${ANIMAL_ENDPOINT}/${animalIdToDelete}`;
+      if (!response.ok) {
+        // Se o backend retornar 401 ou 403, ele cairá aqui.
+        throw new Error(`Falha ao deletar. Status: ${response.status}`);
+      } // Se for bem-sucedido (status 204 No Content):
+      console.log(`Animal ${animalIdToDelete} deletado com sucesso.`); // Lógica para mover para página anterior se a atual ficar vazia
 
-      // const response = await fetch(url, { method: 'DELETE', ...headers });
-
-      // SIMULAÇÃO DE SUCESSO:
-
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Se for bem-sucedido:
-
-      triggerRefresh(); // Força a recarga da listagem
+      if (
+        animais.length === 1 &&
+        currentPage > 1 &&
+        paginationData.totalPages > 1
+      ) {
+        setCurrentPage((prev) => prev - 1);
+      } // Força a recarga da listagem (essencial)
+      triggerRefresh();
 
       setAnimalIdToDelete(null);
-
       setIsConfirmModalOpen(false);
-
-      // Lógica para mover para página anterior se a atual ficar vazia
-
-      if (animais.length === 1 && currentPage > 1) {
-        setCurrentPage((prev) => prev - 1);
-      }
     } catch (error) {
       console.error("Erro ao deletar:", error);
-
-      setError("Erro ao deletar o animal.");
+      setError(
+        `Erro ao deletar o animal: ${
+          error instanceof Error ? error.message : "Erro desconhecido"
+        }`
+      );
     } finally {
       setLoading(false);
     }
