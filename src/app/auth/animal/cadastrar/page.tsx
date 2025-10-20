@@ -803,43 +803,43 @@ export default function CadastrarAnimalPage() {
               </select>
             </div>
 
-            {/* Fazenda */}
+           {/* Fazenda */}
             <div>
-              <label htmlFor="idFazenda" className="block text-sm font-medium mb-1">
+            <label htmlFor="idFazenda" className="block text-sm font-medium mb-1">
                 Fazenda
-              </label>
-              <select
+            </label>
+            <select
                 id="idFazenda"
                 name="idFazenda"
                 value={formData.idFazenda}
                 onChange={handleChange}
                 className="w-full border rounded-md p-2 text-black dark:text-white"
                 required
-              >
+            >
                 <option value="">
-                  {fazendasDoProprietario.length === 0
+                {fazendasDoProprietario.length === 0
                     ? "Carregando fazendas..."
                     : "Selecione uma fazenda"}
                 </option>
                 {fazendasDoProprietario.map((fazenda) => (
-                  <option key={fazenda.id} value={String(fazenda.id)}>
+                <option key={fazenda.id} value={String(fazenda.id)}>
                     {fazenda.nome}
-                  </option>
+                </option>
                 ))}
-              </select>
+            </select>
 
-              {fazendasDoProprietario.length === 0 && (
-                <p className="text-sm text-gray-500 mt-1">
-                  Nenhuma fazenda encontrada.{" "}
-                  <Link
-                    href="/auth/fazenda/cadastrar"
-                    className="text-red-700 hover:underline"
-                  >
-                    Cadastrar Fazenda
-                  </Link>
-                </p>
-              )}
+            <p className="text-sm text-gray-600 mt-2">
+                Não encontrou a fazenda desejada?{" "}
+                <Link
+                href="/auth/fazenda/cadastrar"
+                className="text-red-700 font-medium hover:underline"
+                >
+                Cadastre uma nova fazenda
+                </Link>
+                .
+            </p>
             </div>
+
 
             {/* Data Nascimento */}
             <div>
