@@ -763,6 +763,24 @@ export default function CadastrarAnimalPage() {
               </select>
             </div>
 
+            {/* Composição Racial */}
+            <div>
+            <label
+                htmlFor="composicaoRacial"
+                className="block text-sm font-medium mb-1"
+            >
+                Composição Racial
+            </label>
+            <input
+                type="text"
+                id="composicaoRacial"
+                name="composicaoRacial"
+                value={formData.composicaoRacial}
+                onChange={handleChange}
+                className="w-full border rounded-md p-2 text-black dark:text-white"
+                placeholder="Ex: 1/2 Angus, 1/2 Nelore"
+            />
+            </div>
             {/* Sexo */}
             <div>
               <label htmlFor="sexo" className="block text-sm font-medium mb-1">
