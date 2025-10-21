@@ -3,7 +3,7 @@ import { Animal } from "@/types/Animal";
 export const mockAnimals: Animal[] = [
     {
         id: "1",
-        name: "Estrela",
+        nome: "Estrela",
         tag: "BR-001",
         species: "Bovino",
         breed: "Nelore",

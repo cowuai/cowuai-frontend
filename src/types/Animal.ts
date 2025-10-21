@@ -1,26 +1,17 @@
+import {SexoAnimal} from "@/types/TipoVacina";
+
 export interface Animal {
     id: string;
-    name: string;
-    tag: string;
-    species: string;
-    breed: string;
-    gender: "Macho" | "Fêmea";
-    birthDate: string;
-    weight: number;
-    status: "Ativo" | "Vendido" | "Falecido";
-    image?: string;
-    location: string;
-    father?: {
-        id: string;
-        name: string;
-        tag: string;
-    };
-    mother?: {
-        id: string;
-        name: string;
-        tag: string;
-    };
-    vaccines: Vaccine[];
+    nome: string;
+    registro: string;
+    tipoRaca: string;
+    sexo: SexoAnimal;
+    dataNascimento: string;
+    peso: number;
+    status: StatusAnimal;
+    pai?: Animal
+    mae?: Animal
+    vacinacoes: Vaccine[];
     offspring: Offspring[];
 }
 
@@ -44,4 +35,12 @@ export interface Offspring {
         name: string;
         tag: string;
     };
+}
+
+export enum StatusAnimal {
+    VIVO = "Vivo",
+    FALECIDO = "Falecido",
+    VENDIDO = "Vendido",
+    DOADO = "Doado",
+    ROUBADO = "Roubado"
 }

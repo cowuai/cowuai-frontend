@@ -42,27 +42,22 @@ export const DetailsTab = ({ animal }: DetailsTabProps) => {
                 <div className="space-y-4">
                     <div>
                         <label className="text-sm font-medium text-muted-foreground">Nome</label>
-                        <p className="text-lg font-semibold">{animal.name}</p>
+                        <p className="text-lg font-semibold">{animal.nome}</p>
                     </div>
 
                     <div>
                         <label className="text-sm font-medium text-muted-foreground">Tag de Identificação</label>
-                        <p className="text-lg font-semibold">{animal.tag}</p>
-                    </div>
-
-                    <div>
-                        <label className="text-sm font-medium text-muted-foreground">Espécie</label>
-                        <p className="text-lg">{animal.species}</p>
+                        <p className="text-lg font-semibold">{animal.registro}</p>
                     </div>
 
                     <div>
                         <label className="text-sm font-medium text-muted-foreground">Raça</label>
-                        <p className="text-lg">{animal.breed}</p>
+                        <p className="text-lg">{animal.tipoRaca}</p>
                     </div>
 
                     <div>
                         <label className="text-sm font-medium text-muted-foreground">Sexo</label>
-                        <p className="text-lg">{animal.gender}</p>
+                        <p className="text-lg">{animal.sexo}</p>
                     </div>
                 </div>
 
@@ -71,24 +66,16 @@ export const DetailsTab = ({ animal }: DetailsTabProps) => {
                         <label className="text-sm font-medium text-muted-foreground">Data de Nascimento</label>
                         <div className="flex items-center gap-2 mt-1">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <p className="text-lg">{new Date(animal.birthDate).toLocaleDateString('pt-BR')}</p>
+                            <p className="text-lg">{new Date(animal.dataNascimento).toLocaleDateString('pt-BR')}</p>
                         </div>
-                        <p className="text-sm text-muted-foreground mt-1">{calculateAge(animal.birthDate)}</p>
+                        <p className="text-sm text-muted-foreground mt-1">{calculateAge(animal.dataNascimento)}</p>
                     </div>
 
                     <div>
                         <label className="text-sm font-medium text-muted-foreground">Peso Atual</label>
                         <div className="flex items-center gap-2 mt-1">
                             <Weight className="h-4 w-4 text-muted-foreground" />
-                            <p className="text-lg">{animal.weight} kg</p>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="text-sm font-medium text-muted-foreground">Localização</label>
-                        <div className="flex items-center gap-2 mt-1">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <p className="text-lg">{animal.location}</p>
+                            <p className="text-lg">{animal.peso} kg</p>
                         </div>
                     </div>
 

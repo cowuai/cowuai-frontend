@@ -31,13 +31,13 @@ export const HealthTab = ({ animal }: HealthTabProps) => {
             <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold">Histórico de Vacinação</h3>
                 <Badge variant="outline" className="text-sm">
-                    {animal.vaccines.length} {animal.vaccines.length === 1 ? 'vacina' : 'vacinas'} registrada(s)
+                    {animal.vacinacoes.length} {animal.vacinacoes.length === 1 ? 'vacina' : 'vacinas'} registrada(s)
                 </Badge>
                 <AddVaccineModal idAnimal={BigInt(animal.id)} />
             </div>
 
             <div className="grid gap-4">
-                {animal.vaccines.map((vaccine) => (
+                {animal.vacinacoes.map((vaccine) => (
                     <Card key={vaccine.id} className="border-l-4 border-l-primary">
                         <CardHeader className="pb-3">
                             <CardTitle className="flex items-center justify-between text-lg">
@@ -97,7 +97,7 @@ export const HealthTab = ({ animal }: HealthTabProps) => {
                 ))}
             </div>
 
-            {animal.vaccines.length === 0 && (
+            {animal.vacinacoes.length === 0 && (
                 <Card>
                     <CardContent className="py-12 text-center">
                         <Syringe className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
