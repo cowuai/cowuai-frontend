@@ -1,3 +1,5 @@
+import {TipoVacina} from "@/types/TipoVacina";
+
 export interface Animal {
     id: string;
     nome: string;
@@ -23,6 +25,7 @@ export interface Animal {
 export interface VacinaAplicada {
     id: string;
     idAnimal: string;
+    tipoVacina: TipoVacina;
     idTipoVacina: string;
     dataAplicacao: string;
     proximaDose?: string;

@@ -66,9 +66,17 @@ export const DetailsTab = ({ animal }: DetailsTabProps) => {
                         <label className="text-sm font-medium text-muted-foreground">Data de Nascimento</label>
                         <div className="flex items-center gap-2 mt-1">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <p className="text-lg">{new Date(animal.dataNascimento).toLocaleDateString('pt-BR')}</p>
+                            {animal.dataNascimento ? (
+                                <p className="text-lg">{new Date(animal.dataNascimento).toLocaleDateString('pt-BR')}</p>
+                            ) : (
+                                <p className="text-lg text-muted-foreground">--</p>
+                            )}
                         </div>
-                        <p className="text-sm text-muted-foreground mt-1">{calculateAge(animal.dataNascimento)}</p>
+                        {animal.dataNascimento ? (
+                            <p className="text-sm text-muted-foreground mt-1">{calculateAge(animal.dataNascimento)}</p>
+                        ) : (
+                            <p className="text-sm text-muted-foreground mt-1">Idade não disponível</p>
+                        )}
                     </div>
 
                     <div>

@@ -43,13 +43,13 @@ export const HealthTab = ({ animal }: HealthTabProps) => {
                             <CardTitle className="flex items-center justify-between text-lg">
                                 <div className="flex items-center gap-2">
                                     <Syringe className="h-5 w-5 text-primary" />
-                                    {vaccine.name}
+                                    {vaccine.tipoVacina.nome}
                                 </div>
-                                {vaccine.nextDate && (
+                                {vaccine.proximaDose && (
                                     <Badge
-                                        variant={isPastDue(vaccine.nextDate) ? "destructive" : isUpcoming(vaccine.nextDate) ? "default" : "secondary"}
+                                        variant={isPastDue(vaccine.proximaDose) ? "destructive" : isUpcoming(vaccine.proximaDose) ? "default" : "secondary"}
                                     >
-                                        {isPastDue(vaccine.nextDate) ? "Atrasada" : isUpcoming(vaccine.nextDate) ? "Próxima" : "Agendada"}
+                                        {isPastDue(vaccine.proximaDose) ? "Atrasada" : isUpcoming(vaccine.proximaDose) ? "Próxima" : "Agendada"}
                                     </Badge>
                                 )}
                             </CardTitle>
@@ -60,16 +60,16 @@ export const HealthTab = ({ animal }: HealthTabProps) => {
                                     <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
                                     <div>
                                         <p className="text-sm font-medium text-muted-foreground">Data de Aplicação</p>
-                                        <p className="text-sm">{new Date(vaccine.date).toLocaleDateString('pt-BR')}</p>
+                                        <p className="text-sm">{new Date(vaccine.dataAplicacao).toLocaleDateString('pt-BR')}</p>
                                     </div>
                                 </div>
 
-                                {vaccine.nextDate && (
+                                {vaccine.proximaDose && (
                                     <div className="flex items-start gap-2">
                                         <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
                                         <div>
                                             <p className="text-sm font-medium text-muted-foreground">Próxima Dose</p>
-                                            <p className="text-sm">{new Date(vaccine.nextDate).toLocaleDateString('pt-BR')}</p>
+                                            <p className="text-sm">{new Date(vaccine.proximaDose).toLocaleDateString('pt-BR')}</p>
                                         </div>
                                     </div>
                                 )}
@@ -79,16 +79,16 @@ export const HealthTab = ({ animal }: HealthTabProps) => {
                                 <User className="h-4 w-4 text-muted-foreground mt-0.5" />
                                 <div>
                                     <p className="text-sm font-medium text-muted-foreground">Veterinário</p>
-                                    <p className="text-sm">{vaccine.veterinarian}</p>
+                                    <p className="text-sm">{vaccine.veterinario}</p>
                                 </div>
                             </div>
 
-                            {vaccine.notes && (
+                            {vaccine.observacoes && (
                                 <div className="flex items-start gap-2">
                                     <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                                     <div>
                                         <p className="text-sm font-medium text-muted-foreground">Observações</p>
-                                        <p className="text-sm">{vaccine.notes}</p>
+                                        <p className="text-sm">{vaccine.observacoes}</p>
                                     </div>
                                 </div>
                             )}

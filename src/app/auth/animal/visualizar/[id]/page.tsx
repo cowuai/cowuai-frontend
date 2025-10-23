@@ -13,11 +13,13 @@ import { cn } from "@/lib/utils";
 import {FcGenealogy} from "react-icons/fc";
 import {MdOutlineBloodtype} from "react-icons/md";
 import {FaCow} from "react-icons/fa6";
+import {useAuth} from "@/app/providers/AuthProvider";
 
 type TabType = "details" | "genealogy" | "health" | "offspring";
 
 const AnimalDetails = () => {
     const { id } = useParams();
+    const { accessToken } = useAuth();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<TabType>("details");
 
@@ -41,6 +43,11 @@ const AnimalDetails = () => {
         { id: "offspring" as TabType, label: "Descendentes", icon: FaCow },
     ];
 
+    switch (activeTab) {
+        case "details":
+
+    }
+
     return (
         <div className="min-h-screen bg-background">
             <div className="border-b bg-card">
@@ -54,8 +61,8 @@ const AnimalDetails = () => {
                         Voltar para listagem
                     </Button>
                     <div>
-                        <h1 className="text-3xl font-bold font-tsukimi-rounded text-accent-red-triangulo">{animal.name}</h1>
-                        <p className="text-muted-foreground">{animal.tag} • {animal.breed}</p>
+                        <h1 className="text-3xl font-bold font-tsukimi-rounded text-accent-red-triangulo">{animal.nome}</h1>
+                        <p className="text-muted-foreground">{animal.registro} • {animal.tipoRaca}</p>
                     </div>
                 </div>
             </div>
