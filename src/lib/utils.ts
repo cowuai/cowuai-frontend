@@ -75,3 +75,15 @@ function addMonthsPreserveDay(date: Date, months: number) {
   result.setDate(day);
   return result;
 }
+
+export function calculateAge(birthDate: string) {
+    const birth = new Date(birthDate);
+    const today = new Date();
+    const years = today.getFullYear() - birth.getFullYear();
+    const months = today.getMonth() - birth.getMonth();
+
+    if (years > 0) {
+        return `${years} ${years === 1 ? 'ano' : 'anos'}`;
+    }
+    return `${months} ${months === 1 ? 'mês' : 'meses'}`;
+};
