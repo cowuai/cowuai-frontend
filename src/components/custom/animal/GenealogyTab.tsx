@@ -13,7 +13,7 @@ export const GenealogyTab = ({animal}: GenealogyTabProps) => {
         <div className="space-y-6">
             <div className="text-center py-4">
                 <h3 className="text-2xl font-bold mb-2">{animal.nome}</h3>
-                <p className="text-muted-foreground">{animal.registro}</p>
+            <p className="text-muted-foreground">{animal?.registro || "-"}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -33,7 +33,7 @@ export const GenealogyTab = ({animal}: GenealogyTabProps) => {
                                 </div>
                                 <div>
                                     <label className="text-sm font-medium text-muted-foreground">Tag</label>
-                                    <p className="text-lg">{animal.pai.registro}</p>
+                                    <p className="text-lg">{animal.pai?.registro || "-"}</p>
                                 </div>
                             </div>
                         ) : (
@@ -58,7 +58,7 @@ export const GenealogyTab = ({animal}: GenealogyTabProps) => {
                                 </div>
                                 <div>
                                     <label className="text-sm font-medium text-muted-foreground">Tag</label>
-                                    <p className="text-lg">{animal.mae.registro}</p>
+                                    <p className="text-lg">{animal.mae?.registro || "-"}</p>
                                 </div>
                             </div>
                         ) : (
@@ -123,7 +123,7 @@ export const GenealogyTab = ({animal}: GenealogyTabProps) => {
                             >
                                 <div className="text-center p-4 bg-primary/10 rounded-lg border-2 border-primary/30 min-w-[200px]">
                                     <p className="font-bold">{animal.nome}</p>
-                                    <p className="text-sm text-muted-foreground">{animal.registro}</p>
+                                    <p className="text-sm text-muted-foreground">{animal.registro || "-"}</p>
                                 </div>
                             </ArcherElement>
                         </ArcherContainer>

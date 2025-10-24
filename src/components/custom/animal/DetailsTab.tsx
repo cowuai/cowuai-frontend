@@ -1,32 +1,25 @@
-import { Animal } from "@/types/Animal";
+import {Animal, StatusAnimal} from "@/types/Animal";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Weight, Activity } from "lucide-react";
+import {calculateAge} from "@/lib/utils";
 
 interface DetailsTabProps {
     animal: Animal;
 }
 
 export const DetailsTab = ({ animal }: DetailsTabProps) => {
-    const calculateAge = (birthDate: string) => {
-        const birth = new Date(birthDate);
-        const today = new Date();
-        const years = today.getFullYear() - birth.getFullYear();
-        const months = today.getMonth() - birth.getMonth();
-
-        if (years > 0) {
-            return `${years} ${years === 1 ? 'ano' : 'anos'}`;
-        }
-        return `${months} ${months === 1 ? 'mês' : 'meses'}`;
-    };
-
-    const getStatusColor = (status: string) => {
+    const getStatusColor = (status: StatusAnimal) => {
         switch (status) {
-            case "Ativo":
+            case "VIVO":
                 return "bg-primary text-primary-foreground";
-            case "Vendido":
+            case "VENDIDO":
                 return "bg-accent text-accent-foreground";
-            case "Falecido":
+            case "FALECIDO":
                 return "bg-destructive text-destructive-foreground";
+            case "DOADO":
+                return "bg-warning text-warning-foreground";
+            case "ROUBADO":
+                return "bg-secondary text-secondary-foreground";
             default:
                 return "bg-muted text-muted-foreground";
         }
@@ -47,7 +40,12 @@ export const DetailsTab = ({ animal }: DetailsTabProps) => {
 
                     <div>
                         <label className="text-sm font-medium text-muted-foreground">Tag de Identificação</label>
-                        <p className="text-lg font-semibold">{animal.registro}</p>
+                        <p className="text-lg font-semibold">{animal?.registro || "-"}</p>
+                    </div>
+
+                    <div>
+                        <label className="text-sm font-medium text-muted-foreground">Botton:</label>
+                        <p className="text-lg">{animal?.numeroParticularProprietario || "-"}</p>
                     </div>
 
                     <div>
@@ -83,7 +81,15 @@ export const DetailsTab = ({ animal }: DetailsTabProps) => {
                         <label className="text-sm font-medium text-muted-foreground">Peso Atual</label>
                         <div className="flex items-center gap-2 mt-1">
                             <Weight className="h-4 w-4 text-muted-foreground" />
-                            <p className="text-lg">{animal.peso} kg</p>
+                            <p className="text-lg">{animal.peso ? (animal.peso + "kg") : ("-")} </p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="text-sm font-medium text-muted-foreground">Localização</label>
+                        <div className="flex items-center gap-2 mt-1">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <p className="text-lg">{animal?.localizacao || "-"}</p>
                         </div>
                     </div>
 

@@ -9,8 +9,8 @@ export interface Animal {
     dataNascimento?: string;
     numeroParticularProprietario?: string;
     registro?: string;
-    status: string;
-    peso: number;
+    status: StatusAnimal;
+    peso?: number;
     localizacao: string;
     idPai?: string;
     pai?: Animal
@@ -18,8 +18,9 @@ export interface Animal {
     mae?: Animal
     idFazenda: string;
     idProprietario: string;
-    vacinacoes: VacinaAplicada[];
-    filhos: Animal[];
+    vacinacoes?: VacinaAplicada[];
+    filhosComoPai?: Animal[];
+    filhosComoMae?: Animal[];
 }
 
 export interface VacinaAplicada {
@@ -35,4 +36,12 @@ export interface VacinaAplicada {
     observacoes?: string;
     dataCadastro: string;
     dataAtualizacao: string;
+}
+
+export enum StatusAnimal {
+    VIVO = 'VIVO',
+    FALECIDO = 'FALECIDO',
+    VENDIDO = 'VENDIDO',
+    DOADO = 'DOADO',
+    ROUBADO = 'ROUBADO'
 }

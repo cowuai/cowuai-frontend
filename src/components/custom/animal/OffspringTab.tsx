@@ -2,6 +2,9 @@ import {Animal} from "@/types/Animal";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Calendar, Heart} from "lucide-react";
+import {SexoAnimal} from "@/types/TipoVacina";
+import {FaCow} from "react-icons/fa6";
+import {PiCow} from "react-icons/pi";
 
 interface OffspringTabProps {
     animal: Animal;
@@ -20,8 +23,18 @@ export const OffspringTab = ({animal}: OffspringTabProps) => {
         return `${months} ${months === 1 ? 'mês' : 'meses'}`;
     };
 
-    const maleOffspring = animal.filhos.filter(o => o.sexo === "Macho");
-    const femaleOffspring = animal.filhos.filter(o => o.sexo === "Fêmea");
+    // Garante que as listas existam, mesmo que vazias
+    const filhosComoPai = animal.filhosComoPai ?? [];
+    const filhosComoMae = animal.filhosComoMae ?? [];
+
+    // Define os filhos de acordo com o sexo
+    const filhos: Animal[] =
+        animal.sexo === SexoAnimal.MACHO
+            ? filhosComoPai.filter((filho: Animal) => filho.idPai === animal.id)
+            : filhosComoMae.filter((filho: Animal) => filho.idMae === animal.id);
+
+    const maleOffspring = filhos.filter(o => o.sexo === SexoAnimal.MACHO);
+    const femaleOffspring = filhos.filter(o => o.sexo === SexoAnimal.FEMEA);
 
     return (
         <div className="space-y-6">
@@ -38,7 +51,7 @@ export const OffspringTab = ({animal}: OffspringTabProps) => {
             </div>
 
             <div className="grid gap-4">
-                {animal.filhos.map((offspring) => (
+                {filhos.map((offspring) => (
                     <Card key={offspring.id} className="border-l-4 border-l-primary">
                         <CardHeader className="pb-3">
                             <CardTitle className="flex items-center justify-between text-lg">
@@ -98,10 +111,10 @@ export const OffspringTab = ({animal}: OffspringTabProps) => {
                 ))}
             </div>
 
-            {animal.filhos.length === 0 && (
+            {filhos.length === 0 && (
                 <Card>
-                    <CardContent className="py-12 text-center">
-                        <div className="text-6xl mb-4">👶</div>
+                    <CardContent className="flex py-12 text-center align-middle flex-col items-center justify-center gap-4">
+                        <PiCow size={45}/>
                         <p className="text-muted-foreground">Nenhum descendente registrado para este animal</p>
                     </CardContent>
                 </Card>

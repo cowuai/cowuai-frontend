@@ -3,7 +3,7 @@
 import {Animal} from "@/types/Animal";
 
 export async function getAnimalRelation(accessToken: string, id: string, relacao: 'pais' | 'filhos' | 'vacinacoes') {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/animais/${id}/${relacao}`, {
+    const res    = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/animais/relation/${id}/${relacao}`, {
         method: 'GET',
         next: { revalidate: 300 },
         headers: {
@@ -16,5 +16,5 @@ export async function getAnimalRelation(accessToken: string, id: string, relacao
         throw new Error(`Failed to fetch animal relation: ${res.status} ${res.statusText}`);
     }
 
-    return await res.json() as Animal | Animal[] | any[];
+    return await res.json() as Animal;
 }
