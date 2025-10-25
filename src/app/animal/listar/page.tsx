@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 import {
   Pagination,
@@ -128,7 +129,7 @@ const ANIMAL_ENDPOINT = `${API_BASE_URL}/api/animais`;
 
 const getAuthToken = () => {
   // 💥💥💥 SEU TOKEN JWT VÁLIDO ESTÁ INSERIDO AQUI 💥💥💥
-  return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyMSIsImVtYWlsIjoidGVzdGUzLmNhZGFzdHJvQG5vdm91c2VyLmNvbSIsImlhdCI6MTc2MDkwODIyMywiZXhwIjoxNzYwOTExODIzfQ.rPlYQeMfPZaZvV-JG2RtFpQBXK4Gf40tYzwZ3zVweyk";
+  return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyMyIsImVtYWlsIjoidGVzdGU4LmNhZGFzdHJvQG5vdm91c2VyLmNvbSIsImlhdCI6MTc2MTQxNTE3NCwiZXhwIjoxNzYxNDE4Nzc0fQ.eRxkremA4QZMvkU5F3sHn2U3-8YB6qs10wsTX_a9u_0";
 };
 const fetchAnimals = async (
   page: number,
