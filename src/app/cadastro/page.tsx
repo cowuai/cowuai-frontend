@@ -52,8 +52,8 @@ const tsukimi = Tsukimi_Rounded({
   weight: ["300", "400", "600"],
 });
 
-// --- helpers de validação ---
-const onlyDigits = (s: string) => s.replace(/\D/g, "");
+// --- helpers de validação (Tipagem corrigida) ---
+const onlyDigits = (s: string): string => s.replace(/\D/g, "");
 
 function isValidCPF(cpfRaw: string): boolean {
   const cpf = onlyDigits(cpfRaw);
