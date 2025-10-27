@@ -7,6 +7,39 @@ import { Button } from "@/components/ui/button";
 import { BiPlus } from "react-icons/bi";
 import AddVaccineModal from "../vacinacao/AddVaccineModal";
 
+
+import { format, parse } from "date-fns";
+// Quebra a string do back em partes Y-M-D
+function parseApiDateParts(dateStr: string) {
+  if (!dateStr) return null;
+
+  // caso "yyyy-MM-dd"
+  if (dateStr.length === 10) {
+    const d = parse(dateStr, "yyyy-MM-dd", new Date());
+    return { y: d.getFullYear(), m: d.getMonth(), d: d.getDate() };
+  }
+
+  // caso ISO com Z (ou offset)
+  const d = new Date(dateStr);
+  // usamos UTC para extrair os números "crus" da string
+  return { y: d.getUTCFullYear(), m: d.getUTCMonth(), d: d.getUTCDate() };
+}
+
+// EXIBIÇÃO: monta dd/MM/yyyy SEM criar Date (evita fuso)
+function formatDateBR(dateStr?: string) {
+  const parts = dateStr ? parseApiDateParts(dateStr) : null;
+  if (!parts) return "";
+  const dd = String(parts.d).padStart(2, "0");
+  const mm = String(parts.m + 1).padStart(2, "0");
+  return `${dd}/${mm}/${parts.y}`;
+}
+
+// COMPARAÇÃO: cria um “date-only” em UTC só para cálculos
+function toUTCDateOnly(dateStr: string) {
+  const parts = parseApiDateParts(dateStr)!;
+  return new Date(Date.UTC(parts.y, parts.m, parts.d));
+}
+
 interface HealthTabProps {
     animal: Animal;
 }
@@ -16,20 +49,22 @@ export const HealthTab = ({ animal }: HealthTabProps) => {
     const vacinacoes = animal.vacinacoes ?? [];
     const count = vacinacoes.length;
 
-    const isUpcoming = (nextDate?: string) => {
-        if (!nextDate) return false;
-        const next = new Date(nextDate);
-        const today = new Date();
-        const diffDays = Math.ceil((next.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-        return diffDays > 0 && diffDays <= 30;
-    };
+ const isUpcoming = (nextDate?: string) => {
+  if (!nextDate) return false;
+  const next = toUTCDateOnly(nextDate);
+  const now = new Date();
+  const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const diffDays = Math.ceil((next.getTime() - todayUTC.getTime()) / (1000 * 60 * 60 * 24));
+  return diffDays > 0 && diffDays <= 30;
+};
 
-    const isPastDue = (nextDate?: string) => {
-        if (!nextDate) return false;
-        const next = new Date(nextDate);
-        const today = new Date();
-        return next < today;
-    };
+const isPastDue = (nextDate?: string) => {
+  if (!nextDate) return false;
+  const next = toUTCDateOnly(nextDate);
+  const now = new Date();
+  const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  return next.getTime() < todayUTC.getTime();
+};
 
     return (
         <div className="space-y-6">
@@ -38,7 +73,14 @@ export const HealthTab = ({ animal }: HealthTabProps) => {
                 <Badge variant="outline" className="text-sm">
                     {count} {count === 1 ? "vacina" : "vacinas"} registrada(s)
                 </Badge>
-                <AddVaccineModal idAnimal={BigInt(animal.id)} />
+               <AddVaccineModal 
+               idAnimal={BigInt(animal.id)}
+                sexoAnimal={animal.sexo as "MACHO" | "FEMEA" | "TODOS"}
+                    onSaved={() => {
+                        // depois você pode trocar por um refetch da rota do animal
+                        window.location.reload();
+                    }}
+                />
             </div>
 
             {count === 0 ? (
@@ -79,7 +121,8 @@ export const HealthTab = ({ animal }: HealthTabProps) => {
                                         <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
                                         <div>
                                             <p className="text-sm font-medium text-muted-foreground">Data de Aplicação</p>
-                                            <p className="text-sm">{new Date(vaccine.dataAplicacao).toLocaleDateString("pt-BR")}</p>
+                                            <p className="text-sm">{formatDateBR(vaccine.dataAplicacao)}</p>
+
                                         </div>
                                     </div>
 
@@ -88,7 +131,8 @@ export const HealthTab = ({ animal }: HealthTabProps) => {
                                             <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
                                             <div>
                                                 <p className="text-sm font-medium text-muted-foreground">Próxima Dose</p>
-                                                <p className="text-sm">{new Date(vaccine.proximaDose).toLocaleDateString("pt-BR")}</p>
+                                                <p className="text-sm">{formatDateBR(vaccine.proximaDose)}</p>
+
                                             </div>
                                         </div>
                                     )}
