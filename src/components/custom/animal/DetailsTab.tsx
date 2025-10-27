@@ -11,9 +11,9 @@ export const DetailsTab = ({ animal }: DetailsTabProps) => {
     const getStatusColor = (status: StatusAnimal) => {
         switch (status) {
             case "VIVO":
-                return "bg-primary text-primary-foreground";
+                return "bg-accent-green text-primary-foreground";
             case "VENDIDO":
-                return "bg-accent text-accent-foreground";
+                return "bg-foreground text-accent-foreground";
             case "FALECIDO":
                 return "bg-destructive text-destructive-foreground";
             case "DOADO":

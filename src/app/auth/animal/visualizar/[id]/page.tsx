@@ -17,6 +17,7 @@ import { DetailsTab } from "@/components/custom/animal/DetailsTab";
 import { GenealogyTab } from "@/components/custom/animal/GenealogyTab";
 import { HealthTab } from "@/components/custom/animal/HealthTab";
 import { OffspringTab } from "@/components/custom/animal/OffspringTab";
+import {Spinner} from "@/components/ui/spinner";
 
 type TabType = "details" | "genealogy" | "health" | "offspring";
 
@@ -147,7 +148,9 @@ const AnimalDetails = () => {
                     <main className="lg:col-span-3">
                         <div className="bg-card rounded-lg border p-6">
                             {loading && (
-                                <p className="text-muted-foreground">Carregando dados...</p>
+                                <div className={"flex justify-center items-center h-64"}>
+                                    <Spinner/>
+                                </div>
                             )}
 
                             {!loading && activeTab === "details" && <DetailsTab animal={animal} />}

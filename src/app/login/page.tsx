@@ -117,6 +117,10 @@ export default function LoginPage() {
                             </Link>
                         </p>
                     </div>
+                    
+                    <Link href={"/"} className={"mt-4 text-sm text-white hover:underline"}>
+                        Voltar para a página inicial
+                    </Link>
                 </div>
             </div>
         </main>
