@@ -49,6 +49,9 @@
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
     --radius-xl: calc(var(--radius) + 4px);
+    --color-accent-pink: var(--accent-pink);
+    --color-accent-green: var(--accent-green);
+    --color-bg-alternative: var(--bg-alternative);
 }
 
 :root {
@@ -59,7 +62,7 @@
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: #7f1d1d;    /* red-900 */
+    --primary: #460809;    /* red-950 */
     --primary-foreground: #f5f5f4;
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);
@@ -91,7 +94,9 @@
     --accent-yellow: #fde047;
     --accent-blue: #2563eb;
     --accent-cyan: #06b6d4;
+    --accent-green: #22c55e;
     --accent-pink: #ec4899;
+    --bg-alternative: #F5F5DC;
 }
 
 .dark {
@@ -133,7 +138,9 @@
     --accent-yellow: #fde047;
     --accent-blue: #2563eb;
     --accent-cyan: #06b6d4;
+    --accent-green: #22c55e;
     --accent-pink: #ec4899;
+    --bg-alternative: #3e3d32;
 }
 
 @layer base {

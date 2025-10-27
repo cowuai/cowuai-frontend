@@ -1,9 +1,24 @@
 import Image from "next/image";
+import Hero from "@/components/custom/index/Hero";
+import Header from "@/components/custom/index/Header";
+import Features from "@/components/custom/index/Features";
+import CattleTypes from "@/components/custom/index/CattleTypes";
+import About from "@/components/custom/index/About";
+import CallToAction from "@/components/custom/index/CallToAction";
+import Footer from "@/components/custom/index/Footer";
 
 export default function Home() {
   return (
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <h1 className="text-2xl font-bold">Página Inicial</h1>
-      </main>
+      <div className="min-h-screen">
+          <Header />
+          <main>
+              <Hero />
+              <Features />
+              <CattleTypes />
+              <About />
+              <CallToAction />
+          </main>
+          <Footer />
+      </div>
   );
 }
