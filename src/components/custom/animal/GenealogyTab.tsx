@@ -42,7 +42,7 @@ export const GenealogyTab = ({animal}: GenealogyTabProps) => {
                     </CardContent>
                 </Card>
 
-                <Card className="border-2 bg-accent-yellow/5 border-accent-yellow/20">
+                <Card className="border-2 bg-accent-pink/5 border-accent-pink/20">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <CgGenderFemale size={22}/>
@@ -96,7 +96,7 @@ export const GenealogyTab = ({animal}: GenealogyTabProps) => {
                                 </ArcherElement>
 
                                 <ArcherElement id="mother">
-                                    <div className="text-center p-4 bg-accent-yellow/5 rounded-lg border  border-accent-yellow/20 min-w-[180px]">
+                                    <div className="text-center p-4 bg-accent-pink/5 rounded-lg border  border-accent-pink/20 min-w-[180px]">
                                         <p className="font-semibold">{animal.mae?.nome || "Desconhecido"}</p>
                                         <p className="text-sm text-muted-foreground">{animal.mae?.registro || "-"}</p>
                                     </div>
@@ -117,11 +117,11 @@ export const GenealogyTab = ({animal}: GenealogyTabProps) => {
                                         targetId: "mother",
                                         sourceAnchor: "top",
                                         targetAnchor: "bottom",
-                                        style: { strokeColor: "#fbbf24" },
+                                        style: { strokeColor: "#ec4899" },
                                     },
                                 ]}
                             >
-                                <div className="text-center p-4 bg-primary/10 rounded-lg border-2 border-primary/30 min-w-[200px]">
+                                <div className="text-center p-4 bg-accent-yellow/10 rounded-lg border-2 border-accent-yellow/30 min-w-[200px]">
                                     <p className="font-bold">{animal.nome}</p>
                                     <p className="text-sm text-muted-foreground">{animal.registro || "-"}</p>
                                 </div>

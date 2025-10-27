@@ -4,5 +4,9 @@ type Usuario = {
     nome: string;
     email: string;
     dataNascimento: string;
+    telefone: string;
+    localizacao: string;
     ativo: boolean;
+    dataCadastro: string;
+    dataAtualizacao: string;
 }
