@@ -90,14 +90,17 @@ export function AuthProvider({children}: { children: ReactNode }) {
             if (!res.ok) {
                 console.error("Refresh falhou com o status:", res.status); // Log para debug
                 setAccessToken(null); // Limpa o estado se a resposta não for OK
+                setUsuario(null);  // <<<  garantir limpeza
                 return false;
             }
             const data = await res.json();
             setAccessToken(data.accessToken);
+            setUsuario(data.user || null);   // <<< repõe o usuário
             return true;
         } catch (error) { // Pega erros de fetch (rede, etc.)
             console.error("Erro durante o recarregamento:", error);
             setAccessToken(null); // Limpa o estado em caso de erro
+            setUsuario(null);   // <<< garantir limpeza
             return false;
         }
     }
