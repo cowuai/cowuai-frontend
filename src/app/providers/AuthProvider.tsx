@@ -42,7 +42,7 @@ export function AuthProvider({children}: { children: ReactNode }) {
     }, []);
 
     const login = async (email: string, senha: string): Promise<boolean> => {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, { // 👈 Adicione /api
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({email, senha, dispositivo}),
@@ -58,7 +58,7 @@ export function AuthProvider({children}: { children: ReactNode }) {
     };
 
     const logout = async (): Promise<boolean> => {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, { // 👈 Adicione /api
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ export function AuthProvider({children}: { children: ReactNode }) {
 
     const refresh = async (): Promise<boolean> => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`, { // 👈 Adicione /api {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({dispositivo}),

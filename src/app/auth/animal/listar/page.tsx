@@ -1,5 +1,5 @@
 "use client";
-
+import { useAuth } from "@/app/providers/AuthProvider"; // Verifique o caminho exato
 import { useEffect, useState, useMemo } from "react";
 
 import {
@@ -123,44 +123,43 @@ interface ApiResponse {
 
 // URL Base da sua API (ajuste conforme o ambiente)
 
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const ANIMAL_ENDPOINT = `${API_BASE_URL}/api/animais`;
 
 const getAuthToken = () => {
   // 💥💥💥 SEU TOKEN JWT VÁLIDO ESTÁ INSERIDO AQUI 💥💥💥
-  return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyMyIsImVtYWlsIjoidGVzdGU4LmNhZGFzdHJvQG5vdm91c2VyLmNvbSIsImlhdCI6MTc2MTQxNTE3NCwiZXhwIjoxNzYxNDE4Nzc0fQ.eRxkremA4QZMvkU5F3sHn2U3-8YB6qs10wsTX_a9u_0";
+  return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyNCIsImVtYWlsIjoidGVzdGUxMDAuY2FkYXN0cm9Abm92b3VzZXIuY29tIiwiaWF0IjoxNzYxNDg1OTM3LCJleHAiOjE3NjE0ODk1Mzd9.DLadQMxXyOyZX30YjJCNKegRt-w6EcR_3F9AELQliNI";
 };
 const fetchAnimals = async (
   page: number,
-
-  pageSize: number
+  pageSize: number,
+  token: string | null // ✅ Recebe o token dinâmico
 ): Promise<ApiResponse> => {
-  // A rota de listagem de animais deve ser ajustada para a URL correta do seu backend
+  const url = `${ANIMAL_ENDPOINT}?page=${page}&pageSize=${pageSize}`;
 
-  const url = `${ANIMAL_ENDPOINT}?page=${page}&pageSize=${pageSize}`; // ATENÇÃO: TOKEN DE AUTENTICAÇÃO // O token não é mais enviado via header, mas sim via cookie do navegador. // const MOCK_AUTH_TOKEN = "seu_token_de_autenticacao_aqui"; // Esta linha se torna desnecessária
+  // 👇 Define os headers iniciais
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  // 👇 Adiciona o Authorization SOMENTE SE o token existir
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  // 👇 Removemos a linha const AUTH_TOKEN = getAuthToken(); daqui
 
   const response = await fetch(url, {
-    // ✅ ESSA OPÇÃO É CRUCIAL PARA INCLUIR O COOKIE (refreshToken) NA REQUISIÇÃO
-
     credentials: "include",
-
-    headers: {
-      // ❌ REMOVER 'Authorization': Seu backend lê o token do cookie, não deste header.
-
-      "Content-Type": "application/json",
-    },
+    headers: headers, // ✅ Usa os headers construídos
   });
 
   if (!response.ok) {
     // Lidar com erros de status HTTP (400, 500, etc.)
-
     const errorData = await response
-
       .json()
-
       .catch(() => ({ message: response.statusText }));
-
     throw new Error(
       `Erro ${response.status}: ${
         errorData.message || "Falha ao buscar dados."
@@ -293,6 +292,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
       return (
         <PaginationItem key={index}>
           <PaginationLink
+            href="#"
             // Propriedade nativa do Shadcn para o estilo ativo
 
             isActive={isCurrent}
@@ -323,6 +323,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
 
         <PaginationItem>
           <PaginationPrevious
+            href="#"
             onClick={() => onPageChange(currentPage - 1)}
             aria-disabled={currentPage === 1}
           >
@@ -338,6 +339,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
 
         <PaginationItem>
           <PaginationNext
+            href="#"
             onClick={() => onPageChange(currentPage + 1)}
             aria-disabled={currentPage === totalPages}
           >
@@ -350,6 +352,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
 };
 
 export default function ListarAnimaisPage() {
+  const { accessToken } = useAuth();
   const DEFAULT_PAGE_SIZE = 2;
 
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -394,31 +397,63 @@ export default function ListarAnimaisPage() {
 
   useEffect(() => {
     const loadAnimals = async () => {
+      // 👇 Adiciona a verificação: Não faz nada se não tiver token
+      if (!accessToken) {
+        // Você pode querer setar um estado aqui, tipo "Faça login para ver os animais"
+        // setLoading(false); // Ou deixar carregando
+        return;
+      }
+
       setLoading(true);
-
       setError(null);
-
       try {
+        // 👈 O TRY começa aqui
         // *** CHAMA A FUNÇÃO DE FETCH REAL AGORA ***
+        // MUDANÇA 1: Renomeei para 'apiResponse' para maior clareza,
+        // mas a variável do seu código era 'animaisRecebidos'. Vou manter
+        // o nome da variável de retorno para 'apiResponse'
+        const apiResponse = await fetchAnimals(
+          currentPage,
+          pageSize,
+          accessToken
+        );
+        console.log("Resposta completa da API:", apiResponse); // MUDANÇA 2: Melhorar o log para ver o objeto completo // ✅ CORREÇÃO AQUI: Verifica se a propriedade 'data' da resposta é um array // Se sua API retorna o array DIRETAMENTE, mude para: // if (Array.isArray(apiResponse)) { setAnimais(apiResponse); }
 
-        const response = await fetchAnimals(currentPage, pageSize);
-
-        setAnimais(response.data);
-
-        setPaginationData(response.pagination);
+        if (apiResponse && Array.isArray(apiResponse.data)) {
+          setAnimais(apiResponse.data); // Usa o array de animais // MUDANÇA 3: Usa os dados de paginação da API, se existirem, ou simula
+          setPaginationData(
+            apiResponse.pagination || {
+              page: currentPage,
+              pageSize: pageSize,
+              totalItems: apiResponse.data.length, // Se a API não dá o total, usa o da página
+              totalPages: 1,
+            }
+          );
+        } else {
+          // Se a resposta não seguir o formato { data: [...] }
+          console.error(
+            "Resposta da API de listagem está no formato incorreto ou vazia. Verifique o backend."
+          );
+          setAnimais([]); // Resetar paginação ou mostrar erro
+          setPaginationData({
+            page: 1,
+            pageSize: pageSize,
+            totalItems: 0,
+            totalPages: 1,
+          });
+        } // 👈 O TRY termina aqui, ANTES do CATCH
       } catch (err: any) {
+        // 👈 O CATCH começa aqui
         console.error("Erro ao carregar animais:", err);
-
         setError(err.message || "Falha ao carregar a lista de animais.");
       } finally {
+        // 👈 O FINALLY começa aqui
         setLoading(false);
-      }
-    };
+      } // 👈 O FINALLY termina aqui
+    }; // 👈 A função loadAnimals termina aqui // Carrega dados sempre que a página, o tamanho da página, refreshFlag OU accessToken mudar
 
-    // Carrega dados sempre que a página, o tamanho da página OU refreshFlag mudar
-
-    loadAnimals();
-  }, [currentPage, pageSize, refreshFlag]);
+    loadAnimals(); // 👇 Adiciona accessToken à lista de dependências
+  }, [currentPage, pageSize, refreshFlag, accessToken]); // 👈 O useEffect termina aqui
 
   // ======================================================================
 
