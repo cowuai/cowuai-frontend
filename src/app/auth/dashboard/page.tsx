@@ -37,121 +37,120 @@ ChartJS.register(
 
 export default function DashboardPage() {
   const { theme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  const { accessToken } = useAuth(); 
+  const { accessToken } = useAuth();
   const darkMode = theme === "dark";
+  const [mounted, setMounted] = useState(false);
+
+  // ---------- States dos gráficos ----------
+  const [animaisDoentes, setAnimaisDoentes] = useState(0);
+  const [taxaReproducao, setTaxaReproducao] = useState(0);
+
+  const [lineData, setLineData] = useState<any>({ labels: ["Total"], datasets: [] });
+  const [areaData, setAreaData] = useState<any>({ labels: [], datasets: [] });
+  const [barData, setBarData] = useState<any>({ labels: [], datasets: [] });
+  const [pieData, setPieData] = useState<any>({ labels: [], datasets: [] });
+  const [sexoPieData, setSexoPieData] = useState<any>({ labels: ["Macho", "Fêmea", "Indeterm."], datasets: [] });
+  const [vacinasBarData, setVacinasBarData] = useState<any>({ labels: [], datasets: [] });
 
   useEffect(() => setMounted(true), []);
 
-  // ---------- Dados falsos temporários ----------
-  const [lineData, setLineData] = useState<any>({
-    labels: ["Total"],
-    datasets: [
-      {
-        label: "Animais Doentes",
-        data: [0],
-        borderColor: "#EF4444",
-        backgroundColor: "transparent",
-        tension: 0.4,
-        borderWidth: 2,
-      },
-    ],
-  });
-
-  const [areaData, setAreaData] = useState<any>({
-    labels: ["2019", "2020", "2021"],
-    datasets: [
-      {
-        label: "Animais cadastrados (por ano)",
-        data: [1, 1, 1],
-        fill: true,
-        backgroundColor: "rgba(16, 185, 129, 0.12)",
-        borderColor: "#10B981",
-        tension: 0.3,
-        borderWidth: 2,
-      },
-    ],
-  });
-
-  const [barData, setBarData] = useState<any>({
-    labels: ["Baias 3", "Baias 5", "Pastagem A"],
-    datasets: [
-      { label: "Animais", data: [1, 1, 1], backgroundColor: ["#FF5722", "#009688", "#006064"] },
-    ],
-  });
-
-  const [pieData, setPieData] = useState<any>({
-    labels: ["GIR", "HOLANDES", "GIROLANDO"],
-    datasets: [{ data: [1, 1, 1], backgroundColor: ["#FF5722", "#009688", "#006064"], borderWidth: 0 }],
-  });
-
-  const [sexoPieData, setSexoPieData] = useState<any>({
-    labels: ["Macho", "Fêmea", "Indeterm."],
-    datasets: [{ data: [0, 0, 0], backgroundColor: ["#2196F3", "#E91E63", "#9E9E9E"] }],
-  });
-
-  const [vacinasBarData, setVacinasBarData] = useState<any>({
-    labels: [],
-    datasets: [{ label: "Vacinas aplicadas", data: [], backgroundColor: "#9C27B0" }],
-  });
-
-  const [animaisDoentes, setAnimaisDoentes] = useState<number>(0);
-  const [taxaReproducao, setTaxaReproducao] = useState<number>(0);
-
-  // ---------- Dados reais do backend ----------
+  // ---------- Fetch do dashboard ----------
   useEffect(() => {
-    const fetchSummary = async () => {
+    const fetchDashboard = async () => {
+      if (!accessToken) return;
       try {
         const base = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
         const res = await fetch(`${base}/dashboard`, {
-          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+          headers: { Authorization: `Bearer ${accessToken}` },
           credentials: "include",
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
-        if (data?.vacinacoesPorMes) {
-          const labels = data.vacinacoesPorMes.map((v: any) => v.label);
-          const values = data.vacinacoesPorMes.map((v: any) => v.count);
-          // vacinacoesPorMes: apenas o gráfico de barras de vacinas
-          setVacinasBarData({ labels, datasets: [{ ...vacinasBarData.datasets[0], data: values }] });
-        }
-
         // Animais doentes
-        if (data?.animaisDoentes !== undefined) {
-          setLineData({ labels: ["Total"], datasets: [{ ...lineData.datasets[0], data: [Number(data.animaisDoentes)] }] });
-        }
+        setAnimaisDoentes(Number(data.animaisDoentes ?? 0));
+        setLineData({
+          labels: ["Total"],
+          datasets: [{
+            label: "Animais Doentes",
+            data: [Number(data.animaisDoentes ?? 0)],
+            borderColor: "#EF4444",
+            backgroundColor: "transparent",
+            tension: 0.4,
+            borderWidth: 2,
+          }],
+        });
 
-        if (data?.animaisPorLocalizacao) {
-          const labels = data.animaisPorLocalizacao.map((g: any) => g.label);
-          const values = data.animaisPorLocalizacao.map((g: any) => g.count);
-          setBarData({ labels, datasets: [{ ...barData.datasets[0], data: values }] });
-        }
+        // Taxa de reprodução
+        setTaxaReproducao(Number(data.taxaReproducao ?? 0));
 
-        if (data?.tipoRaca) {
-          const labels = data.tipoRaca.map((g: any) => g.label);
-          const values = data.tipoRaca.map((g: any) => g.count);
-          setPieData({ labels, datasets: [{ ...pieData.datasets[0], data: values }] });
-        }
-
-        if (data?.animaisPorSexo) {
-          const map = { MACHO: 0, FEMEA: 0, INDETERMINADO: 0 };
-          for (const s of data.animaisPorSexo) map[s.sexo as keyof typeof map] = s.count;
-          setSexoPieData({
-            labels: ["Macho", "Fêmea", "Indeterm."],
-            datasets: [{ data: [map.MACHO, map.FEMEA, map.INDETERMINADO], backgroundColor: ["#2196F3", "#E91E63", "#9E9E9E"] }],
+        // Área (animais por ano) - se houver
+        if (data.animaisPorAno) {
+          setAreaData({
+            labels: data.animaisPorAno.map((a: any) => a.ano),
+            datasets: [{
+              label: "Animais cadastrados (por ano)",
+              data: data.animaisPorAno.map((a: any) => a.count),
+              fill: true,
+              backgroundColor: "rgba(16, 185, 129, 0.12)",
+              borderColor: "#10B981",
+              tension: 0.3,
+              borderWidth: 2,
+            }],
           });
         }
 
-        setAnimaisDoentes(Number(data?.animaisDoentes ?? 0));
-        setTaxaReproducao(Number(data?.taxaReproducao ?? 0));
+        // Animais por localização
+        setBarData({
+          labels: data.animaisPorLocalizacao.map((a: any) => a.label),
+          datasets: [{
+            label: "Animais",
+            data: data.animaisPorLocalizacao.map((a: any) => a.count),
+            backgroundColor: ["#FF5722", "#009688", "#006064"],
+          }],
+        });
+
+        // Tipo de raça
+        setPieData({
+          labels: data.tipoRaca.map((r: any) => r.label),
+          datasets: [{
+            data: data.tipoRaca.map((r: any) => r.count),
+            backgroundColor: ["#FF5722", "#009688", "#006064"],
+            borderWidth: 0,
+          }],
+        });
+
+        // Animais por sexo
+        const sexoMap = { MACHO: 0, FEMEA: 0, INDETERMINADO: 0 };
+        data.animaisPorSexo.forEach((s: any) => {
+          if (s.sexo === "MACHO") sexoMap.MACHO = s.count;
+          else if (s.sexo === "FEMEA") sexoMap.FEMEA = s.count;
+          else sexoMap.INDETERMINADO = s.count;
+        });
+        setSexoPieData({
+          labels: ["Macho", "Fêmea", "Indeterm."],
+          datasets: [{ data: [sexoMap.MACHO, sexoMap.FEMEA, sexoMap.INDETERMINADO], backgroundColor: ["#2196F3", "#E91E63", "#9E9E9E"] }],
+        });
+
+        // Vacinas aplicadas
+        setVacinasBarData({
+          labels: data.vacinacoesPorMes.map((v: any) => v.label),
+          datasets: [{
+            label: "Vacinas aplicadas",
+            data: data.vacinacoesPorMes.map((v: any) => v.count),
+            backgroundColor: "#9C27B0",
+          }],
+        });
+
       } catch (err) {
-        console.warn("Não foi possível carregar resumo do dashboard:", err);
+        console.warn("Erro ao carregar dashboard:", err);
       }
     };
-    fetchSummary();
+
+    fetchDashboard();
   }, [accessToken]);
 
+  // ---------- Chart options ----------
   const chartOptions = {
     responsive: true,
     plugins: { legend: { labels: { color: darkMode ? "#fff" : "#000" } } },
@@ -165,6 +164,7 @@ export default function DashboardPage() {
   };
 
   if (!mounted) return null;
+
   // ---------- Layout ----------
   return (
     <div className="p-10">
@@ -177,7 +177,7 @@ export default function DashboardPage() {
       {/* Cards */}
       <div className="w-full mb-10 p-8 rounded-2xl shadow-lg bg-[hsl(var(--dashboard-primary))] text-[hsl(var(--dashboard-primary-foreground))]">
         <div className="flex gap-6 justify-start">
-          <div className="flex items-center p-4 rounded-xl shadow-md bg-[hsl(var(--dashboard-primary))] text-[hsl(var(--dashboard-primary-foreground))] w-52 h-24 gap-3">
+          <div className="flex items-center p-4 rounded-xl shadow-md w-52 h-24 gap-3">
             <Cross size={30} strokeWidth={2} className="text-[hsl(var(--dashboard-primary-foreground))]" />
             <div className="flex flex-col justify-center flex-1 text-right">
               <h2 className="text-lg font-medium leading-snug">Animais Doentes</h2>
@@ -185,7 +185,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex items-center p-4 rounded-xl shadow-md bg-[hsl(var(--dashboard-primary))] text-[hsl(var(--dashboard-primary-foreground))] w-52 h-24 gap-3">
+          <div className="flex items-center p-4 rounded-xl shadow-md w-52 h-24 gap-3">
             <Image src="/images/sperm.svg" alt="Ícone de reprodução" width={30} height={30} />
             <div className="flex flex-col justify-center flex-1 text-right">
               <h2 className="text-lg font-medium leading-snug">
