@@ -2,50 +2,43 @@
 
 import {useTheme} from "next-themes";
 import {useEffect, useState} from "react";
+import {useForm} from "react-hook-form";
 import {toast} from "sonner";
+import {
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import {ArrowLeft} from "lucide-react";
+import {Input} from "@/components/ui/input";
+import {Separator} from "@/components/ui/separator";
 import {useAuth} from "@/app/providers/AuthProvider";
 import {useRouter} from "next/navigation";
 import Link from "next/link";
+import {Animal} from "@/types/Animal";
+import {getAnimalsByIdProprietario} from "@/actions/getAnimalsByIdProprietario";
+import {zodResolver} from "@hookform/resolvers/zod";
+import * as z from "zod";
+import {Button} from "@/components/ui/button";
+import {getTipoRaca} from "@/actions/getTipoRaca";
 import BreadcrumbArea from "@/components/custom/BreadcrumbArea";
+import {getFazendasByIdProprietario} from "@/actions/getFazendasByIdProprietario";
+import {Fazenda} from "@/types/Fazenda";
 
 // ==========================
 // Enums e Tipos
 // ==========================
-enum TipoRaca {
-    NELORE = "NELORE",
-    GIR = "GIR",
-    GIROLANDO = "GIROLANDO",
-    BRAHMAN = "BRAHMAN",
-    GUZERATE = "GUZERÁ",
-    SINDI = "SINDI",
-    ANGUS = "ANGUS",
-    BRANGUS = "BRANGUS",
-    LIMOUSIN = "LIMOUSIN",
-    CHIANINA = "CHIANINA",
-    DEVON = "DEVON",
-    BELGIANBLUE = "BELGIAN BLUE",
-    HEREFORD = "HEREFORD",
-    CANCHIM = "CANCHIM",
-    TABAPUA = "TABAPUÃ",
-    CARACU = "CARACU",
-    SENEPOL = "SENEPOL",
-    CHAROLAISE = "CHAROLÊS",
-    INDUBRASIL = "INDUBRASIL",
-    WAGYU = "WAGYU",
-    SIMMENTAL = "SIMMENTAL",
-    CRIOULO = "CRIOULO",
-    JERSEY = "JERSEY",
-    HOLANDES = "HOLANDÊS",
-    MURRAH = "MURRAH",
-    MESTICO = "MESTIÇO",
-    OUTROS = "OUTROS",
-}
-
-enum SexoAnimal {
-    MACHO = "MACHO",
-    FEMEA = "FEMEA"
-}
-
 enum StatusAnimal {
     VIVO = "VIVO",
     FALECIDO = "FALECIDO",
@@ -54,173 +47,181 @@ enum StatusAnimal {
     ROUBADO = "ROUBADO",
 }
 
-type AnimalForm = {
-    nome: string;
-    tipoRaca: TipoRaca | "";
-    sexo: SexoAnimal | "";
-    composicaoRacial: string;
-    dataNascimento: string;
-    numeroParticularProprietario: string;
-    registro: string;
-    status: StatusAnimal;
-    peso: string;
-    localizacao: string;
-    idPai: string;
-    idMae: string;
-    idFazenda: string;
-};
+enum SexoAnimal {
+    MACHO = "MACHO",
+    FEMEA = "FEMEA"
+}
 
-type AnimalPayload = {
-    nome: string;
-    tipoRaca: TipoRaca;
-    sexo: SexoAnimal;
-    composicaoRacial: string | null;
-    dataNascimento: Date | null;
-    numeroParticularProprietario: string | null;
-    registro: string | null;
-    status: StatusAnimal;
-    peso: number | null;
-    localizacao: string;
-    idPai: number | null;
-    idMae: number | null;
-    idProprietario: number;
-    idFazenda: number;
-};
+const formSchema = z.object({
+    nome: z.string().min(1, "Nome é obrigatório").max(100),
+    tipoRaca: z.string().min(1, "Selecione o tipo de raça"),
+    composicaoRacial: z.string().optional(),
+    numeroParticularProprietario: z.string().optional(),
+    registro: z.string().optional(),
+    sexo: z.enum([SexoAnimal.MACHO, SexoAnimal.FEMEA], {error: "Selecione o sexo"}),
+    idFazenda: z.string().min(1, "Selecione uma fazenda"),
+    idPai: z.string().optional(),
+    idMae: z.string().optional(),
+    dataNascimento: z.string().optional(),
+    peso: z.string().optional(),
+    localizacao: z.string().optional(),
+    status: z.enum([
+        StatusAnimal.VIVO,
+        StatusAnimal.FALECIDO,
+        StatusAnimal.VENDIDO,
+        StatusAnimal.DOADO,
+        StatusAnimal.ROUBADO,
+    ]),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 // ==========================
 // COMPONENTE PRINCIPAL
 // ==========================
 export default function CadastrarAnimalPage() {
-    const {theme} = useTheme();
-    const [mounted, setMounted] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [fazendasDoProprietario, setFazendasDoProprietario] = useState<
-        { id: number; nome: string }[]
-    >([]);
-
     const router = useRouter();
     const {usuario, accessToken} = useAuth();
 
+    const [isLoading, setIsLoading] = useState(false);
+    const [fazendasDoProprietario, setFazendasDoProprietario] = useState<Fazenda[]>([]);
+    const [animais, setAnimais] = useState<Animal[]>([]);
+    const [animaisMachos, setAnimaisMachos] = useState<Animal[]>([]);
+    const [animaisFemeas, setAnimaisFemeas] = useState<Animal[]>([]);
+    const [tiposRaca, setTiposRaca] = useState<string[]>([]);
+
     // Fallbacks (apenas para evitar crash visual; chamadas reais exigem token/ID válidos)
     const usuarioAtivo = usuario ?? {id: 0, nome: "Usuário"};
-    const tokenAtivo = accessToken ?? "";
-
-    const [formData, setFormData] = useState<AnimalForm>({
-        nome: "",
-        tipoRaca: "",
-        sexo: "",
-        composicaoRacial: "",
-        dataNascimento: "",
-        numeroParticularProprietario: "",
-        registro: "",
-        status: StatusAnimal.VIVO,
-        peso: "",
-        localizacao: "",
-        idPai: "",
-        idMae: "",
-        idFazenda: "",
+    const form = useForm<FormValues>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            nome: "",
+            tipoRaca: "",
+            composicaoRacial: "",
+            numeroParticularProprietario: "",
+            registro: "",
+            sexo: undefined,
+            idFazenda: "",
+            idPai: "",
+            idMae: "",
+            dataNascimento: "",
+            peso: "",
+            localizacao: "",
+            status: StatusAnimal.VIVO,
+        },
     });
 
-    useEffect(() => setMounted(true), []);
-    const darkMode = theme === "dark";
-
     // ==========================
-    // Carregar fazendas do proprietário (sem mock em dev)
+    // Carregar dados iniciais
     // ==========================
     useEffect(() => {
+        const carregarTiposRaca = async () => {
+            if (!accessToken) {
+                setTiposRaca([]);
+                return;
+            }
+
+            try {
+                const tipos = await getTipoRaca(accessToken);
+                setTiposRaca(tipos);
+            } catch (err: any) {
+                console.error("Erro ao carregar tipos de raça:", err);
+                toast.error("Erro ao carregar tipos de raça.");
+            }
+        };
+
         const carregarFazendas = async () => {
-            if (!usuarioAtivo?.id || !tokenAtivo) {
+            if (!usuarioAtivo?.id || !accessToken) {
                 setFazendasDoProprietario([]);
                 return;
             }
 
             try {
-                const base = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
-                const resF = await fetch(
-                    `${base}/fazendas/proprietario/${usuarioAtivo.id}`,
-                    {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${tokenAtivo}`,
-                            "Content-Type": "application/json",
-                        },
-                        credentials: "include",
-                    }
-                );
-
-                if (!resF.ok) throw new Error(`HTTP ${resF.status}`);
-                const fazendas: { id: number; nome: string }[] = await resF.json();
-
-                setFazendasDoProprietario(fazendas);
-
-                if (fazendas.length > 0) {
-                    setFormData((prev) => ({
-                        ...prev,
-                        idFazenda: String(fazendas[0].id),
-                    }));
-                }
+                const resF = await getFazendasByIdProprietario(String(usuarioAtivo.id), accessToken);
+                setFazendasDoProprietario(resF);
             } catch (err: any) {
                 console.error("Erro ao carregar fazendas:", err);
                 toast.error("Erro ao carregar fazendas do proprietário.");
             }
         };
 
+        const carregarAnimais = async () => {
+            if (!usuarioAtivo?.id || !accessToken) {
+                setAnimais([]);
+                return;
+            }
+
+            try {
+                const res = await getAnimalsByIdProprietario(accessToken, String(usuarioAtivo.id));
+                setAnimais(res);
+            } catch (err: any) {
+                console.error("Erro ao carregar animais:", err);
+                toast.error("Erro ao carregar animais do proprietário.");
+            }
+        }
+
+        carregarTiposRaca();
         carregarFazendas();
-    }, [usuarioAtivo?.id, tokenAtivo]);
+        carregarAnimais();
+    }, [usuarioAtivo?.id, accessToken]);
+
+    useEffect(() => {
+        if (!animais || animais.length === 0) {
+            setAnimaisMachos([]);
+            setAnimaisFemeas([]);
+            return;
+        }
+
+        console.log("Animais carregados:", animais);
+        const machos = animais.filter((animal) => animal.sexo === SexoAnimal.MACHO);
+        const femeas = animais.filter((animal) => animal.sexo === SexoAnimal.FEMEA);
+
+        setAnimaisMachos(machos);
+        setAnimaisFemeas(femeas);
+    }, [animais]);
 
     // ==========================
     // Funções de formulário
     // ==========================
-    const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-    ) => {
-        setFormData({...formData, [e.target.name]: e.target.value});
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    async function onSubmit(values: FormValues) {
         setIsLoading(true);
-
         try {
-            if (!formData.idFazenda) {
+            if (!values.idFazenda) {
                 toast.error("Selecione uma fazenda antes de salvar.");
                 return;
             }
-            if (!usuarioAtivo?.id || !tokenAtivo) {
+            if (!usuarioAtivo?.id || !accessToken) {
                 toast.error("Sessão inválida. Faça login novamente.");
                 return;
             }
 
-            const payload: AnimalPayload = {
-                nome: formData.nome,
-                tipoRaca: formData.tipoRaca as TipoRaca,
-                sexo: formData.sexo as SexoAnimal,
-                composicaoRacial: formData.composicaoRacial || null,
-                dataNascimento: formData.dataNascimento
-                    ? new Date(formData.dataNascimento)
-                    : null,
-                numeroParticularProprietario:
-                    formData.numeroParticularProprietario || null,
-                registro: formData.registro || null,
-                status: formData.status,
-                // trata vírgula para Windows/pt-BR
-                peso: formData.peso
-                    ? parseFloat(formData.peso.replace(",", "."))
-                    : null,
-                localizacao: formData.localizacao,
-                idPai: formData.idPai ? parseInt(formData.idPai) : null,
-                idMae: formData.idMae ? parseInt(formData.idMae) : null,
+            // Normaliza o payload para os tipos esperados pelo backend / Prisma
+            const pesoParsed = values.peso && values.peso !== ""
+                ? parseFloat(values.peso.replace(",", "."))
+                : NaN;
+
+            const payload = {
+                nome: values.nome,
+                tipoRaca: values.tipoRaca,
+                sexo: values.sexo,
+                composicaoRacial: values.composicaoRacial || null,
+                dataNascimento: values.dataNascimento ? new Date(values.dataNascimento) : null,
+                numeroParticularProprietario: values.numeroParticularProprietario || null,
+                registro: values.registro || null,
+                status: values.status,
+                // envia float ou null; evita enviar NaN
+                peso: Number.isFinite(pesoParsed) ? pesoParsed : null,
+                localizacao: values.localizacao || "",
+                idPai: values.idPai ? (parseInt(values.idPai)) : null,
+                idMae: values.idMae ? (parseInt(values.idMae)) : null,
                 idProprietario: Number(usuarioAtivo.id),
-                idFazenda: parseInt(formData.idFazenda),
+                idFazenda: values.idFazenda ? parseInt(values.idFazenda) : null,
             };
 
-            console.log("Payload enviado:", payload);
-
-            const base = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
-            const res = await fetch(`${base}/animais`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/animais`, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokenAtivo}`,
+                    Authorization: `Bearer ${accessToken}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(payload),
@@ -237,25 +238,8 @@ export default function CadastrarAnimalPage() {
                 throw new Error(msg);
             }
 
-            toast.success("Animal cadastrado com sucesso!");
-
-            // Resetar formulário (mantém primeira fazenda selecionada, se houver)
-            setFormData({
-                nome: "",
-                tipoRaca: "",
-                sexo: "",
-                composicaoRacial: "",
-                dataNascimento: "",
-                numeroParticularProprietario: "",
-                registro: "",
-                status: StatusAnimal.VIVO,
-                peso: "",
-                localizacao: "",
-                idPai: "",
-                idMae: "",
-                idFazenda: fazendasDoProprietario[0]?.id
-                    ? String(fazendasDoProprietario[0].id)
-                    : "",
+            toast.success("Animal cadastrado com sucesso!", {
+                description: `${values.nome} foi adicionado ao sistema.`
             });
 
             router.push("/auth/animal/listar");
@@ -265,212 +249,302 @@ export default function CadastrarAnimalPage() {
         } finally {
             setIsLoading(false);
         }
-    };
-
-    if (!mounted) return null;
+    }
 
     // ==========================
     // RENDERIZAÇÃO
     // ==========================
     return (
-        <div className="flex min-h-screen transition-colors duration-500 bg-background text-foreground">
-            <main className="flex-1 p-10 transition-colors duration-500">
-                <header className="flex-row justify-between items-start mb-8">
-                    <h1
-                        className={`text-3xl font-title mb-6 ${
-                            darkMode ? "text-white" : "text-red-900"
-                        }`}
-                    >
-                        Cadastrar Animal
-                    </h1>
+        <div className="min-h-screen bg-background">
+            <div className="container max-w-4xl mx-auto py-8 px-4">
+                {/* Header */}
+                <div className="mb-8">
+                    <Link href="/auth/animal/listar"
+                          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
+                        <ArrowLeft className="mr-2 h-4 w-4"/>
+                        Voltar para animais
+                    </Link>
+                    <h1 className="text-3xl font-bold text-primary font-tsukimi-rounded mb-2">Cadastrar Animal</h1>
                     <BreadcrumbArea/>
-                </header>
-
-                <div
-                    className={`w-full max-w-2xl mx-auto p-8 rounded-2xl shadow-lg ${
-                        darkMode ? "bg-stone-950" : "bg-white"
-                    }`}
-                >
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Nome */}
-                        <div>
-                            <label htmlFor="nome" className="block text-sm font-medium mb-1">
-                                Nome
-                            </label>
-                            <input
-                                type="text"
-                                id="nome"
-                                name="nome"
-                                value={formData.nome}
-                                onChange={handleChange}
-                                className="w-full border rounded-md p-2 text-black dark:text-white"
-                                placeholder="Nome do animal"
-                                required
-                            />
-                        </div>
-
-                        {/* Tipo Raça */}
-                        <div>
-                            <label htmlFor="tipoRaca" className="block text-sm font-medium mb-1">
-                                Tipo de Raça
-                            </label>
-                            <select
-                                id="tipoRaca"
-                                name="tipoRaca"
-                                value={formData.tipoRaca}
-                                onChange={handleChange}
-                                className="w-full border rounded-md p-2 text-black dark:text-white"
-                                required
-                            >
-                                <option value="">Selecione o tipo de raça</option>
-                                {Object.values(TipoRaca).map((raca) => (
-                                    <option key={raca} value={raca}>
-                                        {raca}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Composição Racial */}
-                        <div>
-                            <label
-                                htmlFor="composicaoRacial"
-                                className="block text-sm font-medium mb-1"
-                            >
-                                Composição Racial
-                            </label>
-                            <input
-                                type="text"
-                                id="composicaoRacial"
-                                name="composicaoRacial"
-                                value={formData.composicaoRacial}
-                                onChange={handleChange}
-                                className="w-full border rounded-md p-2 text-black dark:text-white"
-                                placeholder="Ex: 1/2 Angus, 1/2 Nelore"
-                            />
-                        </div>
-                        {/* Sexo */}
-                        <div>
-                            <label htmlFor="sexo" className="block text-sm font-medium mb-1">
-                                Sexo
-                            </label>
-                            <select
-                                id="sexo"
-                                name="sexo"
-                                value={formData.sexo}
-                                onChange={handleChange}
-                                className="w-full border rounded-md p-2 text-black dark:text-white"
-                                required
-                            >
-                                <option value="">Selecione o sexo</option>
-                                {Object.values(SexoAnimal).map((sexo) => (
-                                    <option key={sexo} value={sexo}>
-                                        {sexo}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Fazenda */}
-                        <div>
-                            <label htmlFor="idFazenda" className="block text-sm font-medium mb-1">
-                                Fazenda
-                            </label>
-                            <select
-                                id="idFazenda"
-                                name="idFazenda"
-                                value={formData.idFazenda}
-                                onChange={handleChange}
-                                className="w-full border rounded-md p-2 text-black dark:text-white"
-                                required
-                            >
-                                <option value="">
-                                    {fazendasDoProprietario.length === 0
-                                        ? "Carregando fazendas..."
-                                        : "Selecione uma fazenda"}
-                                </option>
-                                {fazendasDoProprietario.map((fazenda) => (
-                                    <option key={fazenda.id} value={String(fazenda.id)}>
-                                        {fazenda.nome}
-                                    </option>
-                                ))}
-                            </select>
-
-                            <p className="text-sm text-gray-600 mt-2">
-                                Não encontrou a fazenda desejada?{" "}
-                                <Link
-                                    href="/auth/fazenda/cadastrar"
-                                    className="text-red-700 font-medium hover:underline"
-                                >
-                                    Cadastre uma nova fazenda
-                                </Link>
-                                .
-                            </p>
-                        </div>
-
-
-                        {/* Data Nascimento */}
-                        <div>
-                            <label
-                                htmlFor="dataNascimento"
-                                className="block text-sm font-medium mb-1"
-                            >
-                                Data de Nascimento
-                            </label>
-                            <input
-                                type="date"
-                                id="dataNascimento"
-                                name="dataNascimento"
-                                value={formData.dataNascimento}
-                                onChange={handleChange}
-                                className="w-full border rounded-md p-2 text-black dark:text-white"
-                            />
-                        </div>
-
-                        {/* Peso */}
-                        <div>
-                            <label htmlFor="peso" className="block text-sm font-medium mb-1">
-                                Peso (kg)
-                            </label>
-                            <input
-                                type="number"
-                                id="peso"
-                                name="peso"
-                                value={formData.peso}
-                                onChange={handleChange}
-                                className="w-full border rounded-md p-2 text-black dark:text-white"
-                                placeholder="Peso em kg"
-                                min={0}
-                                step="0.01"
-                            />
-                        </div>
-
-                        {/* Localização */}
-                        <div>
-                            <label htmlFor="localizacao" className="block text-sm font-medium mb-1">
-                                Localização
-                            </label>
-                            <input
-                                type="text"
-                                id="localizacao"
-                                name="localizacao"
-                                value={formData.localizacao}
-                                onChange={handleChange}
-                                className="w-full border rounded-md p-2 text-black dark:text-white"
-                                placeholder="Localização do animal"
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="px-6 py-2 bg-red-900 text-white rounded-md hover:bg-red-700"
-                            disabled={isLoading || fazendasDoProprietario.length === 0}
-                        >
-                            {isLoading ? "Salvando..." : "Salvar"}
-                        </button>
-                    </form>
+                    <p className="text-muted-foreground mt-2">
+                        Preencha as informações do animal para adicioná-lo ao sistema
+                    </p>
                 </div>
-            </main>
+
+                {/* Form Card */}
+                <div className="bg-card rounded-lg border shadow-sm p-6">
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                            {/* Informações Básicas */}
+                            <div className="space-y-4">
+                                <h2 className="text-xl font-semibold text-foreground">Informações Básicas</h2>
+                                <Separator/>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="nome"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>Nome *</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Nome do animal" {...field} />
+                                                </FormControl>
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="sexo"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>Sexo *</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Selecione o sexo"/>
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="MACHO">Macho</SelectItem>
+                                                        <SelectItem value="FEMEA">Fêmea</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="dataNascimento"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>Data de Nascimento</FormLabel>
+                                                <FormControl>
+                                                    <Input type="date" {...field} />
+                                                </FormControl>
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="peso"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>Peso (kg)</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" placeholder="0.00" step="0.01" {...field} />
+                                                </FormControl>
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
+                                <FormField
+                                    control={form.control}
+                                    name="localizacao"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel>Localização</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Pasto, curral, etc." {...field} />
+                                            </FormControl>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            {/* Raça e Genética */}
+                            <div className="space-y-4">
+                                <h2 className="text-xl font-semibold text-foreground">Raça e Genética</h2>
+                                <Separator/>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="tipoRaca"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>Tipo de Raça *</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Selecione a raça"/>
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {tiposRaca.map((raca) => (
+                                                            <SelectItem key={raca} value={raca}>
+                                                                {raca}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="composicaoRacial"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>Composição Racial</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Ex: 1/2 Angus, 1/2 Nelore" {...field} />
+                                                </FormControl>
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="idPai"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>Pai</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Selecione o pai"/>
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {animaisMachos.map((animal) => (
+                                                            <SelectItem key={animal.id} value={animal.id}>
+                                                                {animal.nome}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormDescription>Opcional</FormDescription>
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="idMae"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>Mãe</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Selecione a mãe"/>
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {animaisFemeas.map((animal) => (
+                                                            <SelectItem key={animal.id} value={animal.id}>
+                                                                {animal.nome}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormDescription>Opcional</FormDescription>
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Registros e Identificação */}
+                            <div className="space-y-4">
+                                <h2 className="text-xl font-semibold text-foreground">Registros e Identificação</h2>
+                                <Separator/>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="numeroParticularProprietario"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>Número Particular</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Número do proprietário" {...field} />
+                                                </FormControl>
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="registro"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>Registro</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Número de registro" {...field} />
+                                                </FormControl>
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
+                                <FormField
+                                    control={form.control}
+                                    name="idFazenda"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel>Fazenda *</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Selecione uma fazenda"/>
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {fazendasDoProprietario.map((fazenda) => (
+                                                        <SelectItem key={fazenda.id} value={fazenda.id.toString()}>
+                                                            {fazenda.nome}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormDescription>
+                                                Não encontrou a fazenda?{" "}
+                                                <Link href="/auth/fazenda/cadastrar"
+                                                      className="text-primary hover:underline">
+                                                    Cadastre uma nova fazenda
+                                                </Link>
+                                            </FormDescription>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex gap-4 justify-end pt-4">
+                                <Button type="button" variant="outline" asChild>
+                                    <Link href="/auth/animal/listar">Cancelar</Link>
+                                </Button>
+                                <Button type="submit" disabled={isLoading}>
+                                    {isLoading ? "Salvando..." : "Cadastrar Animal"}
+                                </Button>
+                            </div>
+                        </form>
+                    </Form>
+                </div>
+            </div>
         </div>
     );
 }

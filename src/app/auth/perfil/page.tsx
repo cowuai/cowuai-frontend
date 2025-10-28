@@ -106,7 +106,7 @@ const Profile = () => {
                                 <Avatar className="h-32 w-32 border-4 border-white shadow-xl">
                                     <AvatarImage src={avatarUrl} alt={userData.nome} />
                                     <AvatarFallback className="bg-primary text-primary-foreground text-3xl">
-                                        {userData.nome.split(' ').map((n: any[]) => n[0]).join('')}
+                                        {userData.nome.split(' ').filter(Boolean).map((n: string) => n[0]).join('')}
                                     </AvatarFallback>
                                 </Avatar>
                                 <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
