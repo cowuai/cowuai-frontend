@@ -1,41 +1,87 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Camera, Mail, Phone, MapPin, Calendar, User, Save } from "lucide-react";
 import { toast } from "sonner";
 import BreadcrumbArea from "@/components/custom/BreadcrumbArea";
 import {useAuth} from "@/app/providers/AuthProvider";
 import {Spinner} from "@/components/ui/spinner";
+import {getProfile} from "@/actions/getProfile";
+import {putUsuario} from "@/actions/putUsuario";
+
+export type ProfileData = {
+        totalAnimals: number,
+        totalFarms: number
+}
 
 const Profile = () => {
-    const { usuario } = useAuth();
+    const { usuario, accessToken } = useAuth();
     const [avatarUrl, setAvatarUrl] = useState("https://github.githubassets.com/assets/quickdraw-default--light-medium-5450fadcbe37.png");
     const [tempAvatarUrl, setTempAvatarUrl] = useState("");
     const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
-
     const [userData, setUserData] = useState(usuario);
+    const [profileData, setProfileData] = useState<ProfileData | null>(null);
 
-    const handleAvatarSave = () => {
+    // Busca os dados do perfil ao carregar o componente
+    React.useEffect(() => {
+        handleFetchProfile();
+    }, [accessToken]);
+
+    const handleFetchProfile = async () => {
+        if (!accessToken) return;
+        try {
+            const data = await getProfile(accessToken);
+            console.log(data);
+
+            setProfileData(data);
+        } catch (error) {
+            console.error("Erro ao buscar perfil do usuário:", error);
+        }
+    }
+
+    const handleAvatarSave = async () => {
         if (tempAvatarUrl) {
             setAvatarUrl(tempAvatarUrl);
             setIsAvatarDialogOpen(false);
+
+            try {
+                const updatedUser = await putUsuario(accessToken!, { ...userData!, urlImagem: tempAvatarUrl });
+                setUserData(updatedUser);
+            } catch (error) {
+                console.error("Erro ao salvar avatar do usuário:", error);
+            }
+
             toast.success("Avatar atualizado com sucesso!");
             setTempAvatarUrl("");
         }
     };
 
-    const handleSaveProfile = () => {
+    const handleSaveProfile = async () => {
+        if (!userData || !accessToken) return;
+        try {
+            const updatedUser = await putUsuario(accessToken, userData);
+            setUserData(updatedUser);
+        } catch (error) {
+            console.error("Erro ao salvar perfil do usuário:", error);
+        }
         toast.success("Perfil atualizado com sucesso!");
     };
 
-    if (!userData) {
+    if (!userData || !profileData) {
         return <div className="min-h-screen flex items-center justify-center"><Spinner/></div>;
     }
 
@@ -47,14 +93,14 @@ const Profile = () => {
                 <BreadcrumbArea />
 
                 {/* Card do Perfil no Header */}
-                <Card className="shadow-lg border-none bg-gradient-to-br from-primary/10 to-secondary/10">
+                <Card className="shadow-lg border-none bg-secondary">
                     <CardContent className="pt-6">
                         <div className="flex flex-col md:flex-row items-center gap-6">
                             <div className="relative group">
                                 <Avatar className="h-32 w-32 border-4 border-white shadow-xl">
                                     <AvatarImage src={avatarUrl} alt={userData.nome} />
                                     <AvatarFallback className="bg-primary text-primary-foreground text-3xl">
-                                        {userData.nome.split(' ').map(n => n[0]).join('')}
+                                        {userData.nome.split(' ').map((n: any[]) => n[0]).join('')}
                                     </AvatarFallback>
                                 </Avatar>
                                 <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
@@ -67,18 +113,38 @@ const Profile = () => {
                                         </Button>
                                     </DialogTrigger>
                                     <DialogContent>
+
                                         <DialogHeader>
-                                            <DialogTitle>Alterar Avatar</DialogTitle>
+                                            <DialogTitle className={"font-tsukimi-rounded text-primary"}>Alterar Avatar</DialogTitle>
+                                            <DialogDescription>
+                                                Digite a URL da imagem ou faça upload de uma nova imagem para o seu avatar.
+                                            </DialogDescription>
                                         </DialogHeader>
+
                                         <Tabs defaultValue="url" className="w-full">
-                                            <TabsList className="grid w-full grid-cols-2">
-                                                <TabsTrigger value="url">URL</TabsTrigger>
-                                                <TabsTrigger value="upload">Upload</TabsTrigger>
+                                            <TabsList
+                                                className="grid w-full grid-cols-2 rounded-md bg-muted text-muted-foreground"
+                                                style={{ borderBottom: "none" }}
+                                            >
+                                                <TabsTrigger
+                                                    value="url"
+                                                    className="rounded-md text-sm font-medium data-[state=active]:bg-foreground/10 data-[state=active]:text-foreground"
+                                                >
+                                                    URL
+                                                </TabsTrigger>
+                                                <TabsTrigger
+                                                    value="upload"
+                                                    className="rounded-md text-sm font-medium data-[state=active]:bg-foreground/10 data-[state=active]:text-foreground"
+                                                >
+                                                    Upload
+                                                </TabsTrigger>
                                             </TabsList>
-                                            <TabsContent value="url" className="space-y-4">
+
+                                            <TabsContent value="url" className="space-y-4 ">
                                                 <div className="space-y-2">
                                                     <Label>URL da Imagem</Label>
                                                     <Input
+                                                        className={"bg-white"}
                                                         placeholder="https://exemplo.com/avatar.jpg"
                                                         value={tempAvatarUrl}
                                                         onChange={(e) => setTempAvatarUrl(e.target.value)}
@@ -102,7 +168,7 @@ const Profile = () => {
                                                     <p className="text-sm text-muted-foreground mb-2">
                                                         Arraste uma imagem ou clique para selecionar
                                                     </p>
-                                                    <Input type="file" accept="image/*" className="cursor-pointer" />
+                                                    <Input type="file" accept="image/*" className="cursor-pointer bg-secondary" />
                                                 </div>
                                             </TabsContent>
                                         </Tabs>
@@ -111,7 +177,7 @@ const Profile = () => {
                             </div>
 
                             <div className="flex-1 text-center md:text-left space-y-2">
-                                <h2 className="text-3xl font-bold text-foreground">{userData.nome}</h2>
+                                <h2 className="text-3xl font-bold text-foreground font-tsukimi-rounded">{userData.nome}</h2>
                                 <div className="flex flex-wrap gap-4 justify-center md:justify-start text-sm text-muted-foreground mt-4">
                                     <div className="flex items-center gap-2">
                                         <Mail className="h-4 w-4" />
@@ -142,7 +208,7 @@ const Profile = () => {
                             <CardTitle className="text-sm font-medium opacity-90">Animais Gerenciados</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold">247</div>
+                            <div className="text-3xl font-bold">{profileData?.totalAnimals}</div>
                         </CardContent>
                     </Card>
                     <Card className="bg-secondary text-secondary-foreground shadow-lg border-none">
@@ -150,7 +216,7 @@ const Profile = () => {
                             <CardTitle className="text-sm font-medium opacity-90">Fazendas</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold">3</div>
+                            <div className="text-3xl font-bold">{profileData?.totalFarms}</div>
                         </CardContent>
                     </Card>
                 </div>

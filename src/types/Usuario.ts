@@ -1,4 +1,4 @@
-type Usuario = {
+export type Usuario = {
     id: string;
     cpf: string;
     nome: string;
@@ -7,6 +7,7 @@ type Usuario = {
     telefone: string;
     localizacao: string;
     ativo: boolean;
+    urlImagem: string;
     dataCadastro: string;
     dataAtualizacao: string;
 }
