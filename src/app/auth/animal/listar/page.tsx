@@ -700,7 +700,7 @@ export default function ListarAnimaisPage() {
                   animais.map((animal) => (
                     <TableRow
                       key={animal.id}
-                      className="border-b last:border-0 border-red-900/30 odd:bg-white even:bg-red-50/50 hover:bg-red-100/60 transition-colors"
+                      className="border-b last:border-0 border-red-900/30 odd:bg-white even:bg-red-50/50 hover:bg-muted/80 transition-colors"
                     >
                       <TableCell className="font-medium text-gray-700 p-3">
                         {animal.numeroParticularProprietario}
@@ -1156,7 +1156,6 @@ export default function ListarAnimaisPage() {
       {/* MODAL 3: CONFIRMAÇÃO DE EXCLUSÃO (Mantido) */}
 
       {/* ====================================================================== */}
-
       <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
         <DialogContent className="sm:max-w-md bg-white rounded-xl p-0 shadow-2xl border-none [&>button]:hidden">
           <DialogHeader className="p-6 pb-4 border-b border-red-900/10">
@@ -1167,22 +1166,16 @@ export default function ListarAnimaisPage() {
             </DialogTitle>
 
             {/* Ícone X manual e estilizado (Fecha o modal) */}
-
             <DialogClose className="absolute right-4 top-4 opacity-100 transition-opacity hover:opacity-70 disabled:pointer-events-none p-2 rounded-md">
               <X className="h-5 w-5 text-red-900" />
-
               <span className="sr-only">Fechar</span>
             </DialogClose>
           </DialogHeader>
 
           <div className="p-6">
             <p className="text-gray-700 text-base">
-              Você tem certeza que deseja excluir permanentemente o animal com
-              ID:
-              <span className="font-bold text-red-900 ml-1">
-                {animalIdToDelete}
-              </span>
-              ? Esta ação não pode ser desfeita.
+              Você tem certeza que deseja excluir permanentemente este animal?
+              Esta ação não pode ser desfeita.
             </p>
           </div>
 
@@ -1191,7 +1184,8 @@ export default function ListarAnimaisPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="px-4 py-2 rounded-md text-gray-700 border-gray-400 bg-transparent hover:bg-gray-100"
+                // Borda vermelha e texto vermelho (estilo outline de fazenda)
+                className="px-4 py-2 rounded-md text-red-900 border-3 border-red-900 bg-transparent hover:bg-stone-300 dark:hover:bg-stone-800 dark:text-white"
               >
                 Cancelar
               </Button>
@@ -1200,7 +1194,8 @@ export default function ListarAnimaisPage() {
             <Button
               type="button"
               onClick={confirmDelete}
-              className="px-4 py-2 rounded-md bg-red-700 text-white hover:bg-red-800"
+              // Fundo vermelho escuro (red-900) (estilo primário de fazenda)
+              className="px-4 py-2 rounded-md bg-red-900 text-white hover:bg-red-800"
             >
               Excluir
             </Button>
