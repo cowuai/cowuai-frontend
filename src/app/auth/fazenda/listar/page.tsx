@@ -59,6 +59,7 @@ import { Estado } from "@/types/Estado";
 import { Municipio } from "@/types/Municipio";
 import { getUfs as getUFS } from "@/actions/getUfs";
 import { getMunicipios } from "@/actions/getMunicipios";
+import BreadcrumbArea from "@/components/custom/BreadcrumbArea";
 
 // Fonte do título (igual às outras páginas)
 const tsukimi = Tsukimi_Rounded({
@@ -367,14 +368,15 @@ setFarms(mapped);
       {/* Conteúdo principal */}
       <main className="flex-1 p-10 transition-colors duration-500">
         {/* Header */}
-        <header className="flex justify-between items-start mb-8">
+        <header className="flex-row justify-between items-start mb-8">
           <h1
-            className={`${tsukimi.className} text-3xl ${darkMode ? "text-white" : "text-red-900"
+            className={`${tsukimi.className} text-3xl mb-6 ${darkMode ? "text-white" : "text-red-900" 
               }`}
           >
             Listar Fazendas
           </h1>
 
+            <BreadcrumbArea/>
          
         </header>
 

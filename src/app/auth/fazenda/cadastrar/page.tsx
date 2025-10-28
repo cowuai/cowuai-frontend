@@ -22,6 +22,7 @@ import {getMunicipios} from "@/actions/getMunicipios";
 import { apiFetch } from "@/helpers/ApiFetch";
 import {useAuth} from "@/app/providers/AuthProvider";
 import { useRouter } from "next/navigation";
+import BreadcrumbArea from "@/components/custom/BreadcrumbArea";
 
 type FarmForm = {
   farmName: string;
@@ -160,13 +161,14 @@ const data = await apiFetch(
       {/* Conteúdo principal */}
       <main className="flex-1 p-10 transition-colors duration-500">
         {/* Header */}
-        <header className="flex justify-between items-start mb-8">
+        <header className="flex-row justify-between items-start mb-8">
           <h1
             className={`text-3xl font-title mb-6 ${darkMode ? "text-white" : "text-red-900"
               }`}
           >
             Cadastrar Fazenda
           </h1>
+            <BreadcrumbArea/>
         </header>
 
         {/* Card do formulário (padrão do animal) */}
