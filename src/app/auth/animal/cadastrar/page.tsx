@@ -1,6 +1,5 @@
 "use client";
 
-import {useTheme} from "next-themes";
 import {useEffect, useState} from "react";
 import {useForm} from "react-hook-form";
 import {toast} from "sonner";
@@ -45,6 +44,8 @@ enum StatusAnimal {
     VENDIDO = "VENDIDO",
     DOADO = "DOADO",
     ROUBADO = "ROUBADO",
+    REPRODUZINDO = "REPRODUZINDO",
+    DOENTE = "DOENTE",
 }
 
 enum SexoAnimal {
@@ -71,6 +72,8 @@ const formSchema = z.object({
         StatusAnimal.VENDIDO,
         StatusAnimal.DOADO,
         StatusAnimal.ROUBADO,
+        StatusAnimal.REPRODUZINDO,
+        StatusAnimal.DOENTE,
     ]),
 });
 
