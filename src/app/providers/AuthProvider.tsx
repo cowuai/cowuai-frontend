@@ -3,6 +3,7 @@
 import React, {createContext, useContext, useState, ReactNode, useEffect} from 'react';
 import DeviceInfo from "@/helpers/DeviceInfo";
 import {Spinner} from "@/components/ui/spinner";
+import {Usuario} from "@/types/Usuario";
 
 interface AuthContextType {
     accessToken: string | null;
@@ -42,7 +43,7 @@ export function AuthProvider({children}: { children: ReactNode }) {
     }, []);
 
     const login = async (email: string, senha: string): Promise<boolean> => {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, { // 👈 Adicione /api
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({email, senha, dispositivo}),
@@ -58,7 +59,7 @@ export function AuthProvider({children}: { children: ReactNode }) {
     };
 
     const logout = async (): Promise<boolean> => {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, { // 👈 Adicione /api
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -80,7 +81,7 @@ export function AuthProvider({children}: { children: ReactNode }) {
 
     const refresh = async (): Promise<boolean> => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`, { // 👈 Adicione /api {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({dispositivo}),
