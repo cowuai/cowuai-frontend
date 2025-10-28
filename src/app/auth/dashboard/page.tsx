@@ -21,8 +21,8 @@ import {
     Filler,
     ArcElement,
 } from "chart.js";
-import {PiCertificate, PiCertificateThin, PiCow} from "react-icons/pi";
-import {BiCertification} from "react-icons/bi";
+import {PiCertificate, PiCow} from "react-icons/pi";
+import { PiMoneyWavy, PiFarm } from "react-icons/pi";
 
 ChartJS.register(
     CategoryScale,
@@ -47,6 +47,8 @@ export default function DashboardPage() {
     const [taxaReproducao, setTaxaReproducao] = useState(0);
     const [totalAnimais, setTotalAnimais] = useState(0);
     const [totalAnimaisComRegistro, setTotalAnimaisComRegistro] = useState(0);
+    const [totalAnimaisVendidos, setTotalAnimaisVendidos] = useState(0);
+    const [totalFazendasDoCriador, setTotalFazendasDoCriador] = useState(0);
 
     const [lineData, setLineData] = useState<any>({labels: ["Total"], datasets: []});
     const [areaData, setAreaData] = useState<any>({labels: [], datasets: []});
@@ -90,6 +92,12 @@ export default function DashboardPage() {
 
                 // Total de animais com registro
                 setTotalAnimaisComRegistro(Number(data.totalAnimaisComRegistro ?? 0));
+
+                // Total de animais vendidos
+                setTotalAnimaisVendidos(Number(data.totalAnimaisVendidos ?? 0));
+
+                // Total de fazendas do criador
+                setTotalFazendasDoCriador(Number(data.totalFazendasDoCriador ?? 0));
 
                 // Área (animais por ano) - se houver
                 if (data.animaisPorAno) {
@@ -223,6 +231,28 @@ export default function DashboardPage() {
                                 Total de Animais <br/> Com Registro
                             </h2>
                             <p className="text-sm"> {totalAnimaisComRegistro}</p>
+                        </div>
+                    </div>
+
+                    {/* Total de Animais Vendidos */}
+                    <div className="flex items-center p-4 rounded-xl shadow-md w-52 h-24 gap-3">
+                        <PiMoneyWavy size={35} strokeWidth={0.5}/>
+                        <div className="flex flex-col justify-center flex-1 text-right">
+                            <h2 className="text-lg font-medium leading-snug">
+                                Total de Animais <br/> Vendidos
+                            </h2>
+                            <p className="text-sm"> {totalAnimaisVendidos}</p>
+                        </div>
+                    </div>
+
+                    {/* Total de Fazendas do Criador */}
+                    <div className="flex items-center p-4 rounded-xl shadow-md w-52 h-24 gap-3">
+                        <PiFarm size={35} strokeWidth={0.5}/>
+                        <div className="flex flex-col justify-center flex-1 text-right">
+                            <h2 className="text-lg font-medium leading-snug">
+                                Total de Fazendas <br/> Do Criador
+                            </h2>
+                            <p className="text-sm"> {totalFazendasDoCriador}</p>
                         </div>
                     </div>
                 </div>
