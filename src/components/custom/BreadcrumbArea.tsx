@@ -1,20 +1,40 @@
 import React from "react";
 import {
-    Breadcrumb, BreadcrumbEllipsis,
+    Breadcrumb,
     BreadcrumbItem,
     BreadcrumbLink,
     BreadcrumbList,
+    BreadcrumbPage, // 1. Importe o BreadcrumbPage
     BreadcrumbSeparator
 } from "@/components/ui/breadcrumb";
 import {usePathname} from "next/navigation";
 
-export default function BreadcrumbArea() {
-    // pega a rota atual e constrói os itens do breadcrumb dinamicamente
-    const pathname = usePathname();
-    const paths = pathname.split("/").filter(Boolean); // remove strings vazias
+const NON_CLICKABLE_PATHS = ['animal', 'fazenda'];
 
-    // não renderiza o breadcrumb na página inicial
-    if (paths.length === 0) {
+export default function BreadcrumbArea() {
+    const pathname = usePathname();
+    const allPaths = pathname.split("/").filter(Boolean); // ex: ['auth', 'animal', 'cadastrar']
+
+    // 2. Filtra segmentos que não queremos exibir, como 'auth'
+    const pathsToRender = allPaths.filter(path => path.toLowerCase() !== 'auth');
+    // pathsToRender agora é: ['animal', 'cadastrar']
+
+    // 3. Caso especial: Se estivermos no dashboard ou na raiz 'auth',
+    // mostramos apenas "Início" como a página atual.
+    if (pathname === '/auth/dashboard' || pathname === '/auth') {
+        return (
+            <Breadcrumb>
+                <BreadcrumbList className={"text-primary"}>
+                    <BreadcrumbItem aria-current="page">
+                        <BreadcrumbPage>Início</BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
+        );
+    }
+
+    // Se não sobrar caminhos (ex: estava em /auth, que foi filtrado)
+    if (pathsToRender.length === 0) {
         return null;
     }
 
@@ -22,34 +42,37 @@ export default function BreadcrumbArea() {
         <Breadcrumb>
             <BreadcrumbList className={"text-primary"}>
                 <BreadcrumbItem>
+                    {/* Link estático para "Início" */}
                     <BreadcrumbLink href="/auth/dashboard">Início</BreadcrumbLink>
                 </BreadcrumbItem>
 
-                <BreadcrumbSeparator/>
-
-                {paths.map((path, index) => {
-                    const href = "/" + paths.slice(0, index + 1).join("/");
-                    const isLast = index === paths.length - 1;
-                    const isAuth = path.toLowerCase() === "auth";
+                {/* Renderiza os caminhos filtrados */}
+                {pathsToRender.map((path, index) => {
+                    // 4. Constrói o href corretamente, mantendo o prefixo /auth original
+                    const href = "/auth/" + pathsToRender.slice(0, index + 1).join("/");
+                    const isLast = index === pathsToRender.length - 1;
                     const name = path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, " ");
+
+                    const isNonClickable = NON_CLICKABLE_PATHS.includes(path.toLowerCase());
 
                     return (
                         <React.Fragment key={href}>
+                            <BreadcrumbSeparator/>
                             <BreadcrumbItem aria-current={isLast ? "page" : undefined}>
-                                {isAuth ? (
-                                    <BreadcrumbEllipsis/>
-                                ) : isLast ? (
-                                    <BreadcrumbLink href={href}>{name}</BreadcrumbLink>
+                                {isLast ? (
+                                    <BreadcrumbPage>{name}</BreadcrumbPage>
+                                ) : isNonClickable ? (
+                                    // Renderiza como texto simples (não-clicável)
+                                    // Usamos um span com o estilo de fonte dos links
+                                    <span className="font-medium">{name}</span>
                                 ) : (
                                     <BreadcrumbLink href={href}>{name}</BreadcrumbLink>
                                 )}
                             </BreadcrumbItem>
-
-                            {!isLast && <BreadcrumbSeparator key={`${href}-separator`}/>}
                         </React.Fragment>
                     );
                 })}
             </BreadcrumbList>
         </Breadcrumb>
-    )
+    );
 }
