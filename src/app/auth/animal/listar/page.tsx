@@ -1,6 +1,8 @@
 "use client";
+
 import { useAuth } from "@/app/providers/AuthProvider"; // Verifique o caminho exato
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import {
   Table,
@@ -17,7 +19,7 @@ import { FaEye } from "react-icons/fa";
 
 import { Tsukimi_Rounded } from "next/font/google";
 
-import { Pencil, Trash2, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Pencil, Trash2, X } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -31,7 +33,6 @@ import {
 } from "@/components/ui/dialog";
 
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 import {
   Pagination,
@@ -42,6 +43,7 @@ import {
   PaginationLink,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
+import BreadcrumbArea from "@/components/custom/BreadcrumbArea";
 
 // ======================================================================
 
@@ -125,7 +127,7 @@ interface ApiResponse {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const ANIMAL_ENDPOINT = `${API_BASE_URL}/api/animais`;
+const ANIMAL_ENDPOINT = `${API_BASE_URL}/animais`;
 
 const fetchAnimals = async (
   page: number,
@@ -353,7 +355,7 @@ export default function ListarAnimaisPage() {
 
   const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
+  const [pageSize] = useState<number>(DEFAULT_PAGE_SIZE);
 
   const [refreshFlag, setRefreshFlag] = useState<number>(0);
 
@@ -373,8 +375,6 @@ export default function ListarAnimaisPage() {
 
   const [error, setError] = useState<string | null>(null);
 
-  const [isViewModalOpen, setIsViewModalOpen] = useState<boolean>(false);
-
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
@@ -384,6 +384,8 @@ export default function ListarAnimaisPage() {
   );
 
   const [animalIdToDelete, setAnimalIdToDelete] = useState<number | null>(null);
+
+  const router = useRouter();
 
   // ======================================================================
 
@@ -541,11 +543,14 @@ export default function ListarAnimaisPage() {
       if (!response.ok) {
         // Tenta ler a mensagem de erro do corpo da resposta, se houver
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          `Falha ao deletar. Status: ${response.status}${
-            errorData.message ? ` (${errorData.message})` : ""
-          }`
-        );
+        const msg = `Falha ao deletar. Status: ${response.status}${
+          errorData.message ? ` (${errorData.message})` : ""
+        }`;
+        console.error(msg);
+        setError(msg);
+        setLoading(false);
+        setIsConfirmModalOpen(false);
+        return;
       }
       // Se for bem-sucedido (status 204 No Content ou 200 OK):
       console.log(`Animal ${animalIdToDelete} deletado com sucesso.`);
@@ -582,10 +587,13 @@ export default function ListarAnimaisPage() {
     setIsConfirmModalOpen(true);
   };
 
-  const handleView = (animal: Animal) => {
+  const handleView = async (animal: Animal) => {
     setSelectedAnimal(animal);
-
-    setIsViewModalOpen(true);
+    try {
+        router.push(`/auth/animal/visualizar/${animal.id}`);
+    } catch (err) {
+      console.error("Erro ao navegar:", err);
+    }
   };
 
   const handleEdit = (animal: Animal) => {
@@ -629,12 +637,16 @@ export default function ListarAnimaisPage() {
   // ======================================================================
 
   return (
-    <div className="flex flex-col items-start justify-start min-h-screen bg-gray-50 text-gray-800 p-8">
-      <h1
-        className={`${tsukimi.className} text-3xl font-semibold text-red-900 mb-4`}
-      >
-        Listar Animais
-      </h1>
+    <div className="flex flex-col items-start justify-start min-h-screen bg-background text-gray-800 p-8">
+        <div className="flex-row mb-6">
+            <h1
+                className={`font-tsukimi-rounded text-3xl text-primary mb-6`}
+            >
+                Listar Animais
+            </h1>
+            <BreadcrumbArea/>
+        </div>
+
 
       {/* Card principal com a tabela */}
 
@@ -785,261 +797,7 @@ export default function ListarAnimaisPage() {
         </CardContent>
       </Card>
 
-      {/* MODALS (Mantidos) */}
-
-      {/* ====================================================================== */}
-
-      {/* MODAL 1: VISUALIZAÇÃO (READ-ONLY) */}
-
-      {/* ====================================================================== */}
-
-      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-        <DialogContent className="max-w-xl w-[90vw] bg-white rounded-xl p-0 shadow-2xl border-none [&>button]:hidden">
-          <DialogHeader className="p-6 pb-4 border-b border-red-900/10">
-            <DialogTitle
-              className={`${tsukimi.className} text-xl font-semibold text-red-800`}
-            >
-              Visualizar animal
-            </DialogTitle>
-
-            {/* Ícone X manual e estilizado */}
-
-            <DialogClose className="absolute right-4 top-4 opacity-100 transition-opacity hover:opacity-70 disabled:pointer-events-none p-2 rounded-md">
-              <X className="h-5 w-5 text-red-900" />
-
-              <span className="sr-only">Fechar</span>
-            </DialogClose>
-          </DialogHeader>
-
-          {selectedAnimal && (
-            <div className="p-6 grid gap-4 max-h-[70vh] overflow-y-auto">
-              {/* Linha 1: ID e Brinco */}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    ID
-                  </label>
-
-                  {/* Campos BLOQUEADOS para visualização */}
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.id}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Número do Brinco
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.numeroParticularProprietario}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-              </div>
-
-              {/* Linha 1.5: Registro e Status */}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Registro
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.registro || "-"}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Status
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.status}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-              </div>
-
-              {/* Linha 2: Nome */}
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-700">
-                  Nome do Animal
-                </label>
-
-                <Input
-                  disabled
-                  value={selectedAnimal.nome}
-                  className="bg-red-50/80 border-red-900/20 text-gray-700"
-                />
-              </div>
-
-              {/* Linha 3: Raça e Sexo */}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Raça
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.tipoRaca}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Sexo
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.sexo}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-              </div>
-
-              {/* Linha 4: Composição Racial e Peso */}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Composição Racial
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.composicaoRacial || "-"}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Peso (Kg)
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.peso ? `${selectedAnimal.peso}` : "-"}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-              </div>
-
-              {/* Linha 4.5: Pais e Fazenda */}
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    ID Mãe
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.idMae || "-"}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    ID Pai
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.idPai || "-"}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    ID Fazenda
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.idFazenda}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-              </div>
-
-              {/* Linha 5: Data Nascimento e Data Entrada */}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Data de Nascimento
-                  </label>
-
-                  <Input
-                    disabled
-                    value={formatDate(selectedAnimal.dataNascimento)}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Data de Entrada na Fazenda
-                  </label>
-
-                  <Input
-                    disabled
-                    value={formatDate(selectedAnimal.dataEntrada)}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-              </div>
-
-              {/* Linha 6: Observações (campo longo) */}
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-700">
-                  Observações
-                </label>
-
-                <Input
-                  disabled
-                  value={selectedAnimal.observacoes || "-"}
-                  className="bg-red-50/80 border-red-900/20 text-gray-700 h-16"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Rodapé com botão Fechar */}
-
-          <DialogFooter className="flex justify-end p-6 pt-4 border-t border-red-900/10">
-            <DialogClose asChild>
-              <Button
-                type="button"
-                variant="outline"
-                className="px-4 py-2 rounded-md text-red-900 border-3 border-red-900 bg-transparent hover:bg-red-50/50"
-              >
-                Fechar
-              </Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* MODALS */}
 
       {/* ====================================================================== */}
 
