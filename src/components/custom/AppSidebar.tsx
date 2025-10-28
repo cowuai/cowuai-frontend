@@ -59,7 +59,7 @@ const items: MenuItem[] = [
 const footerItems: MenuItem[] = [
     {
         title: "Perfil",
-        url: "#",
+        url: "/auth/perfil",
         icon: PiUser,
     },
     {

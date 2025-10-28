@@ -22,7 +22,7 @@ export default function BreadcrumbArea() {
         <Breadcrumb>
             <BreadcrumbList className={"text-primary"}>
                 <BreadcrumbItem>
-                    <BreadcrumbLink href="/public">Início</BreadcrumbLink>
+                    <BreadcrumbLink href="/auth/dashboard">Início</BreadcrumbLink>
                 </BreadcrumbItem>
 
                 <BreadcrumbSeparator/>

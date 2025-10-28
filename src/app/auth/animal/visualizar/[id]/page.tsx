@@ -100,7 +100,7 @@ const AnimalDetails = () => {
         <div className="min-h-screen bg-background">
             <div className="border-b bg-card">
                 <div className="container mx-auto px-4 py-4">
-                    <Button variant="ghost" onClick={() => router.push("/")} className="mb-4">
+                    <Button variant="ghost" onClick={() => router.push("/auth/animal/listar")} className="mb-4">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Voltar para listagem
                     </Button>
