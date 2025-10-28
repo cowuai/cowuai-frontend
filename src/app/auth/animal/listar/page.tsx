@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useAuth } from "@/app/providers/AuthProvider"; // Verifique o caminho exato
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import {
   Table,
@@ -17,7 +19,7 @@ import { FaEye } from "react-icons/fa";
 
 import { Tsukimi_Rounded } from "next/font/google";
 
-import { Pencil, Trash2, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Pencil, Trash2, X } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -31,7 +33,6 @@ import {
 } from "@/components/ui/dialog";
 
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 import {
   Pagination,
@@ -42,6 +43,7 @@ import {
   PaginationLink,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
+import BreadcrumbArea from "@/components/custom/BreadcrumbArea";
 
 // ======================================================================
 
@@ -123,44 +125,39 @@ interface ApiResponse {
 
 // URL Base da sua API (ajuste conforme o ambiente)
 
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const ANIMAL_ENDPOINT = `${API_BASE_URL}/api/animais`;
+const ANIMAL_ENDPOINT = `${API_BASE_URL}/animais`;
 
-const getAuthToken = () => {
-  // 💥💥💥 SEU TOKEN JWT VÁLIDO ESTÁ INSERIDO AQUI 💥💥💥
-  return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyMyIsImVtYWlsIjoidGVzdGU4LmNhZGFzdHJvQG5vdm91c2VyLmNvbSIsImlhdCI6MTc2MTQxNTE3NCwiZXhwIjoxNzYxNDE4Nzc0fQ.eRxkremA4QZMvkU5F3sHn2U3-8YB6qs10wsTX_a9u_0";
-};
 const fetchAnimals = async (
   page: number,
-
-  pageSize: number
+  pageSize: number,
+  token: string | null // ✅ Recebe o token dinâmico
 ): Promise<ApiResponse> => {
-  // A rota de listagem de animais deve ser ajustada para a URL correta do seu backend
+  const url = `${ANIMAL_ENDPOINT}?page=${page}&pageSize=${pageSize}`;
 
-  const url = `${ANIMAL_ENDPOINT}?page=${page}&pageSize=${pageSize}`; // ATENÇÃO: TOKEN DE AUTENTICAÇÃO // O token não é mais enviado via header, mas sim via cookie do navegador. // const MOCK_AUTH_TOKEN = "seu_token_de_autenticacao_aqui"; // Esta linha se torna desnecessária
+  // 👇 Define os headers iniciais
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  // 👇 Adiciona o Authorization SOMENTE SE o token existir
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  // 👇 Removemos a linha const AUTH_TOKEN = getAuthToken(); daqui
 
   const response = await fetch(url, {
-    // ✅ ESSA OPÇÃO É CRUCIAL PARA INCLUIR O COOKIE (refreshToken) NA REQUISIÇÃO
-
     credentials: "include",
-
-    headers: {
-      // ❌ REMOVER 'Authorization': Seu backend lê o token do cookie, não deste header.
-
-      "Content-Type": "application/json",
-    },
+    headers: headers, // ✅ Usa os headers construídos
   });
 
   if (!response.ok) {
     // Lidar com erros de status HTTP (400, 500, etc.)
-
     const errorData = await response
-
       .json()
-
       .catch(() => ({ message: response.statusText }));
-
     throw new Error(
       `Erro ${response.status}: ${
         errorData.message || "Falha ao buscar dados."
@@ -293,6 +290,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
       return (
         <PaginationItem key={index}>
           <PaginationLink
+            href="#"
             // Propriedade nativa do Shadcn para o estilo ativo
 
             isActive={isCurrent}
@@ -323,6 +321,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
 
         <PaginationItem>
           <PaginationPrevious
+            href="#"
             onClick={() => onPageChange(currentPage - 1)}
             aria-disabled={currentPage === 1}
           >
@@ -338,6 +337,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
 
         <PaginationItem>
           <PaginationNext
+            href="#"
             onClick={() => onPageChange(currentPage + 1)}
             aria-disabled={currentPage === totalPages}
           >
@@ -350,11 +350,12 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
 };
 
 export default function ListarAnimaisPage() {
+  const { accessToken } = useAuth();
   const DEFAULT_PAGE_SIZE = 2;
 
   const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
+  const [pageSize] = useState<number>(DEFAULT_PAGE_SIZE);
 
   const [refreshFlag, setRefreshFlag] = useState<number>(0);
 
@@ -374,8 +375,6 @@ export default function ListarAnimaisPage() {
 
   const [error, setError] = useState<string | null>(null);
 
-  const [isViewModalOpen, setIsViewModalOpen] = useState<boolean>(false);
-
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
@@ -386,6 +385,8 @@ export default function ListarAnimaisPage() {
 
   const [animalIdToDelete, setAnimalIdToDelete] = useState<number | null>(null);
 
+  const router = useRouter();
+
   // ======================================================================
 
   // EFEITO: BUSCA DE DADOS COM PAGINAÇÃO
@@ -394,31 +395,63 @@ export default function ListarAnimaisPage() {
 
   useEffect(() => {
     const loadAnimals = async () => {
+      // 👇 Adiciona a verificação: Não faz nada se não tiver token
+      if (!accessToken) {
+        // Você pode querer setar um estado aqui, tipo "Faça login para ver os animais"
+        // setLoading(false); // Ou deixar carregando
+        return;
+      }
+
       setLoading(true);
-
       setError(null);
-
       try {
+        // 👈 O TRY começa aqui
         // *** CHAMA A FUNÇÃO DE FETCH REAL AGORA ***
+        // MUDANÇA 1: Renomeei para 'apiResponse' para maior clareza,
+        // mas a variável do seu código era 'animaisRecebidos'. Vou manter
+        // o nome da variável de retorno para 'apiResponse'
+        const apiResponse = await fetchAnimals(
+          currentPage,
+          pageSize,
+          accessToken
+        );
+        console.log("Resposta completa da API:", apiResponse); // MUDANÇA 2: Melhorar o log para ver o objeto completo // ✅ CORREÇÃO AQUI: Verifica se a propriedade 'data' da resposta é um array // Se sua API retorna o array DIRETAMENTE, mude para: // if (Array.isArray(apiResponse)) { setAnimais(apiResponse); }
 
-        const response = await fetchAnimals(currentPage, pageSize);
-
-        setAnimais(response.data);
-
-        setPaginationData(response.pagination);
+        if (apiResponse && Array.isArray(apiResponse.data)) {
+          setAnimais(apiResponse.data); // Usa o array de animais // MUDANÇA 3: Usa os dados de paginação da API, se existirem, ou simula
+          setPaginationData(
+            apiResponse.pagination || {
+              page: currentPage,
+              pageSize: pageSize,
+              totalItems: apiResponse.data.length, // Se a API não dá o total, usa o da página
+              totalPages: 1,
+            }
+          );
+        } else {
+          // Se a resposta não seguir o formato { data: [...] }
+          console.error(
+            "Resposta da API de listagem está no formato incorreto ou vazia. Verifique o backend."
+          );
+          setAnimais([]); // Resetar paginação ou mostrar erro
+          setPaginationData({
+            page: 1,
+            pageSize: pageSize,
+            totalItems: 0,
+            totalPages: 1,
+          });
+        } // 👈 O TRY termina aqui, ANTES do CATCH
       } catch (err: any) {
+        // 👈 O CATCH começa aqui
         console.error("Erro ao carregar animais:", err);
-
         setError(err.message || "Falha ao carregar a lista de animais.");
       } finally {
+        // 👈 O FINALLY começa aqui
         setLoading(false);
-      }
-    };
+      } // 👈 O FINALLY termina aqui
+    }; // 👈 A função loadAnimals termina aqui // Carrega dados sempre que a página, o tamanho da página, refreshFlag OU accessToken mudar
 
-    // Carrega dados sempre que a página, o tamanho da página OU refreshFlag mudar
-
-    loadAnimals();
-  }, [currentPage, pageSize, refreshFlag]);
+    loadAnimals(); // 👇 Adiciona accessToken à lista de dependências
+  }, [currentPage, pageSize, refreshFlag, accessToken]); // 👈 O useEffect termina aqui
 
   // ======================================================================
 
@@ -465,17 +498,24 @@ export default function ListarAnimaisPage() {
       setLoading(false);
     }
   };
+
+  // Assumindo que a variável `accessToken` (obtida de useAuth())
+  // está disponível no escopo da função ListarAnimaisPage,
+  // assim como ANIMAL_ENDPOINT.
+
+  // [SUBSTITUIR ESTE BLOCO PELA VERSÃO CORRIGIDA ABAIXO]
+
   const confirmDelete = async () => {
     if (!animalIdToDelete) return;
 
-    // Pega o token de autenticação da função temporária
-    const AUTH_TOKEN = getAuthToken();
+    // 🛑 CORREÇÃO: Usando o accessToken real do useAuth()
+    const token = accessToken;
 
-    if (!AUTH_TOKEN || AUTH_TOKEN.length < 10) {
-      // Verifica se o token parece válido
-      // Interrompe se não houver token.
-      console.error("Token de autenticação ausente ou muito curto.");
-      setError("Token de autenticação ausente. Não é possível deletar.");
+    if (!token) {
+      console.error("Token de autenticação ausente. Não é possível deletar.");
+      setError(
+        "Você precisa estar autenticado para deletar. Token de acesso ausente."
+      );
       setIsConfirmModalOpen(false);
       return;
     }
@@ -488,35 +528,49 @@ export default function ListarAnimaisPage() {
 
     try {
       // 1. CONSTRÓI A URL DE DELETE com o ID
-      const url = `${ANIMAL_ENDPOINT}/${animalIdToDelete}`; // 2. REALIZA A CHAMADA DELETE REAL
+      const url = `${ANIMAL_ENDPOINT}/${animalIdToDelete}`;
+      // 2. REALIZA A CHAMADA DELETE REAL
       const response = await fetch(url, {
         method: "DELETE",
         credentials: "include",
         headers: {
-          "Content-Type": "application/json", // ✅ CORREÇÃO: Envia o token via cabeçalho Bearer
-          Authorization: `Bearer ${AUTH_TOKEN}`,
+          "Content-Type": "application/json",
+          // ✅ CORREÇÃO: Enviando o token dinâmico e correto
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (!response.ok) {
-        // Se o backend retornar 401 ou 403, ele cairá aqui.
-        throw new Error(`Falha ao deletar. Status: ${response.status}`);
-      } // Se for bem-sucedido (status 204 No Content):
-      console.log(`Animal ${animalIdToDelete} deletado com sucesso.`); // Lógica para mover para página anterior se a atual ficar vazia
+        // Tenta ler a mensagem de erro do corpo da resposta, se houver
+        const errorData = await response.json().catch(() => ({}));
+        const msg = `Falha ao deletar. Status: ${response.status}${
+          errorData.message ? ` (${errorData.message})` : ""
+        }`;
+        console.error(msg);
+        setError(msg);
+        setLoading(false);
+        setIsConfirmModalOpen(false);
+        return;
+      }
+      // Se for bem-sucedido (status 204 No Content ou 200 OK):
+      console.log(`Animal ${animalIdToDelete} deletado com sucesso.`);
 
+      // Lógica para mover para página anterior se a atual ficar vazia
       if (
         animais.length === 1 &&
         currentPage > 1 &&
         paginationData.totalPages > 1
       ) {
         setCurrentPage((prev) => prev - 1);
-      } // Força a recarga da listagem (essencial)
+      }
+      // Força a recarga da listagem (essencial)
       triggerRefresh();
 
       setAnimalIdToDelete(null);
       setIsConfirmModalOpen(false);
     } catch (error) {
       console.error("Erro ao deletar:", error);
+      // Melhorando a mensagem de erro para incluir o status/mensagem do backend
       setError(
         `Erro ao deletar o animal: ${
           error instanceof Error ? error.message : "Erro desconhecido"
@@ -533,10 +587,13 @@ export default function ListarAnimaisPage() {
     setIsConfirmModalOpen(true);
   };
 
-  const handleView = (animal: Animal) => {
+  const handleView = async (animal: Animal) => {
     setSelectedAnimal(animal);
-
-    setIsViewModalOpen(true);
+    try {
+        router.push(`/auth/animal/visualizar/${animal.id}`);
+    } catch (err) {
+      console.error("Erro ao navegar:", err);
+    }
   };
 
   const handleEdit = (animal: Animal) => {
@@ -580,12 +637,16 @@ export default function ListarAnimaisPage() {
   // ======================================================================
 
   return (
-    <div className="flex flex-col items-start justify-start min-h-screen bg-gray-50 text-gray-800 p-8">
-      <h1
-        className={`${tsukimi.className} text-3xl font-semibold text-red-900 mb-4`}
-      >
-        Listar Animais
-      </h1>
+    <div className="flex flex-col items-start justify-start min-h-screen bg-background text-gray-800 p-8">
+        <div className="flex-row mb-6">
+            <h1
+                className={`font-tsukimi-rounded text-3xl text-primary mb-6`}
+            >
+                Listar Animais
+            </h1>
+            <BreadcrumbArea/>
+        </div>
+
 
       {/* Card principal com a tabela */}
 
@@ -639,7 +700,7 @@ export default function ListarAnimaisPage() {
                   animais.map((animal) => (
                     <TableRow
                       key={animal.id}
-                      className="border-b last:border-0 border-red-900/30 odd:bg-white even:bg-red-50/50 hover:bg-red-100/60 transition-colors"
+                      className="border-b last:border-0 border-red-900/30 odd:bg-white even:bg-red-50/50 hover:bg-muted/80 transition-colors"
                     >
                       <TableCell className="font-medium text-gray-700 p-3">
                         {animal.numeroParticularProprietario}
@@ -736,261 +797,7 @@ export default function ListarAnimaisPage() {
         </CardContent>
       </Card>
 
-      {/* MODALS (Mantidos) */}
-
-      {/* ====================================================================== */}
-
-      {/* MODAL 1: VISUALIZAÇÃO (READ-ONLY) */}
-
-      {/* ====================================================================== */}
-
-      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-        <DialogContent className="max-w-xl w-[90vw] bg-white rounded-xl p-0 shadow-2xl border-none [&>button]:hidden">
-          <DialogHeader className="p-6 pb-4 border-b border-red-900/10">
-            <DialogTitle
-              className={`${tsukimi.className} text-xl font-semibold text-red-800`}
-            >
-              Visualizar animal
-            </DialogTitle>
-
-            {/* Ícone X manual e estilizado */}
-
-            <DialogClose className="absolute right-4 top-4 opacity-100 transition-opacity hover:opacity-70 disabled:pointer-events-none p-2 rounded-md">
-              <X className="h-5 w-5 text-red-900" />
-
-              <span className="sr-only">Fechar</span>
-            </DialogClose>
-          </DialogHeader>
-
-          {selectedAnimal && (
-            <div className="p-6 grid gap-4 max-h-[70vh] overflow-y-auto">
-              {/* Linha 1: ID e Brinco */}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    ID
-                  </label>
-
-                  {/* Campos BLOQUEADOS para visualização */}
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.id}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Número do Brinco
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.numeroParticularProprietario}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-              </div>
-
-              {/* Linha 1.5: Registro e Status */}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Registro
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.registro || "-"}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Status
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.status}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-              </div>
-
-              {/* Linha 2: Nome */}
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-700">
-                  Nome do Animal
-                </label>
-
-                <Input
-                  disabled
-                  value={selectedAnimal.nome}
-                  className="bg-red-50/80 border-red-900/20 text-gray-700"
-                />
-              </div>
-
-              {/* Linha 3: Raça e Sexo */}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Raça
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.tipoRaca}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Sexo
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.sexo}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-              </div>
-
-              {/* Linha 4: Composição Racial e Peso */}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Composição Racial
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.composicaoRacial || "-"}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Peso (Kg)
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.peso ? `${selectedAnimal.peso}` : "-"}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-              </div>
-
-              {/* Linha 4.5: Pais e Fazenda */}
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    ID Mãe
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.idMae || "-"}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    ID Pai
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.idPai || "-"}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    ID Fazenda
-                  </label>
-
-                  <Input
-                    disabled
-                    value={selectedAnimal.idFazenda}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-              </div>
-
-              {/* Linha 5: Data Nascimento e Data Entrada */}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Data de Nascimento
-                  </label>
-
-                  <Input
-                    disabled
-                    value={formatDate(selectedAnimal.dataNascimento)}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Data de Entrada na Fazenda
-                  </label>
-
-                  <Input
-                    disabled
-                    value={formatDate(selectedAnimal.dataEntrada)}
-                    className="bg-red-50/80 border-red-900/20 text-gray-700"
-                  />
-                </div>
-              </div>
-
-              {/* Linha 6: Observações (campo longo) */}
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-700">
-                  Observações
-                </label>
-
-                <Input
-                  disabled
-                  value={selectedAnimal.observacoes || "-"}
-                  className="bg-red-50/80 border-red-900/20 text-gray-700 h-16"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Rodapé com botão Fechar */}
-
-          <DialogFooter className="flex justify-end p-6 pt-4 border-t border-red-900/10">
-            <DialogClose asChild>
-              <Button
-                type="button"
-                variant="outline"
-                className="px-4 py-2 rounded-md text-red-900 border-3 border-red-900 bg-transparent hover:bg-red-50/50"
-              >
-                Fechar
-              </Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* MODALS */}
 
       {/* ====================================================================== */}
 
@@ -1349,7 +1156,6 @@ export default function ListarAnimaisPage() {
       {/* MODAL 3: CONFIRMAÇÃO DE EXCLUSÃO (Mantido) */}
 
       {/* ====================================================================== */}
-
       <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
         <DialogContent className="sm:max-w-md bg-white rounded-xl p-0 shadow-2xl border-none [&>button]:hidden">
           <DialogHeader className="p-6 pb-4 border-b border-red-900/10">
@@ -1360,22 +1166,16 @@ export default function ListarAnimaisPage() {
             </DialogTitle>
 
             {/* Ícone X manual e estilizado (Fecha o modal) */}
-
             <DialogClose className="absolute right-4 top-4 opacity-100 transition-opacity hover:opacity-70 disabled:pointer-events-none p-2 rounded-md">
               <X className="h-5 w-5 text-red-900" />
-
               <span className="sr-only">Fechar</span>
             </DialogClose>
           </DialogHeader>
 
           <div className="p-6">
             <p className="text-gray-700 text-base">
-              Você tem certeza que deseja excluir permanentemente o animal com
-              ID:
-              <span className="font-bold text-red-900 ml-1">
-                {animalIdToDelete}
-              </span>
-              ? Esta ação não pode ser desfeita.
+              Você tem certeza que deseja excluir permanentemente este animal?
+              Esta ação não pode ser desfeita.
             </p>
           </div>
 
@@ -1384,7 +1184,8 @@ export default function ListarAnimaisPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="px-4 py-2 rounded-md text-gray-700 border-gray-400 bg-transparent hover:bg-gray-100"
+                // Borda vermelha e texto vermelho (estilo outline de fazenda)
+                className="px-4 py-2 rounded-md text-red-900 border-3 border-red-900 bg-transparent hover:bg-stone-300 dark:hover:bg-stone-800 dark:text-white"
               >
                 Cancelar
               </Button>
@@ -1393,7 +1194,8 @@ export default function ListarAnimaisPage() {
             <Button
               type="button"
               onClick={confirmDelete}
-              className="px-4 py-2 rounded-md bg-red-700 text-white hover:bg-red-800"
+              // Fundo vermelho escuro (red-900) (estilo primário de fazenda)
+              className="px-4 py-2 rounded-md bg-red-900 text-white hover:bg-red-800"
             >
               Excluir
             </Button>

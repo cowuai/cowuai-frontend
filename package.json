@@ -50,13 +50,15 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/estree": "^1.0.5",
+    "@types/json-schema": "^7.0.15",
+    "@types/node": "^20.19.23",
     "@types/react": "^19.2.1",
     "@types/react-dom": "^19.2.0",
     "eslint": "^9",
     "eslint-config-next": "15.4.7",
     "tailwindcss": "^4.1.14",
     "tw-animate-css": "^1.3.7",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   }
 }

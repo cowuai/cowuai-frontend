@@ -30,11 +30,17 @@ export type ProfileData = {
 
 const Profile = () => {
     const { usuario, accessToken } = useAuth();
-    const [avatarUrl, setAvatarUrl] = useState("https://github.githubassets.com/assets/quickdraw-default--light-medium-5450fadcbe37.png");
+    const DEFAULT_AVATAR = "https://github.githubassets.com/assets/quickdraw-default--light-medium-5450fadcbe37.png";
+    const [avatarUrl, setAvatarUrl] = useState(usuario?.urlImagem || DEFAULT_AVATAR);
     const [tempAvatarUrl, setTempAvatarUrl] = useState("");
     const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
     const [userData, setUserData] = useState(usuario);
     const [profileData, setProfileData] = useState<ProfileData | null>(null);
+
+    // Atualiza o avatar quando a URL da imagem do usuário muda
+    React.useEffect(() => {
+      setAvatarUrl(usuario?.urlImagem || DEFAULT_AVATAR);
+    }, [usuario?.urlImagem]);
 
     // Busca os dados do perfil ao carregar o componente
     React.useEffect(() => {
@@ -100,7 +106,7 @@ const Profile = () => {
                                 <Avatar className="h-32 w-32 border-4 border-white shadow-xl">
                                     <AvatarImage src={avatarUrl} alt={userData.nome} />
                                     <AvatarFallback className="bg-primary text-primary-foreground text-3xl">
-                                        {userData.nome.split(' ').map((n: any[]) => n[0]).join('')}
+                                        {userData.nome.split(' ').filter(Boolean).map((n: string) => n[0]).join('')}
                                     </AvatarFallback>
                                 </Avatar>
                                 <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>

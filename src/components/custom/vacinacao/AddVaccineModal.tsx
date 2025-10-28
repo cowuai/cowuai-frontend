@@ -36,6 +36,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { BiPlus } from "react-icons/bi";
 import { ptBR } from "react-day-picker/locale";
+// ⬇️ ADIÇÃO: vamos usar o helper de fetch autenticado
+import { apiFetch } from "@/helpers/ApiFetch";
 
 // ⬇️ ajuste: receber sexoAnimal também
 type Props = {
@@ -51,14 +53,13 @@ export default function AddVaccineModal({ idAnimal, sexoAnimal, onSaved }: Props
   const [vacinas, setVacinas] = React.useState<TipoVacina[] | null>(null);
   const [loadingVacinas, setLoadingVacinas] = React.useState<boolean>(true);
   // abaixo dos useState de vacinas:
-const [sexError, setSexError] = React.useState<string | null>(null);
+  const [sexError, setSexError] = React.useState<string | null>(null);
 
-const isDisallowed = (tipo: TipoVacina) => {
-  const alvo = (tipo.generoAlvo ? String(tipo.generoAlvo) : "TODOS") as "MACHO" | "FEMEA" | "TODOS";
-  if (sexoAnimal === "TODOS") return false;                 // animal "genérico" -> tudo permitido
-  return !(alvo === "TODOS" || alvo === sexoAnimal);        // só bloqueia se for exclusivo do outro sexo
-};
-
+  const isDisallowed = (tipo: TipoVacina) => {
+    const alvo = (tipo.generoAlvo ? String(tipo.generoAlvo) : "TODOS") as "MACHO" | "FEMEA" | "TODOS";
+    if (sexoAnimal === "TODOS") return false;                 // animal "genérico" -> tudo permitido
+    return !(alvo === "TODOS" || alvo === sexoAnimal);        // só bloqueia se for exclusivo do outro sexo
+  };
 
   React.useEffect(() => {
     if (!accessToken) {
@@ -101,17 +102,17 @@ const isDisallowed = (tipo: TipoVacina) => {
     },
   });
 
-  const { handleSubmit, watch, setValue, control, setError } = form;
+  const { handleSubmit, watch, setValue, control, setError, reset } = form;
 
   // ⬇️ filtra as vacinas permitidas para o sexo do animal
-const allowedVacinas = React.useMemo(() => {
-  if (!vacinas) return [];
-  return vacinas.filter((v) => {
-    const alvo = (v.generoAlvo ? String(v.generoAlvo) : "TODOS") as "MACHO" | "FEMEA" | "TODOS";
-    if (sexoAnimal === "TODOS") return true;          // animal “qualquer” → mostra todas
-    return alvo === "TODOS" || alvo === sexoAnimal;   // vacina para TODOS ou para o sexo do animal
-  });
-}, [vacinas, sexoAnimal]);
+  const allowedVacinas = React.useMemo(() => {
+    if (!vacinas) return [];
+    return vacinas.filter((v) => {
+      const alvo = (v.generoAlvo ? String(v.generoAlvo) : "TODOS") as "MACHO" | "FEMEA" | "TODOS";
+      if (sexoAnimal === "TODOS") return true;          // animal “qualquer” → mostra todas
+      return alvo === "TODOS" || alvo === sexoAnimal;   // vacina para TODOS ou para o sexo do animal
+    });
+  }, [vacinas, sexoAnimal]);
 
   const hiddenCount = (vacinas?.length ?? 0) - (allowedVacinas?.length ?? 0);
   const idTipoVacinaWatched = watch("idTipoVacina");
@@ -140,22 +141,76 @@ const allowedVacinas = React.useMemo(() => {
   }, [idTipoVacinaWatched, dataAplicacao, setValue, allowedVacinas, loadingVacinas]);
 
   const onSubmit = async (data: FormValues) => {
-    // ⬇️ defesa extra: impede submissão se a vacina não é permitida ao sexo
-    const selected = allowedVacinas.find(v => String(v.id) === String(data.idTipoVacina ?? ""));
-    if (!selected) {
-      setError("idTipoVacina", {
-        type: "manual",
-        message: sexoAnimal === "MACHO"
-          ? "Esta vacina é exclusiva para fêmeas."
-          : "Esta vacina é exclusiva para machos."
-      });
-      return;
-    }
+  // ⬇️ defesa extra: impede submissão se a vacina não é permitida ao sexo
+  const selected = allowedVacinas.find(v => String(v.id) === String(data.idTipoVacina ?? ""));
+  if (!selected) {
+    setError("idTipoVacina", {
+      type: "manual",
+      message: sexoAnimal === "MACHO"
+        ? "Esta vacina é exclusiva para fêmeas."
+        : "Esta vacina é exclusiva para machos."
+    });
+    return;
+  }
 
-    // ... aqui segue sua chamada de API atual (mantém como estava)
-    // await apiFetch(`${process.env.NEXT_PUBLIC_API_URL}/aplicacoes-vacina`, { ... });
+  // ⬇️ MONTA o payload serializando bigint -> string (JSON não suporta bigint)
+  const payload = {
+    idAnimal: String(data.idAnimal),
+    idTipoVacina: String(data.idTipoVacina),
+    dataAplicacao: data.dataAplicacao,              // yyyy-MM-dd
+    proximaDose: data.proximaDose ?? null,          // pode ir null
+    lote: data.lote || null,
+    veterinario: data.veterinario || null,
+    observacoes: data.observacoes || null,
+  };
 
-    // if (onSaved) onSaved();
+  try {
+    if (!accessToken) throw new Error("Sem token de acesso.");
+
+    // ⬇️ CORREÇÃO DE ROTA: garante /api/aplicacoes-vacina sem duplicar /api
+    const base = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
+    const url = base.endsWith("/api")
+      ? `${base}/aplicacoes-vacina`
+      : `${base}/api/aplicacoes-vacina`;
+
+    console.log("[APLICAR VACINA] URL:", url, "payload:", payload);
+
+    await apiFetch(
+      url,
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+      },
+      accessToken
+    );
+
+    console.log("[APLICAR VACINA] Sucesso!");
+    // opcional: limpar form
+    reset({
+      idAnimal,
+      idTipoVacina: undefined,
+      dataAplicacao: "",
+      proximaDose: "",
+      lote: "",
+      veterinario: "",
+      observacoes: "",
+    });
+
+    // notifica o pai para recarregar a lista
+    if (onSaved) onSaved();
+  } catch (err: any) {
+    console.error("[APLICAR VACINA] Erro:", err?.message || err);
+    // feedback no campo geral, se quiser:
+    setError("idTipoVacina", {
+      type: "manual",
+      message: err?.message || "Falha ao salvar vacina",
+    });
+  }
+};
+
+  // ⬇️ ADIÇÃO: handler para ver erros de validação no console (evita “clicar e nada acontecer”)
+  const onInvalid = (errors: any) => {
+    console.warn("[FORM INVÁLIDO] Erros:", errors);
   };
 
   return (
@@ -176,63 +231,65 @@ const allowedVacinas = React.useMemo(() => {
         </DialogHeader>
 
         <Form {...form} setError={form.setError}>
-          <form onSubmit={handleSubmit(onSubmit)} className="grid md:grid-cols-2 gap-4 space-y-2">
-
+          <form
+            onSubmit={handleSubmit(onSubmit, onInvalid)}
+            className="grid md:grid-cols-2 gap-4 space-y-2"
+          >
             <FormField
-  control={control}
-  name="idTipoVacina"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel>Tipo de Vacina</FormLabel>
-      <Select
-        // se tentar selecionar uma vacina incompatível, não muda o valor e mostra aviso
-        onValueChange={(value) => {
-          const selected = vacinas?.find(v => String(v.id) === value);
-          if (selected && isDisallowed(selected)) {
-            setSexError(
-              `A vacina "${selected.nome}" é exclusiva para ${selected.generoAlvo === "MACHO" ? "MACHO" : "FÊMEA"}.`
-            );
-            // não altera o field
-            return;
-          }
-          setSexError(null);
-          field.onChange(BigInt(value));
-        }}
-        value={field.value ? String(field.value) : ""}
-      >
-        <FormControl>
-          <SelectTrigger className="bg-white dark:bg-stone-900">
-            <SelectValue placeholder="Selecione uma vacina" />
-          </SelectTrigger>
-        </FormControl>
-        <SelectContent>
-          {loadingVacinas && <SelectItem value="0" disabled>Carregando...</SelectItem>}
-          {!loadingVacinas && (!vacinas || vacinas.length === 0) && (
-            <SelectItem value="0" disabled>Nenhuma vacina cadastrada</SelectItem>
-          )}
+              control={control}
+              name="idTipoVacina"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipo de Vacina</FormLabel>
+                  <Select
+                    // se tentar selecionar uma vacina incompatível, não muda o valor e mostra aviso
+                    onValueChange={(value) => {
+                      const selected = vacinas?.find(v => String(v.id) === value);
+                      if (selected && isDisallowed(selected)) {
+                        setSexError(
+                          `A vacina "${selected.nome}" é exclusiva para ${selected.generoAlvo === "MACHO" ? "MACHO" : "FÊMEA"}.`
+                        );
+                        // não altera o field
+                        return;
+                      }
+                      setSexError(null);
+                      field.onChange(BigInt(value));
+                    }}
+                    value={field.value ? String(field.value) : ""}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="bg-white dark:bg-stone-900">
+                        <SelectValue placeholder="Selecione uma vacina" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {loadingVacinas && <SelectItem value="0" disabled>Carregando...</SelectItem>}
+                      {!loadingVacinas && (!vacinas || vacinas.length === 0) && (
+                        <SelectItem value="0" disabled>Nenhuma vacina cadastrada</SelectItem>
+                      )}
 
-          {vacinas?.map((tipo) => {
-            const disabled = isDisallowed(tipo);
-            return (
-              <SelectItem
-                key={String(tipo.id)}
-                value={String(tipo.id)}
-                disabled={disabled}
-                title={disabled ? "Indisponível para o sexo deste animal" : undefined}
-              >
-                {tipo.nome}
-                {disabled ? " (indisponível)" : ""}
-              </SelectItem>
-            );
-          })}
-        </SelectContent>
-      </Select>
-      {/* Mostra a mensagem SOMENTE quando o usuário tenta selecionar uma vacina incompatível */}
-      {sexError && <p className="text-sm text-red-600 mt-1">{sexError}</p>}
-      <FormMessage />
-    </FormItem>
-  )}
-/>
+                      {vacinas?.map((tipo) => {
+                        const disabled = isDisallowed(tipo);
+                        return (
+                          <SelectItem
+                            key={String(tipo.id)}
+                            value={String(tipo.id)}
+                            disabled={disabled}
+                            title={disabled ? "Indisponível para o sexo deste animal" : undefined}
+                          >
+                            {tipo.nome}
+                            {disabled ? " (indisponível)" : ""}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                  {/* Mostra a mensagem SOMENTE quando o usuário tenta selecionar uma vacina incompatível */}
+                  {sexError && <p className="text-sm text-red-600 mt-1">{sexError}</p>}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={control}

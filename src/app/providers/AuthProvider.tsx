@@ -3,6 +3,7 @@
 import React, {createContext, useContext, useState, ReactNode, useEffect} from 'react';
 import DeviceInfo from "@/helpers/DeviceInfo";
 import {Spinner} from "@/components/ui/spinner";
+import {Usuario} from "@/types/Usuario";
 
 interface AuthContextType {
     accessToken: string | null;
