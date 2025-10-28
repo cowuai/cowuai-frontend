@@ -127,10 +127,6 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const ANIMAL_ENDPOINT = `${API_BASE_URL}/api/animais`;
 
-const getAuthToken = () => {
-  // 💥💥💥 SEU TOKEN JWT VÁLIDO ESTÁ INSERIDO AQUI 💥💥💥
-  return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyNCIsImVtYWlsIjoidGVzdGUxMDAuY2FkYXN0cm9Abm92b3VzZXIuY29tIiwiaWF0IjoxNzYxNDg1OTM3LCJleHAiOjE3NjE0ODk1Mzd9.DLadQMxXyOyZX30YjJCNKegRt-w6EcR_3F9AELQliNI";
-};
 const fetchAnimals = async (
   page: number,
   pageSize: number,
@@ -500,17 +496,24 @@ export default function ListarAnimaisPage() {
       setLoading(false);
     }
   };
+
+  // Assumindo que a variável `accessToken` (obtida de useAuth())
+  // está disponível no escopo da função ListarAnimaisPage,
+  // assim como ANIMAL_ENDPOINT.
+
+  // [SUBSTITUIR ESTE BLOCO PELA VERSÃO CORRIGIDA ABAIXO]
+
   const confirmDelete = async () => {
     if (!animalIdToDelete) return;
 
-    // Pega o token de autenticação da função temporária
-    const AUTH_TOKEN = getAuthToken();
+    // 🛑 CORREÇÃO: Usando o accessToken real do useAuth()
+    const token = accessToken;
 
-    if (!AUTH_TOKEN || AUTH_TOKEN.length < 10) {
-      // Verifica se o token parece válido
-      // Interrompe se não houver token.
-      console.error("Token de autenticação ausente ou muito curto.");
-      setError("Token de autenticação ausente. Não é possível deletar.");
+    if (!token) {
+      console.error("Token de autenticação ausente. Não é possível deletar.");
+      setError(
+        "Você precisa estar autenticado para deletar. Token de acesso ausente."
+      );
       setIsConfirmModalOpen(false);
       return;
     }
@@ -523,35 +526,46 @@ export default function ListarAnimaisPage() {
 
     try {
       // 1. CONSTRÓI A URL DE DELETE com o ID
-      const url = `${ANIMAL_ENDPOINT}/${animalIdToDelete}`; // 2. REALIZA A CHAMADA DELETE REAL
+      const url = `${ANIMAL_ENDPOINT}/${animalIdToDelete}`;
+      // 2. REALIZA A CHAMADA DELETE REAL
       const response = await fetch(url, {
         method: "DELETE",
         credentials: "include",
         headers: {
-          "Content-Type": "application/json", // ✅ CORREÇÃO: Envia o token via cabeçalho Bearer
-          Authorization: `Bearer ${AUTH_TOKEN}`,
+          "Content-Type": "application/json",
+          // ✅ CORREÇÃO: Enviando o token dinâmico e correto
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (!response.ok) {
-        // Se o backend retornar 401 ou 403, ele cairá aqui.
-        throw new Error(`Falha ao deletar. Status: ${response.status}`);
-      } // Se for bem-sucedido (status 204 No Content):
-      console.log(`Animal ${animalIdToDelete} deletado com sucesso.`); // Lógica para mover para página anterior se a atual ficar vazia
+        // Tenta ler a mensagem de erro do corpo da resposta, se houver
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          `Falha ao deletar. Status: ${response.status}${
+            errorData.message ? ` (${errorData.message})` : ""
+          }`
+        );
+      }
+      // Se for bem-sucedido (status 204 No Content ou 200 OK):
+      console.log(`Animal ${animalIdToDelete} deletado com sucesso.`);
 
+      // Lógica para mover para página anterior se a atual ficar vazia
       if (
         animais.length === 1 &&
         currentPage > 1 &&
         paginationData.totalPages > 1
       ) {
         setCurrentPage((prev) => prev - 1);
-      } // Força a recarga da listagem (essencial)
+      }
+      // Força a recarga da listagem (essencial)
       triggerRefresh();
 
       setAnimalIdToDelete(null);
       setIsConfirmModalOpen(false);
     } catch (error) {
       console.error("Erro ao deletar:", error);
+      // Melhorando a mensagem de erro para incluir o status/mensagem do backend
       setError(
         `Erro ao deletar o animal: ${
           error instanceof Error ? error.message : "Erro desconhecido"
