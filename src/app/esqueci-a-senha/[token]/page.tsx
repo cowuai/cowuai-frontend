@@ -222,16 +222,19 @@ const ForgotPassword = () => {
     return (
         <div className="flex min-h-screen items-center justify-center gradient-bg px-4 py-8">
             <div className="w-full max-w-md">
-                <div className={"mb-6 flex justify-center animate-in fade-in-50 slide-in-from-top-5 duration-500"}>
-                    <Image
-                        src="/images/cowuai-logo.png"
-                        alt="CowUai Logo"
-                        className="object-contain bg-card rounded-2xl p-4 shadow-card"
-                        width={200}
-                        height={200}
-                    />
-                </div>
-                <div className="card-elegant rounded-2xl bg-card p-8 animate-in fade-in-50 slide-in-from-bottom-5 duration-500">
+                <div className="card-elegant rounded-2xl bg-card animate-in fade-in-50 slide-in-from-bottom-5 duration-500">
+                    <div className={"w-full h-full rounded-t-2xl bg-secondary mb-6 flex justify-center animate-in fade-in-50 slide-in-from-top-5 duration-500"}>
+                        <Image
+                            src="/images/cowuai-logo.png"
+                            alt="CowUai Logo"
+                            className="object-contain my-8"
+                            width={200}
+                            height={200}
+                        />
+                    </div>
+
+                    <div className={"p-8"}>
+
                     {/* Cabeçalho */}
                     <div className="mb-8 text-center">
                         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
@@ -398,6 +401,8 @@ const ForgotPassword = () => {
                             <ArrowLeft className="mr-1 h-4 w-4" />
                             Voltar ao Login
                         </Link>
+                    </div>
+
                     </div>
                 </div>
             </div>
