@@ -74,9 +74,9 @@ export default function LoginPage() {
                             <div>
                                 <div className="flex justify-between items-center">
                                     <label className="text-sm font-medium">Senha</label>
-                                    <a href="#" className="text-sm text-red-900 hover:underline">
+                                    <Link href="/esqueci-a-senha/-" className="text-sm text-red-900 hover:underline">
                                         Esqueceu sua senha?
-                                    </a>
+                                    </Link>
                                 </div>
                                 <input
                                     name="senha"
