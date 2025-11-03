@@ -52,6 +52,11 @@
     --color-accent-pink: var(--accent-pink);
     --color-accent-green: var(--accent-green);
     --color-bg-alternative: var(--bg-alternative);
+    --gradient-primary: linear-gradient(135deg, hsl(359, 79%, 15%), hsl(360, 86%, 61%));
+    --gradient-background: linear-gradient(180deg, hsl(220 25% 97%), hsl(0, 20%, 92%));
+    --shadow-elegant: 0 10px 40px -10px hsla(0, 100%, 33%, 0.23);
+    --shadow-card: 0 4px 20px hsl(222 47% 11% / 0.08);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 :root {
@@ -141,6 +146,20 @@
     --accent-green: #22c55e;
     --accent-pink: #ec4899;
     --bg-alternative: #3e3d32;
+}
+
+.gradient-bg {
+    background: var(--gradient-background);
+}
+
+.card-elegant {
+    box-shadow: var(--shadow-card);
+    transition: var(--transition-smooth);
+}
+
+.card-elegant:hover {
+    box-shadow: var(--shadow-elegant);
+    transform: translateY(-2px);
 }
 
 @layer base {

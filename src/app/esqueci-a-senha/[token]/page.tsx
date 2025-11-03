@@ -9,6 +9,7 @@ import { Mail, Lock, KeyRound, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { z } from "zod";
 import {useParams, useRouter} from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 // Schema de validação para email
 const emailSchema = z.object({
@@ -55,8 +56,46 @@ const ForgotPassword = () => {
 
     // Detecta se há token na URL
     useEffect(() => {
+        if (token !== '-')
         setIsResetMode(!!token);
     }, [token]);
+
+    // Validação de token
+    useEffect(() => {
+        if (token === '-') return;
+
+        const validateToken = async () => {
+            if (isResetMode && token) {
+                setIsLoading(true);
+                try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/validate-reset-token`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ token }),
+                    });
+
+                    if (!res.ok) {
+                        toast.error("Token inválido ou expirado", {
+                            description: "Solicite um novo link de recuperação.",
+                        });
+                        setIsResetMode(false);
+                    }
+                } catch (error) {
+                    console.error("Erro ao validar token:", error);
+                    toast.error("Erro ao validar token", {
+                        description: "Tente novamente mais tarde.",
+                    });
+                    setIsResetMode(false);
+                } finally {
+                    setIsLoading(false);
+                }
+            }
+        };
+
+        validateToken();
+    }, [isResetMode, token]);
 
     // Validação de email em tempo real
     const validateEmail = (value: string) => {
@@ -183,6 +222,15 @@ const ForgotPassword = () => {
     return (
         <div className="flex min-h-screen items-center justify-center gradient-bg px-4 py-8">
             <div className="w-full max-w-md">
+                <div className={"mb-6 flex justify-center animate-in fade-in-50 slide-in-from-top-5 duration-500"}>
+                    <Image
+                        src="/images/cowuai-logo.png"
+                        alt="CowUai Logo"
+                        className="object-contain bg-card rounded-2xl p-4 shadow-card"
+                        width={200}
+                        height={200}
+                    />
+                </div>
                 <div className="card-elegant rounded-2xl bg-card p-8 animate-in fade-in-50 slide-in-from-bottom-5 duration-500">
                     {/* Cabeçalho */}
                     <div className="mb-8 text-center">
