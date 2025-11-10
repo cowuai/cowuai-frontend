@@ -114,7 +114,6 @@ export default function AddVaccineModal({ idAnimal, sexoAnimal, onSaved }: Props
     });
   }, [vacinas, sexoAnimal]);
 
-  const hiddenCount = (vacinas?.length ?? 0) - (allowedVacinas?.length ?? 0);
   const idTipoVacinaWatched = watch("idTipoVacina");
   const dataAplicacao = watch("dataAplicacao");
 
@@ -198,12 +197,13 @@ export default function AddVaccineModal({ idAnimal, sexoAnimal, onSaved }: Props
 
     // notifica o pai para recarregar a lista
     if (onSaved) onSaved();
-  } catch (err: any) {
-    console.error("[APLICAR VACINA] Erro:", err?.message || err);
+  } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+    console.error("[APLICAR VACINA] Erro:", msg);
     // feedback no campo geral, se quiser:
     setError("idTipoVacina", {
       type: "manual",
-      message: err?.message || "Falha ao salvar vacina",
+      message: msg || "Falha ao salvar vacina",
     });
   }
 };

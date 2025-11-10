@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Hero from "@/components/custom/index/Hero";
 import Header from "@/components/custom/index/Header";
 import Features from "@/components/custom/index/Features";

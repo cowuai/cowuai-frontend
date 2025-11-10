@@ -127,8 +127,9 @@ export default function CadastrarAnimalPage() {
             try {
                 const tipos = await getTipoRaca(accessToken);
                 setTiposRaca(tipos);
-            } catch (err: any) {
-                console.error("Erro ao carregar tipos de raça:", err);
+            } catch (err: unknown) {
+                const msg = err instanceof Error ? err.message : String(err);
+                console.error("Erro ao carregar tipos de raça:", msg);
                 toast.error("Erro ao carregar tipos de raça.");
             }
         };
@@ -142,8 +143,9 @@ export default function CadastrarAnimalPage() {
             try {
                 const resF = await getFazendasByIdProprietario(String(usuarioAtivo.id), accessToken);
                 setFazendasDoProprietario(resF);
-            } catch (err: any) {
-                console.error("Erro ao carregar fazendas:", err);
+            } catch (err: unknown) {
+                const msg = err instanceof Error ? err.message : String(err);
+                console.error("Erro ao carregar fazendas:", msg);
                 toast.error("Erro ao carregar fazendas do proprietário.");
             }
         };
@@ -157,8 +159,9 @@ export default function CadastrarAnimalPage() {
             try {
                 const res = await getAnimalsByIdProprietario(accessToken, String(usuarioAtivo.id));
                 setAnimais(res);
-            } catch (err: any) {
-                console.error("Erro ao carregar animais:", err);
+            } catch (err: unknown) {
+                const msg = err instanceof Error ? err.message : String(err);
+                console.error("Erro ao carregar animais:", msg);
                 toast.error("Erro ao carregar animais do proprietário.");
             }
         }
@@ -246,9 +249,10 @@ export default function CadastrarAnimalPage() {
             });
 
             router.push("/auth/animal/listar");
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
             console.error("Erro ao cadastrar animal:", err);
-            toast.error(err?.message || "Erro ao cadastrar animal.");
+            toast.error(msg || "Erro ao cadastrar animal.");
         } finally {
             setIsLoading(false);
         }

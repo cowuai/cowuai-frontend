@@ -1,6 +1,5 @@
 import {Animal} from "@/types/Animal";
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
-import {BiMale} from "react-icons/bi";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {CgGenderFemale, CgGenderMale} from "react-icons/cg";
 import {ArcherContainer, ArcherElement} from "@gitii/react-archer";
 

@@ -1,7 +1,7 @@
 "use client";
 
-import {Sidebar, SidebarProvider, SidebarTrigger} from "@/components/ui/sidebar";
-import {ReactNode, useState} from "react";
+import {SidebarProvider, SidebarTrigger} from "@/components/ui/sidebar";
+import {ReactNode} from "react";
 import AppSidebar from "@/components/custom/AppSidebar";
 import {HeaderActions} from "@/components/custom/HeaderActions";
 

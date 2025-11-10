@@ -44,20 +44,14 @@ const Profile = () => {
 
     // Busca os dados do perfil ao carregar o componente
     React.useEffect(() => {
-        handleFetchProfile();
-    }, [accessToken]);
-
-    const handleFetchProfile = async () => {
         if (!accessToken) return;
-        try {
-            const data = await getProfile(accessToken);
-            console.log(data);
-
-            setProfileData(data);
-        } catch (error) {
-            console.error("Erro ao buscar perfil do usuário:", error);
-        }
-    }
+        (async () => {
+            try {
+                const data = await getProfile(accessToken);
+                setProfileData(data);
+            } catch (e) { console.error(e); }
+        })();
+    }, [accessToken]);
 
     const handleAvatarSave = async () => {
         if (tempAvatarUrl) {

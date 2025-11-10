@@ -1,4 +1,4 @@
-import { TrendingUp, Trophy, Shield } from "lucide-react";
+import { TrendingUp, Trophy } from "lucide-react";
 import { PiShieldCheckLight } from "react-icons/pi";
 
 const features = [

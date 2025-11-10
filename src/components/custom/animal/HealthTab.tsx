@@ -3,12 +3,9 @@ import { Animal } from "@/types/Animal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Syringe, User, FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { BiPlus } from "react-icons/bi";
 import AddVaccineModal from "../vacinacao/AddVaccineModal";
+import { parse } from "date-fns";
 
-
-import { format, parse } from "date-fns";
 // Quebra a string do back em partes Y-M-D
 function parseApiDateParts(dateStr: string) {
   if (!dateStr) return null;
