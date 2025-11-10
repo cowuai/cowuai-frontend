@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import React, {useState} from "react";
-import {PiCow, PiUsersThree, PiKeyReturn, PiFarm, PiUser} from "react-icons/pi";
+import React from "react";
+import {PiCow, PiKeyReturn, PiFarm, PiUser} from "react-icons/pi";
 import {usePathname} from "next/navigation";
 import {LuLayoutDashboard} from "react-icons/lu";
 import {

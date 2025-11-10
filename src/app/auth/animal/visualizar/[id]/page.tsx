@@ -76,7 +76,7 @@ const AnimalDetails = () => {
         };
 
         fetchRelation();
-    }, [activeTab, id, accessToken]);
+    }, [activeTab, id, accessToken, animal]);
 
     if (!animal) {
         return (

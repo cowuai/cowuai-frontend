@@ -3,7 +3,6 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Calendar, Heart} from "lucide-react";
 import {SexoAnimal} from "@/types/TipoVacina";
-import {FaCow} from "react-icons/fa6";
 import {PiCow} from "react-icons/pi";
 
 interface OffspringTabProps {
