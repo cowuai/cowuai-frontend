@@ -39,24 +39,24 @@ export default function LoginPage() {
     }, [error]);
 
     return (
-        <main className="flex items-center justify-center min-h-screen transition-colors duration-500">
-            <div className="flex w-[900px] h-[500px] rounded-lg overflow-hidden shadow-lg">
+        <main className="flex items-center justify-center min-h-screen transition-colors duration-500 px-4">
+            <div className="flex flex-col md:flex-row w-full max-w-4xl md:h-[500px] rounded-lg overflow-hidden shadow-lg">
                 {/* Coluna esquerda */}
-                <div className="flex items-center justify-center w-1/2 bg-white">
+                <div className="flex items-center justify-center md:w-1/2 w-full bg-white p-6">
                     <Image
                         src="/images/cowuai-logo.png"
                         alt="CowUai Logo"
                         width={300}
                         height={300}
-                        className="object-contain"
+                        className="object-contain max-w-[260px] w-full h-auto"
                     />
                 </div>
 
                 {/* Coluna direita */}
-                <div className="flex flex-col items-center justify-center w-1/2 bg-red-900 text-white p-8">
+                <div className="flex flex-col items-center justify-center md:w-1/2 w-full bg-red-900 text-white p-6 md:p-8">
                     <h2 className="text-3xl font-title mb-6">Login</h2>
 
-                    <div className="bg-white text-black rounded-xl p-6 w-80 shadow-md">
+                    <div className="bg-white text-black rounded-xl p-6 w-full max-w-md shadow-md">
                         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                             <div>
                                 <label className="text-sm font-medium">E-mail</label>
@@ -91,14 +91,14 @@ export default function LoginPage() {
 
                             <button
                                 type="submit"
-                                className="bg-red-900 text-white py-2 rounded-lg hover:bg-red-800 transition"
+                                className="bg-red-900 text-white py-2 rounded-lg hover:bg-red-800 transition w-full"
                             >
                                 Login
                             </button>
 
                             <button
                                 type="button"
-                                className="flex items-center justify-center gap-2 border py-2 rounded-lg hover:bg-gray-100 transition"
+                                className="flex items-center justify-center gap-2 border py-2 rounded-lg hover:bg-gray-100 transition w-full"
                             >
                                 Faça login com o Google
                                 <Image
