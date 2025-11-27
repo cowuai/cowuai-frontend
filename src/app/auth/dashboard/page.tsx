@@ -183,7 +183,7 @@ export default function DashboardPage() {
 
     // ---------- Layout ----------
     return (
-        <div className="p-10">
+        <div className="p-6 md:p-10">
             {/* Header */}
             <header className="items-start mb-8">
                 <h1 className="text-3xl font-title mb-4 text-primary">Dashboard</h1>
@@ -192,17 +192,16 @@ export default function DashboardPage() {
 
             {/* Cards */}
             <div
-                className="w-full mb-10 p-8 rounded-2xl shadow-lg bg-[hsl(var(--dashboard-primary))] text-[hsl(var(--dashboard-primary-foreground))]">
-                <div className="flex gap-6 justify-start">
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-52 h-24 gap-3">
+                className="w-full mb-8 p-6 md:p-8 rounded-2xl shadow-lg bg-[hsl(var(--dashboard-primary))] text-[hsl(var(--dashboard-primary-foreground))]">
+                <div className="flex flex-wrap gap-4 justify-start">
+                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
                         <Cross size={30} strokeWidth={2} className="text-[hsl(var(--dashboard-primary-foreground))]"/>
                         <div className="flex flex-col justify-center flex-1 text-right">
                             <h2 className="text-lg font-medium leading-snug">Animais Doentes</h2>
                             <p className="text-sm">{animaisDoentes} casos</p>
                         </div>
                     </div>
-
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-52 h-24 gap-3">
+                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
                         <Image src="/images/sperm.svg" alt="Ícone de reprodução" width={35} height={35}/>
                         <div className="flex flex-col justify-center flex-1 text-right">
                             <h2 className="text-lg font-medium leading-snug">
@@ -211,9 +210,8 @@ export default function DashboardPage() {
                             <p className="text-sm">{taxaReproducao}%</p>
                         </div>
                     </div>
-
                     {/* Total de Animais do Criador no Sistema */}
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-52 h-24 gap-3">
+                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
                         <PiCow size={35} strokeWidth={0.5}/>
                         <div className="flex flex-col justify-center flex-1 text-right">
                             <h2 className="text-lg font-medium leading-snug">
@@ -222,9 +220,8 @@ export default function DashboardPage() {
                             <p className="text-sm"> {totalAnimais}</p>
                         </div>
                     </div>
-
                     {/* Total de Animais com Registro */}
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-52 h-24 gap-3">
+                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
                         <PiCertificate size={35} strokeWidth={0.5}/>
                         <div className="flex flex-col justify-center flex-1 text-right">
                             <h2 className="text-lg font-medium leading-snug">
@@ -233,9 +230,8 @@ export default function DashboardPage() {
                             <p className="text-sm"> {totalAnimaisComRegistro}</p>
                         </div>
                     </div>
-
                     {/* Total de Animais Vendidos */}
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-52 h-24 gap-3">
+                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
                         <PiMoneyWavy size={35} strokeWidth={0.5}/>
                         <div className="flex flex-col justify-center flex-1 text-right">
                             <h2 className="text-lg font-medium leading-snug">
@@ -244,9 +240,8 @@ export default function DashboardPage() {
                             <p className="text-sm"> {totalAnimaisVendidos}</p>
                         </div>
                     </div>
-
                     {/* Total de Fazendas do Criador */}
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-52 h-24 gap-3">
+                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
                         <PiFarm size={35} strokeWidth={0.5}/>
                         <div className="flex flex-col justify-center flex-1 text-right">
                             <h2 className="text-lg font-medium leading-snug">
@@ -259,35 +254,35 @@ export default function DashboardPage() {
             </div>
 
             {/* Gráficos */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div
                     className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Animais Doentes</h2>
-                    <div className="h-40 flex justify-center items-center"><Line data={lineData}
-                                                                                 options={chartOptions}/></div>
+                    <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center"><Line data={lineData}
+                                                                                                     options={chartOptions}/></div>
                 </div>
 
                 <div
                     className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Animais cadastrados
                         por ano</h2>
-                    <div className="h-40 flex justify-center items-center"><Line data={areaData}
-                                                                                 options={chartOptions}/></div>
+                    <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center"><Line data={areaData}
+                                                                                                     options={chartOptions}/></div>
                 </div>
 
                 <div
                     className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Animais por
                         Localização</h2>
-                    <div className="h-40 flex justify-center items-center"><Bar data={barData} options={chartOptions}/>
+                    <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center"><Bar data={barData} options={chartOptions}/>
                     </div>
                 </div>
 
                 <div
                     className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Tipo de Raça</h2>
-                    <div className="h-64 w-64 mx-auto flex justify-center items-center"><Pie data={pieData}
-                                                                                             options={pieOptions}/>
+                    <div className="h-64 w-full max-w-xs mx-auto flex justify-center items-center"><Pie data={pieData}
+                                                                                                     options={pieOptions}/>
                     </div>
                 </div>
 
@@ -295,8 +290,8 @@ export default function DashboardPage() {
                     className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Distribuição por
                         Sexo</h2>
-                    <div className="h-64 w-64 mx-auto flex justify-center items-center"><Pie data={sexoPieData}
-                                                                                             options={pieOptions}/>
+                    <div className="h-64 w-full max-w-xs mx-auto flex justify-center items-center"><Pie data={sexoPieData}
+                                                                                                     options={pieOptions}/>
                     </div>
                 </div>
 
@@ -304,7 +299,7 @@ export default function DashboardPage() {
                     className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Vacinas aplicadas
                         (por mês)</h2>
-                    <div className="h-40"><Bar data={vacinasBarData} options={chartOptions}/></div>
+                    <div className="h-44 sm:h-56 lg:h-40"><Bar data={vacinasBarData} options={chartOptions}/></div>
                 </div>
             </div>
         </div>
