@@ -21,10 +21,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import BreadcrumbArea from "@/components/custom/BreadcrumbArea";
 
 // IMPORTS DOS SEUS COMPONENTES REFATORADOS
-import { PaginationControls } from "./PaginationControls";
-import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
+import { PaginationControls } from "../../../../components/custom/animal/listar/PaginationControls";
+import { ConfirmDeleteModal } from "../../../../components/custom/animal/listar/ConfirmDeleteModal";
 // ✅ IMPORT DO NOVO MODAL DE EDIÇÃO
-import { EditAnimalModal, Animal } from "./EditAnimalModal";
+import { EditAnimalModal, Animal } from "../../../../components/custom/animal/listar/EditAnimalModal";
 
 // ======================================================================
 // CONFIGURAÇÕES GERAIS
