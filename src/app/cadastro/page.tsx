@@ -233,7 +233,7 @@ export default function CadastroPage() {
   }, [form.watch("state")]);
 
   return (
-    <main className="flex items-center justify-center min-h-screen">
+    <main className="flex items-center justify-center min-h-screen px-4">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(
@@ -245,7 +245,7 @@ export default function CadastroPage() {
               console.log("Erros:", errors);
             }
           )}
-          className="flex w-8/12 h-auto rounded-lg overflow-hidden shadow-lg bg-card"
+          className="flex flex-col md:flex-row w-full max-w-5xl rounded-lg overflow-hidden shadow-lg bg-card gap-6 md:gap-0"
         >
           <div className="flex items-start justify-center bg-card">
             <Link
@@ -256,7 +256,8 @@ export default function CadastroPage() {
             </Link>
           </div>
 
-          <div className="flex mt-13 items-center h-max justify-center w-1/2 bg-card">
+          {/* Coluna 1: Dados pessoais */}
+          <div className="flex-1 bg-card p-6 md:p-8">
             <Card className="w-full max-w-md border-0 shadow-none py-8">
               <CardHeader>
                 <CardTitle
@@ -390,9 +391,9 @@ export default function CadastroPage() {
             </Card>
           </div>
 
-          {/* ... conteúdo da coluna direita ... */}
-          <div className="flex w-1/2 p-8 items-stretch">
-            <Card className="w-full h-full bg-red-900 text-white flex flex-col border-0 shadow-none p-4">
+          {/* Coluna 2: Dados da fazenda */}
+          <div className="flex-1 p-4 md:p-8">
+            <Card className="w-full h-full bg-red-900 text-white flex flex-col border-0 shadow-none p-4 md:p-6">
               <CardHeader>
                 <CardTitle
                   className={`${tsukimi.className} text-2xl font-normal text-white items-center justify-center text-center`}
@@ -581,7 +582,7 @@ export default function CadastroPage() {
               <CardFooter className="flex-col gap-2 p-6">
                 <Button
                   type="submit"
-                  className="w-1/3 mx-auto border border-white text-white bg-red-900 hover:bg-red-800 transition-colors flex items-center justify-center"
+                  className="w-full md:w-1/3 mx-auto border  border-white text-white bg-red-900 hover:bg-red-800 transition-colors flex items-center justify-center"
                 >
                   Cadastrar <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
