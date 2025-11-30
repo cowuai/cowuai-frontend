@@ -3,7 +3,7 @@ import { Animal } from "@/types/Animal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Syringe, User, FileText } from "lucide-react";
-import AddVaccineModal from "../vacinacao/AddVaccineModal";
+import AddVaccineModal from "../../vacinacao/AddVaccineModal";
 import { parse } from "date-fns";
 
 // Quebra a string do back em partes Y-M-D

@@ -43,5 +43,7 @@ export enum StatusAnimal {
     FALECIDO = 'FALECIDO',
     VENDIDO = 'VENDIDO',
     DOADO = 'DOADO',
-    ROUBADO = 'ROUBADO'
+    ROUBADO = 'ROUBADO',
+    REPRODUZINDO = 'REPRODUZINDO',
+    DOENTE = 'DOENTE'
 }

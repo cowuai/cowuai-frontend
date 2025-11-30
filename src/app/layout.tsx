@@ -1,6 +1,5 @@
 import type {Metadata} from "next";
 import "./globals.css";
-import {ThemeProvider} from "@/app/providers/ThemeProvider"
 import React from "react";
 import {AuthProvider} from "@/app/providers/AuthProvider";
 import {Toaster} from "@/components/ui/sonner";
@@ -15,18 +14,11 @@ type RootLayoutProps = { children: React.ReactNode };
 export default function RootLayout({children}: RootLayoutProps) {
     return (
         <>
-            <html lang="pt-BR" suppressHydrationWarning>
+            <html lang="pt-BR" suppressHydrationWarning={true}>
             <body className={`antialiased`}>
             <AuthProvider>
-                <ThemeProvider
-                    attribute="class"
-                    defaultTheme="system"
-                    enableSystem
-                    disableTransitionOnChange
-                >
-                    {children}
-                    <Toaster />
-                </ThemeProvider>
+                {children}
+                <Toaster/>
             </AuthProvider>
             </body>
             </html>

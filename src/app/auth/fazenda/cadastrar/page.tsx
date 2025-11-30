@@ -146,7 +146,7 @@ export default function CadastrarFazendaPage() {
     if (!mounted) return null;
 
     return (
-        <div className="flex min-h-screen transition-colors duration-500 bg-background text-foreground">
+        <div className="flex text-foreground">
 
             {/* Conteúdo principal */}
             <main className="flex-1 p-10 transition-colors duration-500">
