@@ -92,6 +92,7 @@ export default function CadastrarAnimalPage() {
     const [animaisMachos, setAnimaisMachos] = useState<Animal[]>([]);
     const [animaisFemeas, setAnimaisFemeas] = useState<Animal[]>([]);
     const [tiposRaca, setTiposRaca] = useState<string[]>([]);
+    
 
     // Fallbacks (apenas para evitar crash visual; chamadas reais exigem token/ID válidos)
     const usuarioAtivo = usuario ?? {id: 0, nome: "Usuário"};
@@ -159,10 +160,10 @@ export default function CadastrarAnimalPage() {
             try {
                 const res = await getAnimalsByIdProprietario(accessToken, String(usuarioAtivo.id));
                 setAnimais(res);
-            } catch (err: unknown) {
-                const msg = err instanceof Error ? err.message : String(err);
-                console.error("Erro ao carregar animais:", msg);
-                toast.error("Erro ao carregar animais do proprietário.");
+            } catch (_err: unknown) {
+                // Não mostramos erro ao usuário nesta tela quando não houver animais.
+                // Apenas garantimos que a lista de animais fique vazia.
+                setAnimais([]);
             }
         }
 
@@ -431,7 +432,7 @@ export default function CadastrarAnimalPage() {
                                                     </FormControl>
                                                     <SelectContent>
                                                         {animaisMachos.map((animal) => (
-                                                            <SelectItem key={animal.id} value={animal.id}>
+                                                            <SelectItem key={animal.id} value={animal.id.toString()}>
                                                                 {animal.nome}
                                                             </SelectItem>
                                                         ))}
@@ -457,7 +458,7 @@ export default function CadastrarAnimalPage() {
                                                     </FormControl>
                                                     <SelectContent>
                                                         {animaisFemeas.map((animal) => (
-                                                            <SelectItem key={animal.id} value={animal.id}>
+                                                            <SelectItem key={animal.id} value={animal.id.toString()}>
                                                                 {animal.nome}
                                                             </SelectItem>
                                                         ))}
