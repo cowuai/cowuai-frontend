@@ -17,6 +17,8 @@ import {apiFetch} from "@/helpers/ApiFetch";
 import {useAuth} from "@/app/providers/AuthProvider";
 import {useRouter} from "next/navigation";
 import BreadcrumbArea from "@/components/custom/BreadcrumbArea";
+import Link from "next/link";
+import {ArrowLeft} from "lucide-react";
 
 type FarmForm = {
     farmName: string;
@@ -146,16 +148,17 @@ export default function CadastrarFazendaPage() {
     if (!mounted) return null;
 
     return (
-        <div className="flex text-foreground">
-
+        <div className="flex max-w-7xl mx-auto py-8 px-4">
             {/* Conteúdo principal */}
-            <main className="flex-1 p-10 transition-colors duration-500">
+            <main className="flex-1 transition-colors duration-500">
                 {/* Header */}
                 <header className="flex-row justify-between items-start mb-8">
-                    <h1
-                        className={`text-3xl font-title mb-6 ${darkMode ? "text-white" : "text-red-900"
-                        }`}
-                    >
+                    <Link href="/auth/fazenda/listar"
+                          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
+                        <ArrowLeft className="mr-2 h-4 w-4"/>
+                        Voltar para fazendas
+                    </Link>
+                    <h1 className={`text-3xl font-title mb-2 ${darkMode ? "text-white" : "text-red-900"}`}>
                         Cadastrar Fazenda
                     </h1>
                     <BreadcrumbArea/>

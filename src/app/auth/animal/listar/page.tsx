@@ -281,9 +281,9 @@ export default function ListarAnimaisPage() {
   }
 
   return (
-    <div className="flex flex-col items-start justify-start text-gray-800 p-8">
+    <div className="flex max-w-7xl mx-auto py-8 px-4 flex-col items-start justify-start text-gray-800 p-8">
       <div className="flex-row mb-6">
-        <h1 className={`${tsukimi.className} text-3xl text-primary mb-6`}>
+        <h1 className={`${tsukimi.className} text-3xl text-primary mb-2`}>
           Listar Animais
         </h1>
         <BreadcrumbArea />
