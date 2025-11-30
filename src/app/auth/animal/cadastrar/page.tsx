@@ -93,6 +93,7 @@ export default function CadastrarAnimalPage() {
     const [animaisFemeas, setAnimaisFemeas] = useState<Animal[]>([]);
     const [tiposRaca, setTiposRaca] = useState<string[]>([]);
 
+
     // Fallbacks (apenas para evitar crash visual; chamadas reais exigem token/ID válidos)
     const usuarioAtivo = usuario ?? {id: 0, nome: "Usuário"};
     const form = useForm<FormValues>({
@@ -159,10 +160,10 @@ export default function CadastrarAnimalPage() {
             try {
                 const res = await getAnimalsByIdProprietario(accessToken, String(usuarioAtivo.id));
                 setAnimais(res);
-            } catch (err: unknown) {
-                const msg = err instanceof Error ? err.message : String(err);
-                console.error("Erro ao carregar animais:", msg);
-                toast.error("Erro ao carregar animais do proprietário.");
+            } catch (_err: unknown) {
+                // Não mostramos erro ao usuário nesta tela quando não houver animais.
+                // Apenas garantimos que a lista de animais fique vazia.
+                setAnimais([]);
             }
         }
 
@@ -415,60 +416,60 @@ export default function CadastrarAnimalPage() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="idPai"
-                                    render={({field}) => (
-                                        <FormItem>
-                                            <FormLabel>Pai</FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Selecione o pai"/>
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {animaisMachos.map((animal) => (
-                                                        <SelectItem key={animal.id} value={animal.id}>
-                                                            {animal.nome}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormDescription>Opcional</FormDescription>
-                                            <FormMessage/>
-                                        </FormItem>
-                                    )}
-                                />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="idPai"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>Pai</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Selecione o pai"/>
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {animaisMachos.map((animal) => (
+                                                            <SelectItem key={animal.id} value={animal.id.toString()}>
+                                                                {animal.nome}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormDescription>Opcional</FormDescription>
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )}
+                                    />
 
-                                <FormField
-                                    control={form.control}
-                                    name="idMae"
-                                    render={({field}) => (
-                                        <FormItem>
-                                            <FormLabel>Mãe</FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Selecione a mãe"/>
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {animaisFemeas.map((animal) => (
-                                                        <SelectItem key={animal.id} value={animal.id}>
-                                                            {animal.nome}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormDescription>Opcional</FormDescription>
-                                            <FormMessage/>
-                                        </FormItem>
-                                    )}
-                                />
+                                    <FormField
+                                        control={form.control}
+                                        name="idMae"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>Mãe</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Selecione a mãe"/>
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {animaisFemeas.map((animal) => (
+                                                            <SelectItem key={animal.id} value={animal.id.toString()}>
+                                                                {animal.nome}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormDescription>Opcional</FormDescription>
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
                             </div>
-                        </div>
 
                         {/* Registros e Identificação */}
                         <div className="space-y-4">
