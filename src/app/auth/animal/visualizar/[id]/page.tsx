@@ -48,35 +48,35 @@ const AnimalDetails = () => {
     }, [id, accessToken]);
 
     // 2. Quando muda de aba, busca a relação correspondente
-    useEffect(() => {
-        if (!accessToken || !id || !animal) return;
+useEffect(() => {
+    if (!accessToken || !id) return;
 
-        const fetchRelation = async () => {
-            try {
-                setLoading(true);
+    const fetchRelation = async () => {
+        try {
+            let relation: "pais" | "filhos" | "vacinacoes" | null = null;
 
-                let relation: "pais" | "filhos" | "vacinacoes" | null = null;
-                if (activeTab === "genealogy") relation = "pais";
-                if (activeTab === "health") relation = "vacinacoes";
-                if (activeTab === "offspring") relation = "filhos";
+            if (activeTab === "genealogy") relation = "pais";
+            if (activeTab === "health") relation = "vacinacoes";
+            if (activeTab === "offspring") relation = "filhos";
 
-                if (!relation) return;
+            if (!relation) return; // aba "details" não busca nada extra
 
-                const res = await getAnimalRelation(accessToken, id.toString(), relation);
+            setLoading(true);
 
-                // O backend retorna o próprio animal com os campos daquela relação preenchidos
-                setAnimal((prev) =>
-                    prev ? { ...prev, ...res } : res
-                );
-            } catch (e) {
-                console.error("Erro ao buscar relação:", e);
-            } finally {
-                setLoading(false);
-            }
-        };
+            const res = await getAnimalRelation(accessToken, id.toString(), relation);
 
-        fetchRelation();
-    }, [activeTab, id, accessToken, animal]);
+            // O backend retorna o próprio animal com os campos daquela relação preenchidos
+            setAnimal((prev) => (prev ? { ...prev, ...res } : res));
+        } catch (e) {
+            console.error("Erro ao buscar relação:", e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    fetchRelation();
+}, [activeTab, id, accessToken]); // 👈 TIRA o "animal" daqui
+
 
     if (!animal) {
         return (
