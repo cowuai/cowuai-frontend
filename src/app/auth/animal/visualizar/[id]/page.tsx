@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, FileText, HeartPulse } from "lucide-react";
+import { ArrowLeft, FileText, HeartPulse, AlertTriangle } from "lucide-react";
 import { MdOutlineBloodtype } from "react-icons/md";
 import { FaCow } from "react-icons/fa6";
 import { cn } from "@/lib/utils";
@@ -12,23 +12,27 @@ import { useAuth } from "@/app/providers/AuthProvider";
 import { Animal } from "@/types/Animal";
 import { getAnimal } from "@/actions/getAnimal";
 import { getAnimalRelation } from "@/actions/getAnimalRelation";
+import { DoencaAnimal } from "@/types/DoencaAnimal";
+import { getDoencasByAnimal } from "@/actions/getDoencasByAnimal";
 
 import { DetailsTab } from "@/components/custom/animal/DetailsTab";
 import { GenealogyTab } from "@/components/custom/animal/GenealogyTab";
 import { HealthTab } from "@/components/custom/animal/HealthTab";
 import { OffspringTab } from "@/components/custom/animal/OffspringTab";
-import {Spinner} from "@/components/ui/spinner";
+import { DiseasesTab } from "@/components/custom/animal/DiseasesTab";
+import { Spinner } from "@/components/ui/spinner";
 
-type TabType = "details" | "genealogy" | "health" | "offspring";
+type TabType = "details" | "genealogy" | "health" | "offspring" | "diseases";
 
 const AnimalDetails = () => {
-    const { id } = useParams();
+    const { id } = useParams<{ id: string }>();
     const router = useRouter();
     const { accessToken } = useAuth();
 
     const [animal, setAnimal] = useState<Animal | null>(null);
     const [activeTab, setActiveTab] = useState<TabType>("details");
     const [loading, setLoading] = useState(false);
+    const [doencasAnimal, setDoencasAnimal] = useState<DoencaAnimal[]>([]);
 
     // 1. Carrega o animal básico
     useEffect(() => {
@@ -48,35 +52,54 @@ const AnimalDetails = () => {
     }, [id, accessToken]);
 
     // 2. Quando muda de aba, busca a relação correspondente
-useEffect(() => {
-    if (!accessToken || !id) return;
+    useEffect(() => {
+        if (!accessToken || !id) return;
 
-    const fetchRelation = async () => {
-        try {
-            let relation: "pais" | "filhos" | "vacinacoes" | null = null;
+        const fetchRelation = async () => {
+            try {
+                let relation: "pais" | "filhos" | "vacinacoes" | null = null;
 
-            if (activeTab === "genealogy") relation = "pais";
-            if (activeTab === "health") relation = "vacinacoes";
-            if (activeTab === "offspring") relation = "filhos";
+                if (activeTab === "genealogy") relation = "pais";
+                if (activeTab === "health") relation = "vacinacoes";
+                if (activeTab === "offspring") relation = "filhos";
 
-            if (!relation) return; // aba "details" não busca nada extra
+                if (!relation) return; // aba "details" não busca nada extra
 
-            setLoading(true);
+                setLoading(true);
 
-            const res = await getAnimalRelation(accessToken, id.toString(), relation);
+                const res = await getAnimalRelation(accessToken, id.toString(), relation);
 
-            // O backend retorna o próprio animal com os campos daquela relação preenchidos
-            setAnimal((prev) => (prev ? { ...prev, ...res } : res));
-        } catch (e) {
-            console.error("Erro ao buscar relação:", e);
-        } finally {
-            setLoading(false);
-        }
-    };
+                // O backend retorna o próprio animal com os campos daquela relação preenchidos
+                setAnimal((prev) => (prev ? { ...prev, ...res } : res));
+            } catch (e) {
+                console.error("Erro ao buscar relação:", e);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    fetchRelation();
-}, [activeTab, id, accessToken]); // 👈 TIRA o "animal" daqui
+        fetchRelation();
+    }, [activeTab, id, accessToken]); // 👈 TIRA o "animal" daqui
 
+    // 3. Quando estiver na aba de doenças, carrega doenças do animal
+    useEffect(() => {
+        if (!accessToken || !id) return;
+        if (activeTab !== "diseases") return;
+
+        const fetchDiseases = async () => {
+            try {
+                setLoading(true);
+                const data = await getDoencasByAnimal(accessToken, id.toString(), false);
+                setDoencasAnimal(data);
+            } catch (e) {
+                console.error("Erro ao buscar doenças do animal:", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDiseases();
+    }, [activeTab, id, accessToken]);
 
     if (!animal) {
         return (
@@ -94,7 +117,18 @@ useEffect(() => {
         { id: "genealogy" as TabType, label: "Genealogia", icon: MdOutlineBloodtype },
         { id: "health" as TabType, label: "Saúde", icon: HeartPulse },
         { id: "offspring" as TabType, label: "Descendentes", icon: FaCow },
+        { id: "diseases" as TabType, label: "Doenças", icon: AlertTriangle },
     ];
+
+    const handleDiseaseSaved = async () => {
+        if (!accessToken || !id) return;
+        try {
+            const data = await getDoencasByAnimal(accessToken, id.toString(), false);
+            setDoencasAnimal(data);
+        } catch (e) {
+            console.error("Erro ao atualizar lista de doenças:", e);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-background">
@@ -149,7 +183,7 @@ useEffect(() => {
                         <div className="bg-card rounded-lg border p-6">
                             {loading && (
                                 <div className={"flex justify-center items-center h-64"}>
-                                    <Spinner/>
+                                    <Spinner />
                                 </div>
                             )}
 
@@ -159,6 +193,13 @@ useEffect(() => {
                             )}
                             {!loading && activeTab === "health" && <HealthTab animal={animal} />}
                             {!loading && activeTab === "offspring" && <OffspringTab animal={animal} />}
+                            {!loading && activeTab === "diseases" && (
+                                <DiseasesTab
+                                    animalId={id.toString()}
+                                    diseases={doencasAnimal}
+                                    onDiseaseSaved={handleDiseaseSaved}
+                                />
+                            )}
                         </div>
                     </main>
                 </div>
