@@ -400,7 +400,7 @@ export default function CadastroPage() {
                 >
                   Dados da Fazenda
                 </CardTitle>
-                <CardDescription className="text-[12px] !text-white  text-center">
+                <CardDescription className="text-[12px] text-white!  text-center">
                   Preencha os campos com os dados da sua fazenda
                 </CardDescription>
               </CardHeader>
@@ -451,7 +451,7 @@ export default function CadastroPage() {
                           value={field.value}
                           onValueChange={field.onChange}
                         >
-                          <SelectTrigger className="w-auto data-[placeholder]:text-white [&_svg:not([class*='text-'])]:text-white">
+                          <SelectTrigger className="w-auto data-placeholder:text-white [&_svg:not([class*='text-'])]:text-white">
                             <SelectValue placeholder="Selecione o estado" />
                           </SelectTrigger>
                           <SelectContent>
@@ -478,7 +478,7 @@ export default function CadastroPage() {
                           value={field.value}
                           onValueChange={field.onChange}
                         >
-                          <SelectTrigger className="w-auto data-[placeholder]:text-white [&_svg:not([class*='text-'])]:text-white">
+                          <SelectTrigger className="w-auto data-placeholder:text-white [&_svg:not([class*='text-'])]:text-white">
                             <SelectValue placeholder="Selecione a cidade" />
                           </SelectTrigger>
                           <SelectContent>
@@ -563,7 +563,7 @@ export default function CadastroPage() {
                             )
                           }
                         >
-                          <SelectTrigger className="w-auto data-[placeholder]:text-white [&_svg:not([class*='text-'])]:text-white">
+                          <SelectTrigger className="w-auto data-placeholder:text-white [&_svg:not([class*='text-'])]:text-white">
                             <SelectValue placeholder="Selecione o tipo" />
                           </SelectTrigger>
                           <SelectContent>
