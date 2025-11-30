@@ -18,6 +18,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
+/**
+ * Normaliza uma string "YYYY-MM-DD" para "YYYY-MM-DDT00:00:00"
+ * para evitar problema de fuso ao salvar no back como DateTime.
+ */
+function normalizeDateForApi(dateStr: string): string {
+  if (!dateStr) return dateStr;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return `${dateStr}T00:00:00`;
+  }
+  return dateStr;
+}
+
 type DiseasesTabProps = {
   animalId: string;
   diseases: DoencaAnimal[];
@@ -86,11 +98,19 @@ export const DiseasesTab = ({
     [diseases]
   );
 
-  // helper de data
+  // helper de data (corrige o problema do "dia anterior")
   const formatDate = (value?: string | null) => {
     if (!value) return "-";
     try {
-      return format(new Date(value), "dd/MM/yyyy", { locale: ptBR });
+      let date: Date;
+      // se vier só "YYYY-MM-DD", monta Date no fuso local
+      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        const [year, month, day] = value.split("-").map(Number);
+        date = new Date(year, month - 1, day);
+      } else {
+        date = new Date(value);
+      }
+      return format(date, "dd/MM/yyyy", { locale: ptBR });
     } catch {
       return value;
     }
@@ -104,6 +124,9 @@ export const DiseasesTab = ({
     try {
       setSaving(true);
 
+      const rawDiagnostico =
+        form.dataDiagnostico || new Date().toISOString().substring(0, 10);
+
       await apiFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/doencas-animal/animal/${animalId}`,
         {
@@ -111,14 +134,12 @@ export const DiseasesTab = ({
           credentials: "include",
           body: JSON.stringify({
             idDoenca: Number(form.idDoenca),
-            dataDiagnostico:
-              form.dataDiagnostico ||
-              new Date().toISOString().substring(0, 10),
+            dataDiagnostico: normalizeDateForApi(rawDiagnostico),
             emTratamento: form.emTratamento,
             dataFimTratamento:
               form.emTratamento || !form.dataFimTratamento
                 ? null
-                : form.dataFimTratamento,
+                : normalizeDateForApi(form.dataFimTratamento),
             observacoes: form.observacoes || null,
           }),
         },
@@ -170,7 +191,7 @@ export const DiseasesTab = ({
           credentials: "include",
           body: JSON.stringify({
             emTratamento: false,
-            dataFimTratamento: closingDate,
+            dataFimTratamento: normalizeDateForApi(closingDate),
           }),
         },
         accessToken
@@ -240,9 +261,7 @@ export const DiseasesTab = ({
                   </p>
                   <p className="text-xs text-muted-foreground">
                     Diagnóstico:{" "}
-                    {d.dataDiagnostico
-                      ? formatDate(d.dataDiagnostico)
-                      : "-"}
+                    {d.dataDiagnostico ? formatDate(d.dataDiagnostico) : "-"}
                   </p>
                   {d.observacoes && (
                     <p className="text-xs text-muted-foreground">
@@ -325,9 +344,7 @@ export const DiseasesTab = ({
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Diagnóstico:{" "}
-                  {d.dataDiagnostico
-                    ? formatDate(d.dataDiagnostico)
-                    : "-"}
+                  {d.dataDiagnostico ? formatDate(d.dataDiagnostico) : "-"}
                 </p>
                 {d.dataFimTratamento && (
                   <p className="text-xs text-muted-foreground">
