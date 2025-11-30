@@ -1,24 +1,27 @@
 // src/app/auth/fazenda/cadastrar/page.tsx
 "use client";
 
-import {useTheme} from "next-themes";
-import {useEffect, useState} from "react";
-import {Slider} from "@/components/ui/slider";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { Slider } from "@/components/ui/slider";
 
 // ✅ toasts
-import {toast} from "sonner";
+import { toast } from "sonner";
 
-import {Estado} from "@/types/Estado";
-import {Municipio} from "@/types/Municipio";
-import {getUfs as getUFS} from "@/actions/getUfs";
-import {getMunicipios} from "@/actions/getMunicipios";
+import { Estado } from "@/types/Estado";
+import { Municipio } from "@/types/Municipio";
+import { getUfs as getUFS } from "@/actions/getUfs";
+import { getMunicipios } from "@/actions/getMunicipios";
 
-import {apiFetch} from "@/helpers/ApiFetch";
-import {useAuth} from "@/app/providers/AuthProvider";
-import {useRouter} from "next/navigation";
+import { apiFetch } from "@/helpers/ApiFetch";
+import { useAuth } from "@/app/providers/AuthProvider";
+import { useRouter } from "next/navigation";
 import BreadcrumbArea from "@/components/custom/BreadcrumbArea";
 import Link from "next/link";
-import {ArrowLeft} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+
+import { fazendaScheme } from "@/zodSchemes/fazendaScheme";
+import { z } from "zod";
 
 type FarmForm = {
     farmName: string;
@@ -31,7 +34,7 @@ type FarmForm = {
 };
 
 export default function CadastrarFazendaPage() {
-    const {theme} = useTheme();
+    const { theme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
     const [estados, setEstados] = useState<Estado[]>([]);
@@ -48,7 +51,7 @@ export default function CadastrarFazendaPage() {
     });
 
     const router = useRouter();
-    const {usuario, accessToken} = useAuth();
+    const { usuario, accessToken } = useAuth();
 
 
     type FazendaPayload = {
@@ -95,10 +98,10 @@ export default function CadastrarFazendaPage() {
     useEffect(() => {
         if (formData.state && formData.state.length === 2) {
             getMunicipios(formData.state).then(setMunicipios).catch(console.error);
-            setFormData((prev) => ({...prev, city: ""})); // zera cidade ao trocar UF
+            setFormData((prev) => ({ ...prev, city: "" })); // zera cidade ao trocar UF
         } else {
             setMunicipios([]);
-            setFormData((prev) => ({...prev, city: ""}));
+            setFormData((prev) => ({ ...prev, city: "" }));
         }
 
     }, [formData.state]);
@@ -106,21 +109,22 @@ export default function CadastrarFazendaPage() {
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
-        setFormData({...formData, [e.target.name]: e.target.value});
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        if (!usuario?.id) {
+            toast.error("Sessão expirada. Faça login novamente.");
+            return;
+        }
+
         try {
-            if (!usuario?.id) {
-                // 🔁 trocado de alert() → toast.error()
-                toast.error("Sessão expirada. Faça login novamente.");
-                return;
-            }
+            const rawBody = toPayload(formData, usuario.id);
 
-            const body = toPayload(formData, usuario.id);
-
+            // valida com Zod (front)
+            const body = fazendaScheme.parse(rawBody);
 
             const data = await apiFetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/fazendas`,
@@ -131,17 +135,21 @@ export default function CadastrarFazendaPage() {
                 accessToken ?? undefined
             );
 
-            // sucesso: data deve conter a fazenda criada
-            // opcional: redirecionar para a lista
             router.push("/auth/fazenda/listar");
-
-            // 🔁 trocado de alert() → toast.success()
             toast.success("Fazenda cadastrada com sucesso!");
             console.log("Fazenda criada:", data);
-        } catch (err: any) {
+        } catch (err) {
+            if (err instanceof z.ZodError) {
+                // ⬇️ aqui muda de `errors` para `issues` e tipamos o issue
+                err.issues.forEach((issue: z.ZodIssue) => {
+                    toast.error(issue.message);
+                });
+                return;
+            }
+
             console.error(err);
-            // 🔁 trocado de alert() → toast.error()
-            toast.error(err?.message ?? "Erro ao cadastrar fazenda");
+            const anyErr = err as any;
+            toast.error(anyErr?.message ?? "Erro ao cadastrar fazenda");
         }
     };
 
@@ -154,20 +162,20 @@ export default function CadastrarFazendaPage() {
                 {/* Header */}
                 <header className="flex-row justify-between items-start mb-8">
                     <Link href="/auth/fazenda/listar"
-                          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
-                        <ArrowLeft className="mr-2 h-4 w-4"/>
+                        className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
                         Voltar para fazendas
                     </Link>
                     <h1 className={`text-3xl font-title mb-2 ${darkMode ? "text-white" : "text-red-900"}`}>
                         Cadastrar Fazenda
                     </h1>
-                    <BreadcrumbArea/>
+                    <BreadcrumbArea />
                 </header>
 
                 {/* Card do formulário (padrão do animal) */}
                 <div
                     className={`w-full max-w-2xl mx-auto p-8 rounded-2xl shadow-lg ${darkMode ? "bg-stone-950" : "bg-white"
-                    }`}
+                        }`}
                 >
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Nome da Fazenda */}
