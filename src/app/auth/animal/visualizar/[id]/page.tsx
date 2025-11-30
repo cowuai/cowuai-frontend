@@ -15,11 +15,11 @@ import { getAnimalRelation } from "@/actions/getAnimalRelation";
 import { DoencaAnimal } from "@/types/DoencaAnimal";
 import { getDoencasByAnimal } from "@/actions/getDoencasByAnimal";
 
-import { DetailsTab } from "@/components/custom/animal/DetailsTab";
-import { GenealogyTab } from "@/components/custom/animal/GenealogyTab";
-import { HealthTab } from "@/components/custom/animal/HealthTab";
-import { OffspringTab } from "@/components/custom/animal/OffspringTab";
-import { DiseasesTab } from "@/components/custom/animal/DiseasesTab";
+import { DetailsTab } from "@/components/custom/animal/detalhes/DetailsTab";
+import { GenealogyTab } from "@/components/custom/animal/detalhes/GenealogyTab";
+import { HealthTab } from "@/components/custom/animal/detalhes/HealthTab";
+import { OffspringTab } from "@/components/custom/animal/detalhes/OffspringTab";
+import { DiseasesTab } from "@/components/custom/animal/detalhes/DiseasesTab";
 import { Spinner } from "@/components/ui/spinner";
 
 type TabType = "details" | "genealogy" | "health" | "offspring" | "diseases";
