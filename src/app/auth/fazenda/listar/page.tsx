@@ -329,7 +329,7 @@ export default function ListarFazendasPage() {
     }
 
     return (
-        <div className="flex min-h-screen transition-colors duration-500 bg-background text-foreground">
+        <div className="flex transition-colors duration-500 text-foreground">
             {/* Conteúdo principal */}
             <main className="flex-1 p-10 transition-colors duration-500">
                 {/* Header */}
@@ -347,7 +347,7 @@ export default function ListarFazendasPage() {
 
                 {/* Card central com a Tabela */}
                 <div
-                    className={`w-full max-w-6xl mx-auto p-6 md:p-8 rounded-2xl shadow-lg overflow-x-auto ${darkMode ? "bg-stone-950" : "bg-white"
+                    className={`w-full mx-auto p-6 md:p-8 rounded-2xl shadow-lg overflow-x-auto ${darkMode ? "bg-stone-950" : "bg-white"
                     }`}
                 >
                     {/* estados de carregamento/erro (simples) */}
