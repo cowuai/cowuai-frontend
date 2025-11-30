@@ -27,7 +27,7 @@ type TabType = "details" | "genealogy" | "health" | "offspring" | "diseases";
 const AnimalDetails = () => {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
-    const { accessToken } = useAuth();
+    const {accessToken} = useAuth();
 
     const [animal, setAnimal] = useState<Animal | null>(null);
     const [activeTab, setActiveTab] = useState<TabType>("details");
@@ -103,7 +103,7 @@ const AnimalDetails = () => {
 
     if (!animal) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-background">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <h1 className="text-2xl font-bold mb-4">Animal não encontrado</h1>
                     <Button onClick={() => router.push("/")}>Voltar para listagem</Button>
@@ -131,11 +131,10 @@ const AnimalDetails = () => {
     };
 
     return (
-        <div className="min-h-screen bg-background">
-            <div className="border-b bg-card">
+        <div className={"min-h-screen"}>
                 <div className="container mx-auto px-4 py-4">
                     <Button variant="ghost" onClick={() => router.push("/auth/animal/listar")} className="mb-4">
-                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        <ArrowLeft className="h-4 w-4 mr-2"/>
                         Voltar para listagem
                     </Button>
                     <div>
@@ -147,7 +146,8 @@ const AnimalDetails = () => {
                         </p>
                     </div>
                 </div>
-            </div>
+
+            <div className={"w-9/12 mx-auto border-b border-background"}/>
 
             <div className="container mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -169,7 +169,7 @@ const AnimalDetails = () => {
                                                     : "hover:bg-muted text-muted-foreground"
                                             )}
                                         >
-                                            <Icon className="h-5 w-5" />
+                                            <Icon className="h-5 w-5"/>
                                             {item.label}
                                         </button>
                                     );
@@ -187,9 +187,9 @@ const AnimalDetails = () => {
                                 </div>
                             )}
 
-                            {!loading && activeTab === "details" && <DetailsTab animal={animal} />}
+                            {!loading && activeTab === "details" && <DetailsTab animal={animal}/>}
                             {!loading && activeTab === "genealogy" && (
-                                <GenealogyTab animal={animal} />
+                                <GenealogyTab animal={animal}/>
                             )}
                             {!loading && activeTab === "health" && <HealthTab animal={animal} />}
                             {!loading && activeTab === "offspring" && <OffspringTab animal={animal} />}

@@ -99,7 +99,7 @@ const formatDate = (dateString: string | null): string => {
 
 export default function ListarAnimaisPage() {
   const { accessToken } = useAuth();
-  const DEFAULT_PAGE_SIZE = 2;
+  const DEFAULT_PAGE_SIZE = 10;
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize] = useState<number>(DEFAULT_PAGE_SIZE);
@@ -281,7 +281,7 @@ export default function ListarAnimaisPage() {
   }
 
   return (
-    <div className="flex flex-col items-start justify-start min-h-screen bg-background text-gray-800 p-8">
+    <div className="flex flex-col items-start justify-start text-gray-800 p-8">
       <div className="flex-row mb-6">
         <h1 className={`${tsukimi.className} text-3xl text-primary mb-6`}>
           Listar Animais
@@ -289,7 +289,7 @@ export default function ListarAnimaisPage() {
         <BreadcrumbArea />
       </div>
 
-      <Card className="w-full max-w-6xl rounded-2xl shadow-xl border-red-900/20 mx-auto">
+      <Card className="w-full rounded-2xl shadow-xl mx-auto">
         <CardContent className="p-4">
           <div className="w-full overflow-hidden rounded-md border border-red-900/20">
             <Table>

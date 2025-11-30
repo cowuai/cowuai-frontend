@@ -93,6 +93,7 @@ export default function CadastrarAnimalPage() {
     const [animaisFemeas, setAnimaisFemeas] = useState<Animal[]>([]);
     const [tiposRaca, setTiposRaca] = useState<string[]>([]);
 
+
     // Fallbacks (apenas para evitar crash visual; chamadas reais exigem token/ID válidos)
     const usuarioAtivo = usuario ?? {id: 0, nome: "Usuário"};
     const form = useForm<FormValues>({
@@ -159,10 +160,10 @@ export default function CadastrarAnimalPage() {
             try {
                 const res = await getAnimalsByIdProprietario(accessToken, String(usuarioAtivo.id));
                 setAnimais(res);
-            } catch (err: unknown) {
-                const msg = err instanceof Error ? err.message : String(err);
-                console.error("Erro ao carregar animais:", msg);
-                toast.error("Erro ao carregar animais do proprietário.");
+            } catch (_err: unknown) {
+                // Não mostramos erro ao usuário nesta tela quando não houver animais.
+                // Apenas garantimos que a lista de animais fique vazia.
+                setAnimais([]);
             }
         }
 
@@ -262,107 +263,91 @@ export default function CadastrarAnimalPage() {
     // RENDERIZAÇÃO
     // ==========================
     return (
-        <div className="min-h-screen bg-background">
-            <div className="container max-w-4xl mx-auto py-8 px-4">
-                {/* Header */}
-                <div className="mb-8">
-                    <Link href="/auth/animal/listar"
-                          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
-                        <ArrowLeft className="mr-2 h-4 w-4"/>
-                        Voltar para animais
-                    </Link>
-                    <h1 className="text-3xl font-bold text-primary font-tsukimi-rounded mb-2">Cadastrar Animal</h1>
-                    <BreadcrumbArea/>
-                    <p className="text-muted-foreground mt-2">
-                        Preencha as informações do animal para adicioná-lo ao sistema
-                    </p>
-                </div>
+        <div className="container max-w-7xl mx-auto py-8 px-4">
+            {/* Header */}
+            <div className="mb-8">
+                <Link href="/auth/animal/listar"
+                      className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
+                    <ArrowLeft className="mr-2 h-4 w-4"/>
+                    Voltar para animais
+                </Link>
+                <h1 className="text-3xl font-bold text-primary font-tsukimi-rounded mb-2">Cadastrar Animal</h1>
+                <BreadcrumbArea/>
+                <p className="text-muted-foreground mt-2">
+                    Preencha as informações do animal para adicioná-lo ao sistema
+                </p>
+            </div>
 
-                {/* Form Card */}
-                <div className="bg-card rounded-lg border shadow-sm p-6">
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                            {/* Informações Básicas */}
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-semibold text-foreground">Informações Básicas</h2>
-                                <Separator/>
+            {/* Form Card */}
+            <div className="bg-card rounded-lg border shadow-sm p-6">
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                        {/* Informações Básicas */}
+                        <div className="space-y-4">
+                            <h2 className="text-xl font-semibold text-foreground">Informações Básicas</h2>
+                            <Separator/>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="nome"
-                                        render={({field}) => (
-                                            <FormItem>
-                                                <FormLabel>Nome *</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Nome do animal" {...field} />
-                                                </FormControl>
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="sexo"
-                                        render={({field}) => (
-                                            <FormItem>
-                                                <FormLabel>Sexo *</FormLabel>
-                                                <Select onValueChange={field.onChange} value={field.value}>
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Selecione o sexo"/>
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        <SelectItem value="MACHO">Macho</SelectItem>
-                                                        <SelectItem value="FEMEA">Fêmea</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="dataNascimento"
-                                        render={({field}) => (
-                                            <FormItem>
-                                                <FormLabel>Data de Nascimento</FormLabel>
-                                                <FormControl>
-                                                    <Input type="date" {...field} />
-                                                </FormControl>
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="peso"
-                                        render={({field}) => (
-                                            <FormItem>
-                                                <FormLabel>Peso (kg)</FormLabel>
-                                                <FormControl>
-                                                    <Input type="number" placeholder="0.00" step="0.01" {...field} />
-                                                </FormControl>
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="nome"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel>Nome *</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Nome do animal" {...field} />
+                                            </FormControl>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
 
                                 <FormField
                                     control={form.control}
-                                    name="localizacao"
+                                    name="sexo"
                                     render={({field}) => (
                                         <FormItem>
-                                            <FormLabel>Localização</FormLabel>
+                                            <FormLabel>Sexo *</FormLabel>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Selecione o sexo"/>
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="MACHO">Macho</SelectItem>
+                                                    <SelectItem value="FEMEA">Fêmea</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="dataNascimento"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel>Data de Nascimento</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Pasto, curral, etc." {...field} />
+                                                <Input type="date" {...field} />
+                                            </FormControl>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="peso"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel>Peso (kg)</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" placeholder="0.00" step="0.01" {...field} />
                                             </FormControl>
                                             <FormMessage/>
                                         </FormItem>
@@ -370,187 +355,201 @@ export default function CadastrarAnimalPage() {
                                 />
                             </div>
 
-                            {/* Raça e Genética */}
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-semibold text-foreground">Raça e Genética</h2>
-                                <Separator/>
+                            <FormField
+                                control={form.control}
+                                name="localizacao"
+                                render={({field}) => (
+                                    <FormItem>
+                                        <FormLabel>Localização</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Pasto, curral, etc." {...field} />
+                                        </FormControl>
+                                        <FormMessage/>
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="tipoRaca"
-                                        render={({field}) => (
-                                            <FormItem>
-                                                <FormLabel>Tipo de Raça *</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Selecione a raça"/>
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        {tiposRaca.map((raca) => (
-                                                            <SelectItem key={raca} value={raca}>
-                                                                {raca}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
-                                    />
+                        {/* Raça e Genética */}
+                        <div className="space-y-4">
+                            <h2 className="text-xl font-semibold text-foreground">Raça e Genética</h2>
+                            <Separator/>
 
-                                    <FormField
-                                        control={form.control}
-                                        name="composicaoRacial"
-                                        render={({field}) => (
-                                            <FormItem>
-                                                <FormLabel>Composição Racial</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Ex: 1/2 Angus, 1/2 Nelore" {...field} />
-                                                </FormControl>
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="idPai"
-                                        render={({field}) => (
-                                            <FormItem>
-                                                <FormLabel>Pai</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Selecione o pai"/>
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        {animaisMachos.map((animal) => (
-                                                            <SelectItem key={animal.id} value={animal.id}>
-                                                                {animal.nome}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormDescription>Opcional</FormDescription>
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="idMae"
-                                        render={({field}) => (
-                                            <FormItem>
-                                                <FormLabel>Mãe</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Selecione a mãe"/>
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        {animaisFemeas.map((animal) => (
-                                                            <SelectItem key={animal.id} value={animal.id}>
-                                                                {animal.nome}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormDescription>Opcional</FormDescription>
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Registros e Identificação */}
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-semibold text-foreground">Registros e Identificação</h2>
-                                <Separator/>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="numeroParticularProprietario"
-                                        render={({field}) => (
-                                            <FormItem>
-                                                <FormLabel>Número Particular</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Número do proprietário" {...field} />
-                                                </FormControl>
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="registro"
-                                        render={({field}) => (
-                                            <FormItem>
-                                                <FormLabel>Registro</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Número de registro" {...field} />
-                                                </FormControl>
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <FormField
                                     control={form.control}
-                                    name="idFazenda"
+                                    name="tipoRaca"
                                     render={({field}) => (
                                         <FormItem>
-                                            <FormLabel>Fazenda *</FormLabel>
+                                            <FormLabel>Tipo de Raça *</FormLabel>
                                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                 <FormControl>
                                                     <SelectTrigger>
-                                                        <SelectValue placeholder="Selecione uma fazenda"/>
+                                                        <SelectValue placeholder="Selecione a raça"/>
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
-                                                    {fazendasDoProprietario.map((fazenda) => (
-                                                        <SelectItem key={fazenda.id} value={fazenda.id.toString()}>
-                                                            {fazenda.nome}
+                                                    {tiposRaca.map((raca) => (
+                                                        <SelectItem key={raca} value={raca}>
+                                                            {raca}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>
-                                            <FormDescription>
-                                                Não encontrou a fazenda?{" "}
-                                                <Link href="/auth/fazenda/cadastrar"
-                                                      className="text-primary hover:underline">
-                                                    Cadastre uma nova fazenda
-                                                </Link>
-                                            </FormDescription>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="composicaoRacial"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel>Composição Racial</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Ex: 1/2 Angus, 1/2 Nelore" {...field} />
+                                            </FormControl>
                                             <FormMessage/>
                                         </FormItem>
                                     )}
                                 />
                             </div>
 
-                            {/* Actions */}
-                            <div className="flex gap-4 justify-end pt-4">
-                                <Button type="button" variant="outline" asChild>
-                                    <Link href="/auth/animal/listar">Cancelar</Link>
-                                </Button>
-                                <Button type="submit" disabled={isLoading}>
-                                    {isLoading ? "Salvando..." : "Cadastrar Animal"}
-                                </Button>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="idPai"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel>Pai</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Selecione o pai"/>
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {animaisMachos.map((animal) => (
+                                                        <SelectItem key={animal.id} value={animal.id.toString()}>
+                                                            {animal.nome}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormDescription>Opcional</FormDescription>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="idMae"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel>Mãe</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Selecione a mãe"/>
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {animaisFemeas.map((animal) => (
+                                                        <SelectItem key={animal.id} value={animal.id.toString()}>
+                                                            {animal.nome}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormDescription>Opcional</FormDescription>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
                             </div>
-                        </form>
-                    </Form>
-                </div>
+                        </div>
+
+                        {/* Registros e Identificação */}
+                        <div className="space-y-4">
+                            <h2 className="text-xl font-semibold text-foreground">Registros e Identificação</h2>
+                            <Separator/>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="numeroParticularProprietario"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel>Número Particular</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Número do proprietário" {...field} />
+                                            </FormControl>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="registro"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel>Registro</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Número de registro" {...field} />
+                                            </FormControl>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <FormField
+                                control={form.control}
+                                name="idFazenda"
+                                render={({field}) => (
+                                    <FormItem>
+                                        <FormLabel>Fazenda *</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Selecione uma fazenda"/>
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {fazendasDoProprietario.map((fazenda) => (
+                                                    <SelectItem key={fazenda.id} value={fazenda.id.toString()}>
+                                                        {fazenda.nome}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormDescription>
+                                            Não encontrou a fazenda?{" "}
+                                            <Link href="/auth/fazenda/cadastrar"
+                                                  className="text-primary hover:underline">
+                                                Cadastre uma nova fazenda
+                                            </Link>
+                                        </FormDescription>
+                                        <FormMessage/>
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-4 justify-end pt-4">
+                            <Button type="button" variant="outline" asChild>
+                                <Link href="/auth/animal/listar">Cancelar</Link>
+                            </Button>
+                            <Button type="submit" disabled={isLoading}>
+                                {isLoading ? "Salvando..." : "Cadastrar Animal"}
+                            </Button>
+                        </div>
+                    </form>
+                </Form>
             </div>
         </div>
     );
