@@ -263,7 +263,7 @@ export default function CadastrarAnimalPage() {
     // RENDERIZAÇÃO
     // ==========================
     return (
-        <div className="container max-w-7xl mx-auto py-8 px-4">
+        <div className="max-w-7xl mx-auto py-8 px-4">
             {/* Header */}
             <div className="mb-8">
                 <Link href="/auth/animal/listar"
@@ -271,7 +271,7 @@ export default function CadastrarAnimalPage() {
                     <ArrowLeft className="mr-2 h-4 w-4"/>
                     Voltar para animais
                 </Link>
-                <h1 className="text-3xl font-bold text-primary font-tsukimi-rounded mb-2">Cadastrar Animal</h1>
+                <h1 className="text-3xl text-primary font-tsukimi-rounded mb-2">Cadastrar Animal</h1>
                 <BreadcrumbArea/>
                 <p className="text-muted-foreground mt-2">
                     Preencha as informações do animal para adicioná-lo ao sistema

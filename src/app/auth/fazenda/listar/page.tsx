@@ -329,13 +329,13 @@ export default function ListarFazendasPage() {
     }
 
     return (
-        <div className="flex transition-colors duration-500 text-foreground">
+        <div className="flex max-w-7xl mx-auto py-8 px-4 transition-colors duration-500 text-foreground">
             {/* Conteúdo principal */}
-            <main className="flex-1 p-10 transition-colors duration-500">
+            <main className="flex-1 transition-colors duration-500">
                 {/* Header */}
-                <header className="flex-row justify-between items-start mb-8">
+                <header className="flex-row justify-between items-start mb-6">
                     <h1
-                        className={`${tsukimi.className} text-3xl mb-6 ${darkMode ? "text-white" : "text-red-900"
+                        className={`${tsukimi.className} text-3xl mb-2 ${darkMode ? "text-white" : "text-red-900"
                         }`}
                     >
                         Listar Fazendas

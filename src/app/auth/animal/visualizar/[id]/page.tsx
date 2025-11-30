@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, FileText, HeartPulse, AlertTriangle } from "lucide-react";
-import { MdOutlineBloodtype } from "react-icons/md";
-import { FaCow } from "react-icons/fa6";
+import {ArrowLeft, FileText, HeartPulse, BugIcon, DnaIcon} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/app/providers/AuthProvider";
 
@@ -21,6 +19,7 @@ import { HealthTab } from "@/components/custom/animal/detalhes/HealthTab";
 import { OffspringTab } from "@/components/custom/animal/detalhes/OffspringTab";
 import { DiseasesTab } from "@/components/custom/animal/detalhes/DiseasesTab";
 import { Spinner } from "@/components/ui/spinner";
+import {SiLineageos} from "react-icons/si";
 
 type TabType = "details" | "genealogy" | "health" | "offspring" | "diseases";
 
@@ -57,15 +56,22 @@ const AnimalDetails = () => {
 
         const fetchRelation = async () => {
             try {
+                if (activeTab === "genealogy" && (animal as any).pais) return;
+                if (activeTab === "health" && (animal as any).vacinacoes) return;
+                if (activeTab === "offspring" && (animal as any).filhos) return;
+
+                setLoading(true);
+
                 let relation: "pais" | "filhos" | "vacinacoes" | null = null;
 
                 if (activeTab === "genealogy") relation = "pais";
                 if (activeTab === "health") relation = "vacinacoes";
                 if (activeTab === "offspring") relation = "filhos";
 
-                if (!relation) return; // aba "details" não busca nada extra
-
-                setLoading(true);
+                if (!relation) {
+                    setLoading(false);
+                    return;
+                }
 
                 const res = await getAnimalRelation(accessToken, id.toString(), relation);
 
@@ -79,7 +85,7 @@ const AnimalDetails = () => {
         };
 
         fetchRelation();
-    }, [activeTab, id, accessToken]); // 👈 TIRA o "animal" daqui
+    }, [activeTab, id, accessToken]);
 
     // 3. Quando estiver na aba de doenças, carrega doenças do animal
     useEffect(() => {
@@ -101,23 +107,12 @@ const AnimalDetails = () => {
         fetchDiseases();
     }, [activeTab, id, accessToken]);
 
-    if (!animal) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold mb-4">Animal não encontrado</h1>
-                    <Button onClick={() => router.push("/")}>Voltar para listagem</Button>
-                </div>
-            </div>
-        );
-    }
-
     const menuItems = [
         { id: "details" as TabType, label: "Detalhes", icon: FileText },
-        { id: "genealogy" as TabType, label: "Genealogia", icon: MdOutlineBloodtype },
+        { id: "genealogy" as TabType, label: "Genealogia", icon: DnaIcon },
         { id: "health" as TabType, label: "Saúde", icon: HeartPulse },
-        { id: "offspring" as TabType, label: "Descendentes", icon: FaCow },
-        { id: "diseases" as TabType, label: "Doenças", icon: AlertTriangle },
+        { id: "offspring" as TabType, label: "Descendentes", icon: SiLineageos },
+        { id: "diseases" as TabType, label: "Doenças", icon: BugIcon },
     ];
 
     const handleDiseaseSaved = async () => {
@@ -130,24 +125,43 @@ const AnimalDetails = () => {
         }
     };
 
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Spinner />
+            </div>
+        );
+    }
+
+    if (!animal) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <h1 className="text-2xl font-tsukimi-rounded font-bold mb-4">Animal não encontrado</h1>
+                    <Button onClick={() => router.push("/")}>Voltar para listagem</Button>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className={"min-h-screen"}>
+        <div className={"max-w-7xl mx-auto py-8 px-4 min-h-screen"}>
                 <div className="container mx-auto px-4 py-4">
                     <Button variant="ghost" onClick={() => router.push("/auth/animal/listar")} className="mb-4">
                         <ArrowLeft className="h-4 w-4 mr-2"/>
                         Voltar para listagem
                     </Button>
                     <div>
-                        <h1 className="text-3xl font-bold text-accent-red-triangulo">
+                        <h1 className="text-3xl font-tsukimi-rounded font-bold text-accent-red-triangulo">
                             {animal.nome}
                         </h1>
-                        <p className="text-muted-foreground">
+                        <p className="text-muted-foreground mt-2">
                             {animal.registro} • {animal.tipoRaca}
                         </p>
                     </div>
                 </div>
 
-            <div className={"w-9/12 mx-auto border-b border-background"}/>
+            <div className={"border-b border-background"}/>
 
             <div className="container mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
