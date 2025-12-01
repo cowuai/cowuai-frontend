@@ -3,12 +3,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/app/providers/AuthProvider';
-import { toast } from 'sonner';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+import {useRouter} from 'next/navigation';
+import {useAuth} from '@/app/providers/AuthProvider';
+import {toast} from 'sonner';
+import {useForm} from 'react-hook-form';
+import {z} from 'zod';
+import {zodResolver} from '@hookform/resolvers/zod';
 
 const loginSchema = z.object({
     email: z.string().email('E-mail inválido'),
@@ -18,12 +18,12 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-    const { login } = useAuth();
+    const {login} = useAuth();
     const router = useRouter();
 
     const form = useForm<LoginForm>({
         resolver: zodResolver(loginSchema),
-        defaultValues: { email: '', password: '' },
+        defaultValues: {email: '', password: ''},
         mode: 'onSubmit',
     });
 
@@ -33,7 +33,7 @@ export default function LoginPage() {
             if (success) {
                 router.push('/auth/dashboard');
             } else {
-                toast.error('Falha no login', { description: 'Verifique suas credenciais.' });
+                toast.error('Falha no login', {description: 'Verifique suas credenciais.'});
             }
         } catch (err: any) {
             console.error('Erro no login:', err);
@@ -43,7 +43,8 @@ export default function LoginPage() {
 
     return (
         <main className="flex items-center justify-center min-h-screen transition-colors duration-500 px-4">
-            <div className="flex flex-col md:flex-row w-full max-w-4xl md:h-[500px] rounded-lg overflow-hidden shadow-lg">
+            <div
+                className="flex flex-col md:flex-row w-full max-w-4xl md:h-[500px] rounded-lg overflow-hidden shadow-lg">
                 {/* Coluna esquerda */}
                 <div className="flex items-center justify-center md:w-1/2 w-full bg-white p-6">
                     <Image
@@ -56,7 +57,8 @@ export default function LoginPage() {
                 </div>
 
                 {/* Coluna direita */}
-                <div className="flex flex-col items-center justify-center md:w-1/2 w-full bg-red-900 text-white p-6 md:p-8">
+                <div
+                    className="flex flex-col items-center justify-center md:w-1/2 w-full bg-red-900 text-white p-6 md:p-8">
                     <h2 className="text-3xl font-title mb-6">Login</h2>
 
                     <div className="bg-white text-black rounded-xl p-6 w-full max-w-md shadow-md">
@@ -104,13 +106,20 @@ export default function LoginPage() {
                                 )}
                             </div>
 
-                            <button type="submit" className="bg-red-900 text-white py-2 rounded-lg hover:bg-red-800 transition w-full">
+                            <button type="submit"
+                                    className="bg-red-900 text-white py-2 rounded-lg hover:bg-red-800 transition w-full">
                                 Login
                             </button>
 
-                            <button type="button" className="flex items-center justify-center gap-2 border py-2 rounded-lg hover:bg-gray-100 transition w-full">
+                            <button
+                                type="button"
+                                className="flex items-center justify-center gap-2 border py-2 rounded-lg hover:bg-gray-100 transition w-full"
+                                onClick={() => {
+                                    window.location.assign(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`);
+                                }}
+                            >
                                 Faça login com o Google
-                                <Image src="/images/google-icon.png" alt="Google" width={20} height={20} />
+                                <Image src="/images/google-icon.png" alt="Google" width={20} height={20}/>
                             </button>
                         </form>
 
