@@ -125,6 +125,18 @@ const AnimalDetails = () => {
         }
     };
 
+    const refreshHealthData = async () => {
+        if (!accessToken || !id) return;
+        try {
+            const res = await getAnimalRelation(accessToken, id.toString(), "vacinacoes");
+
+            // Atualiza o estado do animal com as novas vacinas vindas do back
+            setAnimal((prev) => (prev ? { ...prev, ...res } : res));
+        } catch (e) {
+            console.error("Erro ao recarregar vacinas:", e);
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -205,7 +217,7 @@ const AnimalDetails = () => {
                             {!loading && activeTab === "genealogy" && (
                                 <GenealogyTab animal={animal}/>
                             )}
-                            {!loading && activeTab === "health" && <HealthTab animal={animal} />}
+                            {!loading && activeTab === "health" && <HealthTab animal={animal} onUpdate={refreshHealthData} />}
                             {!loading && activeTab === "offspring" && <OffspringTab animal={animal} />}
                             {!loading && activeTab === "diseases" && (
                                 <DiseasesTab
