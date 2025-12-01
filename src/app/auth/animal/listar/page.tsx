@@ -14,12 +14,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FaEye } from "react-icons/fa"; // Você pode manter ou trocar por Eye do lucide-react para padronizar
+import { FaEye } from "react-icons/fa";
 import { Tsukimi_Rounded } from "next/font/google";
-import { Pencil, Trash2, Eye } from "lucide-react"; // Importei Eye aqui caso queira padronizar com a fazenda
+import { Pencil, Trash2, Eye } from "lucide-react";
 import BreadcrumbArea from "@/components/custom/BreadcrumbArea";
 
-import { PaginationControls } from "../../../../components/custom/animal/listar/PaginationControls";
+// REMOVIDO: import { PaginationControls } ...
+// ADICIONADO: Importações diretas do Shadcn (igual à Fazenda)
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+
 import { ConfirmDeleteModal } from "../../../../components/custom/animal/listar/ConfirmDeleteModal";
 import {
   EditAnimalModal,
@@ -91,17 +101,28 @@ export default function ListarAnimaisPage() {
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const { accessToken } = useAuth();
-  const DEFAULT_PAGE_SIZE = 5;
+
+  // Definição de itens por página
+  const DEFAULT_PAGE_SIZE = 2;
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [refreshFlag, setRefreshFlag] = useState<number>(0);
+
   const [paginationData, setPaginationData] = useState<PaginationData>({
     page: 1,
     pageSize: DEFAULT_PAGE_SIZE,
     totalItems: 0,
     totalPages: 1,
   });
+
+  // Cálculos para exibição "Exibindo X-Y de Z"
+  // No server-side, o cálculo é baseado na página atual e tamanho da página
+  const startDisplay = (currentPage - 1) * pageSize;
+  const endDisplay = Math.min(
+    startDisplay + pageSize,
+    paginationData.totalItems
+  );
 
   const [animais, setAnimais] = useState<Animal[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -244,7 +265,9 @@ export default function ListarAnimaisPage() {
     router.push(`/auth/animal/visualizar/${animal.id}`);
   };
 
-  const handlePageChange = (page: number) => {
+  // Esta função não é mais usada diretamente pelo PaginationControls,
+  // mas a lógica está embutida nos botões abaixo.
+  const goToPage = (page: number) => {
     if (page >= 1 && page <= paginationData.totalPages) {
       setCurrentPage(page);
     }
@@ -261,7 +284,6 @@ export default function ListarAnimaisPage() {
   }
 
   return (
-    // ESTRUTURA EXTERNA IGUAL À FAZENDA (Removido min-h-screen e bg-background daqui)
     <div className="flex max-w-7xl mx-auto py-8 px-4 transition-colors duration-500 text-foreground">
       {/* Conteúdo principal */}
       <main className="flex-1 transition-colors duration-500">
@@ -277,7 +299,7 @@ export default function ListarAnimaisPage() {
           <BreadcrumbArea />
         </header>
 
-        {/* Card central com a Tabela (IGUAL À FAZENDA) */}
+        {/* Card central com a Tabela */}
         <div
           className={`w-full mx-auto p-6 md:p-8 rounded-2xl shadow-lg overflow-x-auto ${
             darkMode ? "bg-stone-950" : "bg-white"
@@ -286,7 +308,6 @@ export default function ListarAnimaisPage() {
           {/* Wrapper da Tabela com borda externa sutil */}
           <div className="w-full overflow-x-auto rounded-md border border-red-900/20">
             <Table>
-              {/* Header da Tabela */}
               <TableHeader className="bg-red-700/10 dark:bg-red-950/30">
                 <TableRow className="hover:bg-transparent border-b border-red-900/20">
                   <TableHead className="font-bold text-red-900 dark:text-red-300 w-[100px] p-3">
@@ -401,16 +422,84 @@ export default function ListarAnimaisPage() {
             </Table>
           </div>
 
-          {/* Rodapé do Card (Paginação) */}
-          <div className="flex items-center justify-between mt-4 pt-4">
+          {/* ========================================================== */}
+          {/* PADRÃO DE PAGINAÇÃO IGUAL AO DA FAZENDA (COM SHADCN DIRETAMENTE) */}
+          {/* ========================================================== */}
+
+          <div className="flex items-center justify-between mt-1">
             <span className="text-sm opacity-70">
               Total: {paginationData.totalItems} animal(is)
             </span>
-            <PaginationControls
-              currentPage={paginationData.page}
-              totalPages={paginationData.totalPages}
-              onPageChange={handlePageChange}
-            />
+
+            <span className="flex items-center text-sm opacity-70 whitespace-nowrap">
+              Exibindo {paginationData.totalItems === 0 ? 0 : startDisplay + 1}–
+              {endDisplay} de {paginationData.totalItems}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between mt-2">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      goToPage(Math.max(1, currentPage - 1));
+                    }}
+                    className={`text-stone-500 hover:text-stone-500 hover:bg-stone-100
+                      dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-700
+                      ${
+                        currentPage === 1
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }`}
+                  />
+                </PaginationItem>
+
+                {/* Gera os números de página (array simples como na Fazenda) */}
+                {Array.from(
+                  { length: paginationData.totalPages },
+                  (_, i) => i + 1
+                ).map((n) => (
+                  <PaginationItem key={n}>
+                    <PaginationLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        goToPage(n);
+                      }}
+                      aria-current={currentPage === n ? "page" : undefined}
+                      // Aqui aplicamos a classe condicional para o item ATIVO (vermelho)
+                      className={`text-stone-500 hover:text-stone-500 hover:bg-stone-100
+        dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-700
+        ${currentPage === n ? "border-2 border-stone-300 font-bold" : ""}`}
+                    >
+                      {n}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      goToPage(
+                        Math.min(paginationData.totalPages, currentPage + 1)
+                      );
+                    }}
+                    className={`text-stone-500 hover:text-stone-500 hover:bg-stone-100
+                      dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-700
+                      ${
+                        currentPage === paginationData.totalPages
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }`}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
         </div>
 
