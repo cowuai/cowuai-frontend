@@ -17,7 +17,7 @@ function AuthContent() {
             setAccessToken(accessToken);
 
             // Força um refresh ou redireciona
-            router.push("/dashboard");
+            router.push("/auth/dashboard");
         } else {
             router.push("/login?error=auth_failed");
         }
