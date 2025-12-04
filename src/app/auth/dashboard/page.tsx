@@ -174,6 +174,31 @@ export default function DashboardPage() {
                     });
                 }
 
+                // Se houver dados de doenças por fazenda, garantir que o total de "animais doentes"
+                // reflita a soma dos casos por doença (para manter os gráficos consistentes).
+                if (data.doencasPorFazenda && Array.isArray(data.doencasPorFazenda)) {
+                    const totalDoencasCount = data.doencasPorFazenda.reduce((sum: number, d: any) => {
+                        const c = Number(d.count ?? 0);
+                        return sum + (Number.isNaN(c) ? 0 : c);
+                    }, 0);
+
+                    if (totalDoencasCount > 0) {
+                        // Atualiza o estado principal e o gráfico de linha para refletir o total calculado
+                        setAnimaisDoentes(totalDoencasCount);
+                        setLineData({
+                            labels: ["Total"],
+                            datasets: [{
+                                label: "Animais Doentes",
+                                data: [totalDoencasCount],
+                                borderColor: "#EF4444",
+                                backgroundColor: "transparent",
+                                tension: 0.4,
+                                borderWidth: 2,
+                            }],
+                        });
+                    }
+                }
+
             } catch (err) {
                 console.warn("Erro ao carregar dashboard:", err);
             }
