@@ -44,6 +44,10 @@ export enum StatusAnimal {
     VENDIDO = 'VENDIDO',
     DOADO = 'DOADO',
     ROUBADO = 'ROUBADO',
-    REPRODUZINDO = 'REPRODUZINDO',
     DOENTE = 'DOENTE'
+}
+
+export enum SexoAnimal {
+    MACHO = 'MACHO',
+    FEMEA = 'FEMEA',
 }
