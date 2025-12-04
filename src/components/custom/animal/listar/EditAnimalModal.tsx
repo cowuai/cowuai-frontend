@@ -124,9 +124,9 @@ export const EditAnimalModal: React.FC<EditAnimalModalProps> = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="max-w-3xl bg-white rounded-xl p-0 shadow-2xl border-none">
+            <DialogContent className="max-w-3xl rounded-xl p-0 shadow-2xl border-none">
                 <DialogHeader className="p-6 pb-4 border-b border-red-900/10">
-                    <DialogTitle className={`${tsukimiClassName} text-xl font-semibold text-red-800`}>
+                    <DialogTitle className={`${tsukimiClassName} text-xl font-semibold text-primary`}>
                         Editar animal
                     </DialogTitle>
                     <DialogClose className="absolute right-4 top-4 p-2 rounded-md hover:bg-gray-100 transition-colors">
@@ -140,7 +140,7 @@ export const EditAnimalModal: React.FC<EditAnimalModalProps> = ({
                         {/* Linha 1: Identificação */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1">
-                                <Label className="text-xs font-semibold text-gray-700">Número do Brinco</Label>
+                                <Label className="text-xs font-semibold">Número do Brinco</Label>
                                 <Input
                                     required
                                     value={formData.registro || ""}
@@ -149,7 +149,7 @@ export const EditAnimalModal: React.FC<EditAnimalModalProps> = ({
                                 />
                             </div>
                             <div className="flex flex-col gap-1">
-                                <Label className="text-xs font-semibold text-gray-700">N Particular</Label>
+                                <Label className="text-xs font-semibold">N Particular</Label>
                                 <Input
                                     value={formData.numeroParticularProprietario || ""}
                                     onChange={(e) => handleChange("numeroParticularProprietario", e.target.value)}
@@ -161,7 +161,7 @@ export const EditAnimalModal: React.FC<EditAnimalModalProps> = ({
                         {/* Linha 2: Nome e Status */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1">
-                                <Label className="text-xs font-semibold text-gray-700">Nome</Label>
+                                <Label className="text-xs font-semibold ">Nome</Label>
                                 <Input
                                     value={formData.nome || ""}
                                     onChange={(e) => handleChange("nome", e.target.value)}
@@ -169,7 +169,7 @@ export const EditAnimalModal: React.FC<EditAnimalModalProps> = ({
                                 />
                             </div>
                             <div className="flex flex-col gap-1">
-                                <Label className="text-xs font-semibold text-gray-700">Status</Label>
+                                <Label className="text-xs font-semibold">Status</Label>
                                 <Select
                                     value={formData.status}
                                     onValueChange={(val) => handleChange("status", val)}
@@ -191,7 +191,7 @@ export const EditAnimalModal: React.FC<EditAnimalModalProps> = ({
                         {/* Linha 3: Raça e Sexo */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1">
-                                <Label className="text-xs font-semibold text-gray-700">Raça</Label>
+                                <Label className="text-xs font-semibold">Raça</Label>
                                 <Select
                                     value={formData.tipoRaca || ""}
                                     onValueChange={(val) => handleChange("tipoRaca", val)}
@@ -209,7 +209,7 @@ export const EditAnimalModal: React.FC<EditAnimalModalProps> = ({
                                 </Select>
                             </div>
                             <div className="flex flex-col gap-1">
-                                <Label className="text-xs font-semibold text-gray-700">Sexo</Label>
+                                <Label className="text-xs font-semibold">Sexo</Label>
                                 <Select
                                     value={formData.sexo}
                                     onValueChange={(val) => handleChange("sexo", val)}
@@ -231,7 +231,7 @@ export const EditAnimalModal: React.FC<EditAnimalModalProps> = ({
                         {/* Linha 4: Genealogia */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1">
-                                <Label className="text-xs font-semibold text-gray-700">Mãe</Label>
+                                <Label className="text-xs font-semibold">Mãe</Label>
                                 {/* Convertendo para string no value para evitar erro se for null/number */}
                                 <Select
                                     value={formData.idMae?.toString() || ""}
@@ -250,7 +250,7 @@ export const EditAnimalModal: React.FC<EditAnimalModalProps> = ({
                                 </Select>
                             </div>
                             <div className="flex flex-col gap-1">
-                                <Label className="text-xs font-semibold text-gray-700">Pai</Label>
+                                <Label className="text-xs font-semibold">Pai</Label>
                                 <Select
                                     value={formData.idPai?.toString() || ""}
                                     onValueChange={(val) => handleChange("idPai", val ? Number(val) : null)}
@@ -272,7 +272,7 @@ export const EditAnimalModal: React.FC<EditAnimalModalProps> = ({
                         {/* Linha 5: Detalhes Físicos e Local */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div className="flex flex-col gap-1">
-                                <Label className="text-xs font-semibold text-gray-700">Peso (Kg)</Label>
+                                <Label className="text-xs font-semibold">Peso (Kg)</Label>
                                 <Input
                                     type="number"
                                     min="0"
@@ -283,7 +283,7 @@ export const EditAnimalModal: React.FC<EditAnimalModalProps> = ({
                                 />
                             </div>
                             <div className="flex flex-col gap-1 col-span-2">
-                                <Label className="text-xs font-semibold text-gray-700">Composição Racial</Label>
+                                <Label className="text-xs font-semibold">Composição Racial</Label>
                                 <Input
                                     value={formData.composicaoRacial || ""}
                                     onChange={(e) => handleChange("composicaoRacial", e.target.value)}
@@ -295,7 +295,7 @@ export const EditAnimalModal: React.FC<EditAnimalModalProps> = ({
                         {/* Linha 6: Logística */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1">
-                                <Label className="text-xs font-semibold text-gray-700">Data Nascimento</Label>
+                                <Label className="text-xs font-semibold">Data Nascimento</Label>
                                 <Input
                                     type="datetime-local"
                                     value={formatToLocalISO(formData.dataNascimento)}
@@ -304,7 +304,7 @@ export const EditAnimalModal: React.FC<EditAnimalModalProps> = ({
                                 />
                             </div>
                             <div className="flex flex-col gap-1">
-                                <Label className="text-xs font-semibold text-gray-700">Fazenda</Label>
+                                <Label className="text-xs font-semibold">Fazenda</Label>
                                 <Select
                                     value={formData.idFazenda?.toString() || ""}
                                     onValueChange={(val) => handleChange("idFazenda", Number(val))}
@@ -324,7 +324,7 @@ export const EditAnimalModal: React.FC<EditAnimalModalProps> = ({
                         </div>
 
                         <div className="flex flex-col gap-1">
-                            <Label className="text-xs font-semibold text-gray-700">Localização (Pasto/Lote)</Label>
+                            <Label className="text-xs font-semibold">Localização (Pasto/Lote)</Label>
                             <Input
                                 value={formData.localizacao || ""}
                                 onChange={(e) => handleChange("localizacao", e.target.value)}

@@ -65,6 +65,7 @@ const tsukimi = Tsukimi_Rounded({
 
 import { fazendaUpdateSchema } from "@/zodSchemes/fazendaScheme";
 import { z } from "zod";
+import {toast} from "sonner";
 
 // Tipagem básica da UI (mantendo seu shape com size/affixType)
 type Farm = {
@@ -318,14 +319,14 @@ export default function ListarFazendasPage() {
         } catch (e) {
             if (e instanceof z.ZodError) {
                 e.issues.forEach((issue: z.ZodIssue) => {
-                    alert(issue.message); // se quiser depois trocamos por toast/sonner
+                    toast.error(`Erro no campo ${issue.path.join(", ")}: ${issue.message}`);
                 });
                 return;
             }
 
             // aqui você pode usar sonner/toast se preferir
             const anyErr = e as any;
-            alert(anyErr?.message ?? "Erro ao salvar alterações");
+            toast.error(anyErr?.message ?? "Erro ao salvar edição");
         }
     }
 
@@ -498,7 +499,7 @@ export default function ListarFazendasPage() {
                                                 >
                                                     <AlertDialogContent>
                                                         <AlertDialogHeader>
-                                                            <AlertDialogTitle>Excluir fazenda</AlertDialogTitle>
+                                                            <AlertDialogTitle className={"font-tsukimi-rounded text-primary"}>Excluir fazenda</AlertDialogTitle>
                                                             <AlertDialogDescription>
                                                                 Tem certeza que deseja excluir <b>{f.farmName}</b>? Essa
                                                                 ação não pode ser desfeita.
@@ -508,7 +509,7 @@ export default function ListarFazendasPage() {
                                                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                                             <AlertDialogAction
                                                                 onClick={() => doDelete(f.id)}
-                                                                className="bg-red-900 text-white hover:bg-red-800"
+                                                                className="bg-primary hover:bg-primary/90 text-white"
                                                             >
                                                                 Excluir
                                                             </AlertDialogAction>
@@ -526,7 +527,7 @@ export default function ListarFazendasPage() {
                                             Nenhuma fazenda encontrada.{" "}
                                             <Link
                                                 href="/auth/fazenda/cadastrar"
-                                                className="text-red-900 hover:underline"
+                                                className="text-primary hover:underline"
                                             >
                                                 Cadastrar agora
                                             </Link>
@@ -611,7 +612,7 @@ export default function ListarFazendasPage() {
                 >
                     <DialogContent className="sm:max-w-lg">
                         <DialogHeader className="items-center text-center">
-                            <DialogTitle className={`${tsukimi.className} text-red-900 dark:text-red-500`}>
+                            <DialogTitle className={`${tsukimi.className} text-primary`}>
                                 Visualizar fazenda
                             </DialogTitle>
                         </DialogHeader>
@@ -748,7 +749,7 @@ export default function ListarFazendasPage() {
                                     <DialogClose asChild>
                                         <button
                                             type="button"
-                                            className="px-4 py-2 rounded-md text-red-900 border-3 border-red-900 bg-transparent hover:bg-stone-300 dark:hover:bg-stone-800 dark:text-white"
+                                            className="px-4 py-2 rounded-md text-primary border-3 border-primary bg-transparent hover:bg-stone-300 dark:hover:bg-stone-800 dark:text-white"
                                         >
                                             Fechar
                                         </button>
@@ -770,7 +771,7 @@ export default function ListarFazendasPage() {
                 >
                     <DialogContent className="sm:max-w-lg">
                         <DialogHeader className="items-center text-center">
-                            <DialogTitle className={`${tsukimi.className} text-red-900 dark:text-red-500`}>
+                            <DialogTitle className={`${tsukimi.className} text-primary`}>
                                 Editar fazenda
                             </DialogTitle>
                         </DialogHeader>

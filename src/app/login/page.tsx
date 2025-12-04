@@ -107,13 +107,13 @@ export default function LoginPage() {
                             </div>
 
                             <button type="submit"
-                                    className="bg-red-900 text-white py-2 rounded-lg hover:bg-red-800 transition w-full">
+                                    className="bg-red-900 text-white py-2 rounded-lg hover:bg-red-800 transition w-full cursor-pointer">
                                 Login
                             </button>
 
                             <button
                                 type="button"
-                                className="flex items-center justify-center gap-2 border py-2 rounded-lg hover:bg-gray-100 transition w-full"
+                                className="flex items-center justify-center gap-2 border py-2 rounded-lg hover:bg-gray-100 transition w-full cursor-pointer"
                                 onClick={() => {
                                     window.location.assign(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`);
                                 }}
