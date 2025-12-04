@@ -2,10 +2,10 @@
 "use client";
 
 import Link from "next/link";
-import {useTheme} from "next-themes";
-import {useEffect, useState} from "react";
-import {Tsukimi_Rounded} from "next/font/google";
-import {Pencil, Trash2, Eye} from "lucide-react";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { Tsukimi_Rounded } from "next/font/google";
+import { Pencil, Trash2, Eye } from "lucide-react";
 
 import {
     Table,
@@ -34,11 +34,11 @@ import {
     DialogClose,
 } from "@/components/ui/dialog"
 
-// 🔐 Auth + fetch helper (sem hooks dentro)
-import {useAuth} from "@/app/providers/AuthProvider";
-import {apiFetch} from "@/helpers/ApiFetch";
+//  Auth + fetch helper (sem hooks dentro)
+import { useAuth } from "@/app/providers/AuthProvider";
+import { apiFetch } from "@/helpers/ApiFetch";
 
-// ⚠️ CONFIRMAÇÃO COM SHADCN (substitui window.confirm)
+//  CONFIRMAÇÃO COM SHADCN (substitui window.confirm)
 import {
     AlertDialog,
     AlertDialogAction,
@@ -50,11 +50,11 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-// ✅ TIPOS/AÇÕES para UF/município (mesmo padrão do cadastrar)
-import {Estado} from "@/types/Estado";
-import {Municipio} from "@/types/Municipio";
-import {getUfs as getUFS} from "@/actions/getUfs";
-import {getMunicipios} from "@/actions/getMunicipios";
+//  TIPOS/AÇÕES para UF/município (mesmo padrão do cadastrar)
+import { Estado } from "@/types/Estado";
+import { Municipio } from "@/types/Municipio";
+import { getUfs as getUFS } from "@/actions/getUfs";
+import { getMunicipios } from "@/actions/getMunicipios";
 import BreadcrumbArea from "@/components/custom/BreadcrumbArea";
 
 // Fonte do título (igual às outras páginas)
@@ -62,6 +62,9 @@ const tsukimi = Tsukimi_Rounded({
     subsets: ["latin"],
     weight: ["300", "400", "600"],
 });
+
+import { fazendaUpdateSchema } from "@/zodSchemes/fazendaScheme";
+import { z } from "zod";
 
 // Tipagem básica da UI (mantendo seu shape com size/affixType)
 type Farm = {
@@ -96,12 +99,12 @@ function flagsFromAffixType(affixType?: "" | "preffix" | "suffix") {
 }
 
 export default function ListarFazendasPage() {
-    const {theme} = useTheme();
+    const { theme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
     // 🔐 pega token/usuário do provider (dentro do componente é ok)
     // const { accessToken } = useAuth();
-    const {usuario, accessToken} = useAuth();
+    const { usuario, accessToken } = useAuth();
 
     useEffect(() => setMounted(true), []);
     const darkMode = theme === "dark";
@@ -220,7 +223,7 @@ export default function ListarFazendasPage() {
         try {
             // otimista: remove local
             setFarms((curr) => curr.filter((f) => f.id !== id));
-            await apiFetch(`${apiBase}/fazendas/${id}`, {method: "DELETE"}, accessToken ?? undefined);
+            await apiFetch(`${apiBase}/fazendas/${id}`, { method: "DELETE" }, accessToken ?? undefined);
             // opcional: recarrega do servidor para garantir consistência
             // await loadFarms();
         } catch (e: any) {
@@ -283,7 +286,7 @@ export default function ListarFazendasPage() {
 
         try {
             // monta payload esperado pelo back (UI → Back)
-            const body = {
+            const rawBody = {
                 nome: selectedFarm.farmName,
                 endereco: selectedFarm.address,
                 cidade: selectedFarm.city,
@@ -295,6 +298,9 @@ export default function ListarFazendasPage() {
                 // pais: "Brasil",
                 // idProprietario: <id>,
             };
+
+            // 🔍 validação com Zod (update = parcial)
+            const body = fazendaUpdateSchema.parse(rawBody);
 
             await apiFetch(
                 `${apiBase}/fazendas/${selectedFarm.id}`,
@@ -309,9 +315,17 @@ export default function ListarFazendasPage() {
             setIsEditOpen(false);
             setSelectedFarm(null);
             await loadFarms();
-        } catch (e: any) {
+        } catch (e) {
+            if (e instanceof z.ZodError) {
+                e.issues.forEach((issue: z.ZodIssue) => {
+                    alert(issue.message); // se quiser depois trocamos por toast/sonner
+                });
+                return;
+            }
+
             // aqui você pode usar sonner/toast se preferir
-            alert(e?.message ?? "Erro ao salvar alterações");
+            const anyErr = e as any;
+            alert(anyErr?.message ?? "Erro ao salvar alterações");
         }
     }
 
@@ -336,19 +350,19 @@ export default function ListarFazendasPage() {
                 <header className="flex-row justify-between items-start mb-6">
                     <h1
                         className={`${tsukimi.className} text-3xl mb-2 ${darkMode ? "text-white" : "text-red-900"
-                        }`}
+                            }`}
                     >
                         Listar Fazendas
                     </h1>
 
-                    <BreadcrumbArea/>
+                    <BreadcrumbArea />
 
                 </header>
 
                 {/* Card central com a Tabela */}
                 <div
                     className={`w-full mx-auto p-6 md:p-8 rounded-2xl shadow-lg overflow-x-auto ${darkMode ? "bg-stone-950" : "bg-white"
-                    }`}
+                        }`}
                 >
                     {/* estados de carregamento/erro (simples) */}
                     {loading && (
@@ -426,7 +440,7 @@ export default function ListarFazendasPage() {
                                                     aria-label={`Visualizar ${f.farmName}`}
                                                     title="Visualizar"
                                                 >
-                                                    <Eye className="w-4 h-4"/>
+                                                    <Eye className="w-4 h-4" />
                                                 </button>
 
                                                 {/* Editar — abre o Dialog preenchido */}
@@ -457,7 +471,7 @@ export default function ListarFazendasPage() {
                                                     aria-label={`Editar ${f.farmName}`}
                                                     title="Editar"
                                                 >
-                                                    <Pencil className="w-4 h-4"/>
+                                                    <Pencil className="w-4 h-4" />
                                                 </button>
 
                                                 {/* Excluir (abre o AlertDialog) */}
@@ -471,7 +485,7 @@ export default function ListarFazendasPage() {
                                                     aria-label={`Excluir ${f.farmName}`}
                                                     title="Excluir"
                                                 >
-                                                    <Trash2 className="w-4 h-4"/>
+                                                    <Trash2 className="w-4 h-4" />
                                                 </button>
 
                                                 {/* AlertDialog posicionado aqui para cada linha, controlado por estado */}
@@ -526,13 +540,13 @@ export default function ListarFazendasPage() {
 
                     {/* Ações (bottom do card) */}
                     <div className="flex items-center justify-between mt-1">
-            <span className="text-sm opacity-70">
-              Total: {farms.length} fazenda(s)
-            </span>
+                        <span className="text-sm opacity-70">
+                            Total: {farms.length} fazenda(s)
+                        </span>
 
                         <span className="flex items-center text-sm opacity-70 whitespace-nowrap">
-              Exibindo {farms.length === 0 ? 0 : start + 1}–{Math.min(end, farms.length)} de {farms.length}
-            </span>
+                            Exibindo {farms.length === 0 ? 0 : start + 1}–{Math.min(end, farms.length)} de {farms.length}
+                        </span>
                     </div>
 
                     {/* Paginação */}
@@ -552,7 +566,7 @@ export default function ListarFazendasPage() {
                                     />
                                 </PaginationItem>
 
-                                {Array.from({length: totalPages}, (_, i) => i + 1).map((n) => (
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
                                     <PaginationItem key={n}>
                                         <PaginationLink
                                             href="#"
@@ -788,7 +802,7 @@ export default function ListarFazendasPage() {
                                         type="text"
                                         value={selectedFarm.farmName}
                                         onChange={(e) =>
-                                            setSelectedFarm({...selectedFarm, farmName: e.target.value})
+                                            setSelectedFarm({ ...selectedFarm, farmName: e.target.value })
                                         }
                                         className="w-full border rounded-md p-2 text-black dark:text-foreground bg-white dark:bg-stone-900"
                                         required
@@ -802,7 +816,7 @@ export default function ListarFazendasPage() {
                                         type="text"
                                         value={selectedFarm.address}
                                         onChange={(e) =>
-                                            setSelectedFarm({...selectedFarm, address: e.target.value})
+                                            setSelectedFarm({ ...selectedFarm, address: e.target.value })
                                         }
                                         className="w-full border rounded-md p-2 text-black dark:text-foreground bg-white dark:bg-stone-900"
                                         required
@@ -819,7 +833,7 @@ export default function ListarFazendasPage() {
                                                 const uf = e.target.value.toUpperCase().slice(0, 2);
                                                 // ao trocar UF, zera cidade local
                                                 setSelectedFarm((prev) =>
-                                                    prev ? {...prev, state: uf, city: ""} : prev
+                                                    prev ? { ...prev, state: uf, city: "" } : prev
                                                 );
                                                 // municipios serão carregados pelo useEffect acima
                                             }}
@@ -841,7 +855,7 @@ export default function ListarFazendasPage() {
                                             value={selectedFarm.city}
                                             onChange={(e) =>
                                                 setSelectedFarm((prev) =>
-                                                    prev ? {...prev, city: e.target.value} : prev
+                                                    prev ? { ...prev, city: e.target.value } : prev
                                                 )
                                             }
                                             className="w-full border rounded-md p-2 text-black dark:text-foreground bg-white dark:bg-stone-900"
@@ -889,7 +903,7 @@ export default function ListarFazendasPage() {
                                             type="text"
                                             value={selectedFarm.affix}
                                             onChange={(e) =>
-                                                setSelectedFarm({...selectedFarm, affix: e.target.value})
+                                                setSelectedFarm({ ...selectedFarm, affix: e.target.value })
                                             }
                                             className="w-full border rounded-md p-2 text-black dark:text-foreground bg-white dark:bg-stone-900"
                                             placeholder="Ex.: Boa Esperança"

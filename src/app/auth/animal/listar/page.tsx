@@ -1,10 +1,11 @@
+// src/app/auth/animal/listar/page.tsx
 "use client";
 
 import { useAuth } from "@/app/providers/AuthProvider";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 
-// Imports da Tabela
 import {
   Table,
   TableBody,
@@ -13,22 +14,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { FaEye } from "react-icons/fa";
 import { Tsukimi_Rounded } from "next/font/google";
-import { Pencil, Trash2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Pencil, Trash2, Eye } from "lucide-react";
 import BreadcrumbArea from "@/components/custom/BreadcrumbArea";
 
-// IMPORTS DOS SEUS COMPONENTES REFATORADOS
-import { PaginationControls } from "../../../../components/custom/animal/listar/PaginationControls";
-import { ConfirmDeleteModal } from "../../../../components/custom/animal/listar/ConfirmDeleteModal";
-// ✅ IMPORT DO NOVO MODAL DE EDIÇÃO
-import { EditAnimalModal, Animal } from "../../../../components/custom/animal/listar/EditAnimalModal";
+// REMOVIDO: import { PaginationControls } ...
+// ADICIONADO: Importações diretas do Shadcn (igual à Fazenda)
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
-// ======================================================================
-// CONFIGURAÇÕES GERAIS
-// ======================================================================
+import { ConfirmDeleteModal } from "../../../../components/custom/animal/listar/ConfirmDeleteModal";
+import {
+  EditAnimalModal,
+  Animal,
+} from "../../../../components/custom/animal/listar/EditAnimalModal";
+
 const tsukimi = Tsukimi_Rounded({
   subsets: ["latin"],
   weight: ["300", "400", "600"],
@@ -49,9 +56,6 @@ interface ApiResponse {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 const ANIMAL_ENDPOINT = `${API_BASE_URL}/animais`;
 
-// ======================================================================
-// FUNÇÕES FETCH
-// ======================================================================
 const fetchAnimals = async (
   page: number,
   pageSize: number,
@@ -93,17 +97,18 @@ const formatDate = (dateString: string | null): string => {
   }
 };
 
-// ======================================================================
-// COMPONENTE PRINCIPAL
-// ======================================================================
-
 export default function ListarAnimaisPage() {
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const { accessToken } = useAuth();
-  const DEFAULT_PAGE_SIZE = 10;
+
+  // Definição de itens por página
+  const DEFAULT_PAGE_SIZE = 2;
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [refreshFlag, setRefreshFlag] = useState<number>(0);
+
   const [paginationData, setPaginationData] = useState<PaginationData>({
     page: 1,
     pageSize: DEFAULT_PAGE_SIZE,
@@ -111,21 +116,28 @@ export default function ListarAnimaisPage() {
     totalPages: 1,
   });
 
+  // Cálculos para exibição "Exibindo X-Y de Z"
+  // No server-side, o cálculo é baseado na página atual e tamanho da página
+  const startDisplay = (currentPage - 1) * pageSize;
+  const endDisplay = Math.min(
+    startDisplay + pageSize,
+    paginationData.totalItems
+  );
+
   const [animais, setAnimais] = useState<Animal[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Estados para o Modal de Edição (Adicionados de volta)
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
-
-  // Estados para o Modal de Exclusão
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
   const [animalIdToDelete, setAnimalIdToDelete] = useState<number | null>(null);
 
   const router = useRouter();
 
-  // Busca de Dados
+  useEffect(() => setMounted(true), []);
+  const darkMode = theme === "dark";
+
   useEffect(() => {
     const loadAnimals = async () => {
       if (!accessToken) return;
@@ -171,11 +183,7 @@ export default function ListarAnimaisPage() {
     setRefreshFlag((prev) => prev + 1);
   };
 
-  // ======================================================================
-  // LÓGICA DE EDIÇÃO (RESTAURADA E LIMPA)
-  // ======================================================================
   const handleEdit = (animal: Animal) => {
-    // Abre o modal e define o animal selecionado
     setSelectedAnimal(animal);
     setIsEditModalOpen(true);
   };
@@ -185,15 +193,12 @@ export default function ListarAnimaisPage() {
 
     setLoading(true);
     try {
-      // 1. URL correta para atualização (assumindo que sua API usa /animais/{id})
       const url = `${ANIMAL_ENDPOINT}/${updatedAnimal.id}`;
-
-      // 2. Faz a chamada REAL para o backend
       const response = await fetch(url, {
-        method: "PUT", // Ou 'PATCH', dependendo da sua API
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`, // Importante: Autenticação
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(updatedAnimal),
       });
@@ -203,12 +208,9 @@ export default function ListarAnimaisPage() {
         throw new Error(errorData.message || "Erro ao atualizar o animal.");
       }
 
-      console.log("Animal atualizado com sucesso:", updatedAnimal);
-
-      // 3. Fecha o modal e recarrega a lista
       setIsEditModalOpen(false);
       setSelectedAnimal(null);
-      triggerRefresh(); // Isso vai buscar os dados ATUALIZADOS do backend
+      triggerRefresh();
     } catch (err: any) {
       console.error("Erro ao salvar edição:", err);
       setError(err.message || "Erro ao salvar alterações.");
@@ -217,9 +219,6 @@ export default function ListarAnimaisPage() {
     }
   };
 
-  // ======================================================================
-  // LÓGICA DE EXCLUSÃO
-  // ======================================================================
   const handleDelete = (id: number) => {
     setAnimalIdToDelete(id);
     setIsConfirmModalOpen(true);
@@ -266,11 +265,15 @@ export default function ListarAnimaisPage() {
     router.push(`/auth/animal/visualizar/${animal.id}`);
   };
 
-  const handlePageChange = (page: number) => {
+  // Esta função não é mais usada diretamente pelo PaginationControls,
+  // mas a lógica está embutida nos botões abaixo.
+  const goToPage = (page: number) => {
     if (page >= 1 && page <= paginationData.totalPages) {
       setCurrentPage(page);
     }
   };
+
+  if (!mounted) return null;
 
   if (error) {
     return (
@@ -281,39 +284,51 @@ export default function ListarAnimaisPage() {
   }
 
   return (
-    <div className="flex max-w-7xl mx-auto py-8 px-4 flex-col items-start justify-start text-gray-800 p-8">
-      <div className="flex-row mb-6">
-        <h1 className={`${tsukimi.className} text-3xl text-primary mb-2`}>
-          Listar Animais
-        </h1>
-        <BreadcrumbArea />
-      </div>
+    <div className="flex max-w-7xl mx-auto py-8 px-4 transition-colors duration-500 text-foreground">
+      {/* Conteúdo principal */}
+      <main className="flex-1 transition-colors duration-500">
+        {/* Header */}
+        <header className="flex-row justify-between items-start mb-6">
+          <h1
+            className={`${tsukimi.className} text-3xl mb-2 ${
+              darkMode ? "text-white" : "text-red-900"
+            }`}
+          >
+            Listar Animais
+          </h1>
+          <BreadcrumbArea />
+        </header>
 
-      <Card className="w-full rounded-2xl shadow-xl mx-auto">
-        <CardContent className="p-4">
-          <div className="w-full overflow-hidden rounded-md border border-red-900/20">
+        {/* Card central com a Tabela */}
+        <div
+          className={`w-full mx-auto p-6 md:p-8 rounded-2xl shadow-lg overflow-x-auto ${
+            darkMode ? "bg-stone-950" : "bg-white"
+          }`}
+        >
+          {/* Wrapper da Tabela com borda externa sutil */}
+          <div className="w-full overflow-x-auto rounded-md border border-red-900/20">
             <Table>
               <TableHeader className="bg-red-700/10 dark:bg-red-950/30">
-                <TableRow className="border-b border-red-900/20 hover:bg-transparent">
-                  <TableHead className="font-bold text-red-900 w-[100px] p-3">
+                <TableRow className="hover:bg-transparent border-b border-red-900/20">
+                  <TableHead className="font-bold text-red-900 dark:text-red-300 w-[100px] p-3">
                     Brinco
                   </TableHead>
-                  <TableHead className="font-bold text-red-900 w-[150px] p-3">
+                  <TableHead className="font-bold text-red-900 dark:text-red-300 w-[150px] p-3">
                     Nome
                   </TableHead>
-                  <TableHead className="font-bold text-red-900 p-3">
+                  <TableHead className="font-bold text-red-900 dark:text-red-300 p-3">
                     Raça
                   </TableHead>
-                  <TableHead className="font-bold text-red-900 p-3">
+                  <TableHead className="font-bold text-red-900 dark:text-red-300 p-3">
                     Sexo
                   </TableHead>
-                  <TableHead className="font-bold text-red-900 p-3">
+                  <TableHead className="font-bold text-red-900 dark:text-red-300 p-3">
                     Peso (Kg)
                   </TableHead>
-                  <TableHead className="font-bold text-red-900 p-3">
+                  <TableHead className="font-bold text-red-900 dark:text-red-300 p-3">
                     Nascimento
                   </TableHead>
-                  <TableHead className="text-center font-bold text-red-900 w-[100px] p-3">
+                  <TableHead className="text-center font-bold text-red-900 dark:text-red-300 w-[100px] p-3">
                     Ações
                   </TableHead>
                 </TableRow>
@@ -324,7 +339,7 @@ export default function ListarAnimaisPage() {
                   <TableRow>
                     <TableCell
                       colSpan={7}
-                      className="text-center py-8 text-red-700"
+                      className="text-center py-8 text-red-700 dark:text-red-400"
                     >
                       Carregando animais...
                     </TableCell>
@@ -333,12 +348,12 @@ export default function ListarAnimaisPage() {
                   animais.map((animal) => (
                     <TableRow
                       key={animal.id}
-                      className="border-b last:border-0 border-red-900/30 odd:bg-white even:bg-red-50/50 hover:bg-muted/80 transition-colors"
+                      className="hover:bg-muted/80 border-b last:border-0 border-red-900/30 transition-colors"
                     >
-                      <TableCell className="font-medium text-gray-700 p-3">
+                      <TableCell className="font-medium p-3">
                         {animal.numeroParticularProprietario}
                       </TableCell>
-                      <TableCell className="font-medium text-gray-700 p-3">
+                      <TableCell className="font-medium p-3">
                         {animal.nome}
                       </TableCell>
                       <TableCell className="p-3">{animal.tipoRaca}</TableCell>
@@ -350,35 +365,44 @@ export default function ListarAnimaisPage() {
                         {formatDate(animal.dataNascimento)}
                       </TableCell>
 
-                      <TableCell className="text-center p-3">
-                        <div className="flex items-center justify-center space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
+                      {/* Ações */}
+                      <TableCell className="text-right p-3">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            type="button"
                             onClick={() => handleView(animal)}
-                            className="text-stone-500 hover:text-blue-700"
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-md
+                                text-stone-500 hover:text-stone-700 hover:bg-stone-300
+                                dark:text-stone-400 dark:hover:text-red-300 dark:hover:bg-stone-700
+                                transition-colors"
+                            title="Visualizar"
                           >
-                            <FaEye className="h-4 w-4" />
-                          </Button>
+                            <FaEye className="w-4 h-4" />
+                          </button>
 
-                          {/* BOTÃO EDITAR AGORA ABRE O MODAL */}
-                          <Button
-                            variant="ghost"
-                            size="icon"
+                          <button
+                            type="button"
                             onClick={() => handleEdit(animal)}
-                            className="text-stone-500 hover:text-blue-700"
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-md
+                                text-stone-500 hover:text-stone-700 hover:bg-stone-300
+                                dark:text-stone-400 dark:hover:text-red-300 dark:hover:bg-stone-700
+                                transition-colors"
+                            title="Editar"
                           >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
+                            <Pencil className="w-4 h-4" />
+                          </button>
 
-                          <Button
-                            variant="ghost"
-                            size="icon"
+                          <button
+                            type="button"
                             onClick={() => handleDelete(animal.id)}
-                            className="text-stone-500 hover:text-red-700"
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-md
+                                text-stone-500 hover:text-red-700 hover:bg-stone-300
+                                dark:text-stone-400 dark:hover:text-red-400 dark:hover:bg-stone-700
+                                transition-colors"
+                            title="Excluir"
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -388,7 +412,7 @@ export default function ListarAnimaisPage() {
                   <TableRow>
                     <TableCell
                       colSpan={7}
-                      className="text-center py-8 text-gray-500"
+                      className="text-center py-8 opacity-70"
                     >
                       Nenhum animal encontrado.
                     </TableCell>
@@ -398,37 +422,105 @@ export default function ListarAnimaisPage() {
             </Table>
           </div>
 
-          <div className="flex items-center justify-between mt-4 pt-4">
+          {/* ========================================================== */}
+          {/* PADRÃO DE PAGINAÇÃO IGUAL AO DA FAZENDA (COM SHADCN DIRETAMENTE) */}
+          {/* ========================================================== */}
+
+          <div className="flex items-center justify-between mt-1">
             <span className="text-sm opacity-70">
               Total: {paginationData.totalItems} animal(is)
             </span>
-            <PaginationControls
-              currentPage={paginationData.page}
-              totalPages={paginationData.totalPages}
-              onPageChange={handlePageChange}
-            />
+
+            <span className="flex items-center text-sm opacity-70 whitespace-nowrap">
+              Exibindo {paginationData.totalItems === 0 ? 0 : startDisplay + 1}–
+              {endDisplay} de {paginationData.totalItems}
+            </span>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
-      <ConfirmDeleteModal
-        isOpen={isConfirmModalOpen}
-        setIsOpen={setIsConfirmModalOpen}
-        onConfirm={confirmDelete}
-        isLoading={loading}
-        tsukimiClassName={tsukimi.className}
-      />
+          <div className="flex items-center justify-between mt-2">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      goToPage(Math.max(1, currentPage - 1));
+                    }}
+                    className={`text-stone-500 hover:text-stone-500 hover:bg-stone-100
+                      dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-700
+                      ${
+                        currentPage === 1
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }`}
+                  />
+                </PaginationItem>
 
-      {/* ✅ MODAL DE EDIÇÃO ADICIONADO DE VOLTA */}
-      <EditAnimalModal
-        isOpen={isEditModalOpen}
-        setIsOpen={setIsEditModalOpen}
-        animalToEdit={selectedAnimal}
-        onSave={handleSaveEdit}
-        isLoading={loading}
-        tsukimiClassName={tsukimi.className}
-      />
+                {/* Gera os números de página (array simples como na Fazenda) */}
+                {Array.from(
+                  { length: paginationData.totalPages },
+                  (_, i) => i + 1
+                ).map((n) => (
+                  <PaginationItem key={n}>
+                    <PaginationLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        goToPage(n);
+                      }}
+                      aria-current={currentPage === n ? "page" : undefined}
+                      // Aqui aplicamos a classe condicional para o item ATIVO (vermelho)
+                      className={`text-stone-500 hover:text-stone-500 hover:bg-stone-100
+        dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-700
+        ${currentPage === n ? "border-2 border-stone-300 font-bold" : ""}`}
+                    >
+                      {n}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      goToPage(
+                        Math.min(paginationData.totalPages, currentPage + 1)
+                      );
+                    }}
+                    className={`text-stone-500 hover:text-stone-500 hover:bg-stone-100
+                      dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-700
+                      ${
+                        currentPage === paginationData.totalPages
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }`}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        </div>
+
+        {/* Modais */}
+        <ConfirmDeleteModal
+          isOpen={isConfirmModalOpen}
+          setIsOpen={setIsConfirmModalOpen}
+          onConfirm={confirmDelete}
+          isLoading={loading}
+          tsukimiClassName={tsukimi.className}
+        />
+
+        <EditAnimalModal
+          isOpen={isEditModalOpen}
+          setIsOpen={setIsEditModalOpen}
+          animalToEdit={selectedAnimal}
+          onSave={handleSaveEdit}
+          isLoading={loading}
+          tsukimiClassName={tsukimi.className}
+        />
+      </main>
     </div>
   );
 }

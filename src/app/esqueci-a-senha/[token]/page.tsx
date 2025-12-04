@@ -220,7 +220,7 @@ const ForgotPassword = () => {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center gradient-bg px-4 py-8">
+        <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
             <div className="w-full max-w-md">
                 <div className="card-elegant rounded-2xl bg-card animate-in fade-in-50 slide-in-from-bottom-5 duration-500">
                     <div className={"w-full h-full rounded-t-2xl bg-secondary mb-6 flex justify-center animate-in fade-in-50 slide-in-from-top-5 duration-500"}>

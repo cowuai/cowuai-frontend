@@ -36,10 +36,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { BiPlus } from "react-icons/bi";
 import { ptBR } from "react-day-picker/locale";
-// ⬇️ ADIÇÃO: vamos usar o helper de fetch autenticado
 import { apiFetch } from "@/helpers/ApiFetch";
 
-// ⬇️ ajuste: receber sexoAnimal também
 type Props = {
   idAnimal: bigint;
   sexoAnimal: "MACHO" | "FEMEA" | "TODOS"; // ⬅️ inclui TODOS
@@ -222,9 +220,9 @@ export default function AddVaccineModal({ idAnimal, sexoAnimal, onSaved }: Props
         </Button>
       </DialogTrigger>
 
-      <DialogContent className={"max-w-2xl h-auto space-y-4"}>
+      <DialogContent className={"max-w-2xl h-auto space-y-4 bg-card"}>
         <DialogHeader>
-          <DialogTitle className={"font-tsukimi-rounded"}>Cadastro de Vacina</DialogTitle>
+          <DialogTitle className={"font-tsukimi-rounded text-primary"}>Cadastro de Vacina</DialogTitle>
           <DialogDescription>
             Formulário para adicionar uma nova vacina aplicada no animal.
           </DialogDescription>
