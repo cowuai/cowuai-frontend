@@ -20,8 +20,6 @@ export const DetailsTab = ({ animal }: DetailsTabProps) => {
                 return "bg-warning text-warning-foreground";
             case "ROUBADO":
                 return "bg-secondary text-secondary-foreground";
-            case "REPRODUZINDO":
-                return "bg-accent-blue text-primary-foreground";
             case "DOENTE":
                 return "bg-accent-yellow text-primary-foreground";
             default:
