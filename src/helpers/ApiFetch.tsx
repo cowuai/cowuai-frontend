@@ -19,10 +19,14 @@ export async function apiFetch(
     try {
       const data = await res.json();
       message = (data?.message || data?.error || message) as string;
+      const err: any = new Error(message);
+      err.status = res.status;
+      err.body = data;
+      throw err;
     } catch {
-      // keep default
+      // se não conseguimos parsear o body, lança erro simples
+      throw new Error(message);
     }
-    throw new Error(message);
   }
 
   // tenta parsear json; se não for json, retorna vazio

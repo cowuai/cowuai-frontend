@@ -1,16 +1,28 @@
-// src/app/cadastro/page.tsx
 "use client";
 
-import { z } from "zod"; // ✅ remove 'undefined' do import
+import { z } from "zod"; 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Tsukimi_Rounded } from "next/font/google";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Estado } from "@/types/Estado";
+import { Municipio } from "@/types/Municipio";
+import { apiFetch } from "@/helpers/ApiFetch";
 
 import {
   Card,
@@ -29,82 +41,29 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-import { Tsukimi_Rounded } from "next/font/google";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useEffect, useState } from "react";
-import { Estado } from "@/types/Estado";
-import { getUfs } from "@/actions/getUfs";
-import { Municipio } from "@/types/Municipio";
-import { getMunicipios } from "@/actions/getMunicipios";
-import { useRouter } from "next/navigation";
+import { createUsuarioSchema } from "@/zodSchemes/usuarioScheme";
 
-// 🔗 helper de rede (puro, sem hooks dentro)
-import { apiFetch } from "@/helpers/ApiFetch";
-
+// Fonte do título (como em outras páginas)
 const tsukimi = Tsukimi_Rounded({
   subsets: ["latin"],
   weight: ["300", "400", "600"],
 });
 
-// --- helpers de validação (Tipagem corrigida) ---
-const onlyDigits = (s: string): string => s.replace(/\D/g, "");
-
-function isValidCPF(cpfRaw: string): boolean {
-  const cpf = onlyDigits(cpfRaw);
-  if (!/^\d{11}$/.test(cpf)) return false;
-  if (/^(\d)\1{10}$/.test(cpf)) return false; // todos iguais
-
-  // dígitos verificadores
-  const calcDigit = (base: string, factorStart: number) => {
-    let sum = 0,
-      factor = factorStart;
-    for (const ch of base) sum += parseInt(ch, 10) * factor--;
-    const rest = sum % 11;
-    return rest < 2 ? 0 : 11 - rest;
-  };
-
-  const d1 = calcDigit(cpf.slice(0, 9), 10);
-  const d2 = calcDigit(cpf.slice(0, 9) + d1.toString(), 11);
-  return cpf.endsWith(`${d1}${d2}`);
-}
-
-function isValidBirthDateStr(s: string): boolean {
-  // espera "YYYY-MM-DD"
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
-  const d = new Date(s + "T00:00:00");
-  if (Number.isNaN(d.getTime())) return false;
-
-  const today = new Date();
-  // não pode ser no futuro
-  if (d > today) return false;
-
-  // idade máxima (ex.: 120 anos)
-  const oldest = new Date();
-  oldest.setFullYear(oldest.getFullYear() - 120);
-  if (d < oldest) return false;
-
-  return true;
-}
+/*
+  Reaproveita as validações definidas em `createUsuarioSchema` para
+  os campos do formulário de cadastro do usuário
+*/
 
 const schema = z
   .object({
-    name: z.string().min(3, "Informe seu nome completo"),
-    email: z.string().email("E-mail inválido"),
-    password: z.string().min(6, "Mínimo 6 caracteres"),
-    confirm: z.string().min(6, "Confirme a senha"),
-    cpf: z
-      .string()
-      .min(11, "Informe o CPF")
-      .refine((v) => isValidCPF(v), "CPF inválido"),
-    birthDate: z
-      .string()
-      .refine((v) => isValidBirthDateStr(v), "Data de nascimento inválida"),
+    name: createUsuarioSchema.shape.nome,
+    email: createUsuarioSchema.shape.email,
+    password: createUsuarioSchema.shape.senha,
+    confirm: createUsuarioSchema.shape.senha,
+    cpf: z.preprocess((v) => (typeof v === "string" ? v.replace(/\D/g, "") : v), createUsuarioSchema.shape.cpf as any),
+    birthDate: createUsuarioSchema.shape.dataNascimento,
+
+    // campos da fazenda seguem as mesmas regras locais
     farmName: z.string().min(3, "Informe o nome da fazenda"),
     address: z.string().min(5, "Informe o endereço"),
     city: z.string().min(2, "Informe a cidade"),
@@ -126,7 +85,7 @@ export default function CadastroPage() {
   const [estados, setEstados] = useState<Estado[]>([]);
   const [municipios, setMunicipios] = useState<Municipio[]>([]);
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: {
       name: "",
       email: "",
@@ -142,9 +101,9 @@ export default function CadastroPage() {
       size: 1,
       affix: "",
       affixType: null,
-    },
+    } as FormValues,
 
-    mode: "onSubmit",
+    mode: "onChange",
   });
 
   // 🚜 mapeia size (UI) → porte (API)
@@ -182,14 +141,12 @@ export default function CadastroPage() {
       };
 
       // 2. Fazer a chamada para a rota /api/cadastro
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL; // ex.: http://localhost:3333/api
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL; 
       if (!API_BASE) {
         throw new Error(
           "API base não configurada. Defina NEXT_PUBLIC_API_URL no .env.local"
         );
       }
-
-      // 🔗 CHAMA O BACKEND (sem token; cadastro costuma ser público)
       const data = await apiFetch(
         `${API_BASE}/cadastro`,
         {
@@ -213,19 +170,66 @@ export default function CadastroPage() {
       router.push("/login"); // ou "/auth/dashboard", conforme seu fluxo
     } catch (err: any) {
       console.error("Erro no processo de cadastro:", err);
+      // Se o backend retornou erros de validação formatados (validateResource), aplica no form
+      const body = err?.body;
+      if (body?.errors && Array.isArray(body.errors)) {
+        // Mapeia os caminhos do backend 
+        const mapField = (backendPath: string) => {
+          const p = backendPath.replace(/^body\.?/, "");
+          const map: { [k: string]: string } = {
+            nome: "name",
+            senha: "password",
+            dataNascimento: "birthDate",
+            email: "email",
+            cpf: "cpf",
+            "fazenda.nome": "farmName",
+            "fazenda.endereco": "address",
+            "fazenda.cidade": "city",
+            "fazenda.estado": "state",
+            "fazenda.pais": "country",
+            "fazenda.porte": "size",
+            "fazenda.afixo": "affix",
+          };
+          return map[p] ?? p;
+        };
+
+        for (const e of body.errors) {
+          const frontendField = mapField(e.field || "");
+          try {
+            form.setError(frontendField as any, { type: "server", message: e.message });
+          } catch {
+            // fallback: mostra toast
+            toast.error(e.message);
+          }
+        }
+        return; // não mostra toast genérico
+      }
+
       toast.error(err?.message || "Erro inesperado ao cadastrar!");
     }
   }
 
   useEffect(() => {
-    // carregar lista de estados
-    getUfs().then(setEstados).catch(console.error);
+    // carregar lista de estados (IBGE) no cliente
+    fetch("https://servicodados.ibge.gov.br/api/v1/localidades/estados")
+      .then((r) => {
+        if (!r.ok) throw new Error("Falha ao buscar UFs");
+        return r.json();
+      })
+      .then((list: Estado[]) => setEstados(list))
+      .catch(console.error);
   }, []);
 
   useEffect(() => {
     const uf = form.getValues("state");
     if (uf?.length === 2) {
-      getMunicipios(uf).then(setMunicipios).catch(console.error);
+      fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
+        .then((r) => {
+          if (!r.ok) throw new Error("Falha ao buscar municípios");
+          return r.json();
+        })
+        .then((list: Municipio[]) => setMunicipios(list))
+        .catch(console.error);
     } else {
       setMunicipios([]);
     }
@@ -379,7 +383,7 @@ export default function CadastroPage() {
                             type="password"
                             placeholder="Digite novamente sua senha..."
                             {...field}
-                            className=" border-red-900 focus-visible:ring-0 focus:border-red-90"
+                            className=" border-red-900 focus-visible:ring-0 focus:border-red-900"
                           />
                         </FormControl>
                         <FormMessage />
@@ -394,13 +398,13 @@ export default function CadastroPage() {
           {/* Coluna 2: Dados da fazenda */}
           <div className="flex-1 p-4 md:p-8">
             <Card className="w-full h-full bg-red-900 text-white flex flex-col border-0 shadow-none p-4 md:p-6">
-              <CardHeader>
+                <CardHeader>
                 <CardTitle
                   className={`${tsukimi.className} text-2xl font-normal text-white items-center justify-center text-center`}
                 >
                   Dados da Fazenda
                 </CardTitle>
-                <CardDescription className="text-[12px] text-white!  text-center">
+                <CardDescription className="text-[12px] text-white text-center">
                   Preencha os campos com os dados da sua fazenda
                 </CardDescription>
               </CardHeader>
