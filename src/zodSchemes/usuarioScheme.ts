@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-/* Regex CPF: aceita 11 dígitos ou formato com pontos/traço */
-const cpfRegex = /^(?:\d{11}|\d{3}\.\d{3}\.\d{3}-\d{2})$/;
+/* Regex CPF: exige exatamente 11 dígitos (sem pontuação) */
+const cpfRegex = /^\d{11}$/;
 
 /* Validar CPF */
 function validarCPF(cpf: string) {
@@ -26,8 +26,8 @@ function validarCPF(cpf: string) {
 /* --- schema para criação (o body enviado ao backend) --- */
 export const createUsuarioSchema = z.object({
   cpf: z
-    .string({ error: "Informe o CPF" })
-    .regex(cpfRegex, "CPF inválido")
+    .string()
+    .regex(cpfRegex, "CPF deve conter exatamente 11 números")
     .refine((v) => validarCPF(v), "CPF inválido"),
 
   nome: z
@@ -41,7 +41,7 @@ export const createUsuarioSchema = z.object({
       message: "Cada parte do nome deve ter ao menos 2 caracteres",
     }),
 
-  email: z.string({ error: "Informe o e-mail" }).email("E-mail inválido"),
+  email: z.string().email("Email inválido"),
 
   senha: z
     .string()
@@ -75,8 +75,6 @@ export const createUsuarioSchema = z.object({
     .optional(),
 
   urlImagem: z.union([z.string().url("URL inválida").max(2048), z.literal("")]).optional(),
-
-  googleId: z.string().optional().nullable(),
 });
 
 /* --- Schema para update ---*/
