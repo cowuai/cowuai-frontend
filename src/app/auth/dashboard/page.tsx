@@ -273,7 +273,7 @@ export default function DashboardPage() {
                             className="
                               flex items-center gap-4
                               p-4 rounded-xl shadow-md
-                              bg-[hsl(var(--dashboard-primary))]
+                              bg-dashboard
                               text-[hsl(var(--dashboard-primary-foreground))]
                               h-32
                             "

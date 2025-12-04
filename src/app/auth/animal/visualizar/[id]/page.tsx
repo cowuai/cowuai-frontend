@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {ArrowLeft, FileText, HeartPulse, BugIcon, DnaIcon} from "lucide-react";
+import {ArrowLeft, FileText, HeartPulse, BugIcon, DnaIcon, BabyIcon} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/app/providers/AuthProvider";
 
@@ -111,7 +111,7 @@ const AnimalDetails = () => {
         { id: "details" as TabType, label: "Detalhes", icon: FileText },
         { id: "genealogy" as TabType, label: "Genealogia", icon: DnaIcon },
         { id: "health" as TabType, label: "Saúde", icon: HeartPulse },
-        { id: "offspring" as TabType, label: "Descendentes", icon: SiLineageos },
+        { id: "offspring" as TabType, label: "Descendentes", icon: BabyIcon },
         { id: "diseases" as TabType, label: "Doenças", icon: BugIcon },
     ];
 
@@ -195,7 +195,7 @@ const AnimalDetails = () => {
                                                     : "hover:bg-muted text-muted-foreground"
                                             )}
                                         >
-                                            <Icon className="h-5 w-5"/>
+                                            <Icon width={20} height={20}/>
                                             {item.label}
                                         </button>
                                     );
