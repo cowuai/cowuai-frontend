@@ -3,7 +3,6 @@
 import Image from "next/image";
 import {useTheme} from "next-themes";
 import {useEffect, useState} from "react";
-import { getDoencasPorFazenda } from "@/actions/getDoencasPorFazenda";
 import {Line, Bar, Pie} from "react-chartjs-2";
 import {useAuth} from "@/app/providers/AuthProvider";
 import {Cross} from "lucide-react";
@@ -23,7 +22,7 @@ import {
     ArcElement,
 } from "chart.js";
 import {PiCertificate, PiCow} from "react-icons/pi";
-import { PiMoneyWavy, PiFarm } from "react-icons/pi";
+import {PiMoneyWavy, PiFarm} from "react-icons/pi";
 
 ChartJS.register(
     CategoryScale,
@@ -45,7 +44,6 @@ export default function DashboardPage() {
 
     // ---------- States dos gráficos ----------
     const [animaisDoentes, setAnimaisDoentes] = useState(0);
-    const [taxaReproducao, setTaxaReproducao] = useState(0);
     const [totalAnimais, setTotalAnimais] = useState(0);
     const [totalAnimaisComRegistro, setTotalAnimaisComRegistro] = useState(0);
     const [totalAnimaisVendidos, setTotalAnimaisVendidos] = useState(0);
@@ -86,8 +84,6 @@ export default function DashboardPage() {
                     }],
                 });
 
-                // Taxa de reprodução
-                setTaxaReproducao(Number(data.taxaReproducao ?? 0));
 
                 // Total de animais cadastrados
                 setTotalAnimais(Number(data.totalAnimais ?? 0));
@@ -231,64 +227,68 @@ export default function DashboardPage() {
 
             {/* Cards */}
             <div
-                className="w-full mb-8 p-6 md:p-8 rounded-2xl shadow-lg bg-[hsl(var(--dashboard-primary))] text-[hsl(var(--dashboard-primary-foreground))]">
-                <div className="flex flex-wrap gap-4 justify-start">
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
-                        <Cross size={30} strokeWidth={2} className="text-[hsl(var(--dashboard-primary-foreground))]"/>
-                        <div className="flex flex-col justify-center flex-1 text-right">
-                            <h2 className="text-lg font-medium leading-snug">Animais Doentes</h2>
-                            <p className="text-sm">{animaisDoentes} casos</p>
+                className="w-full mb-8 p-6 md:p-8 rounded-2xl shadow-lg bg-[hsl(var(--dashboard-primary))] text-[hsl(var(--dashboard-primary-foreground))]"
+            >
+                <div
+                    className="
+                      grid
+                      grid-cols-1
+                      sm:grid-cols-2
+                      md:grid-cols-3
+                      lg:grid-cols-4
+                      xl:grid-cols-5
+                      gap-6
+                    "
+                >
+                    {/* Card base */}
+                    {[
+                        {
+                            title: "Animais Doentes",
+                            value: `${animaisDoentes} casos`,
+                            icon: <Cross size={30} strokeWidth={2}/>,
+                        },
+                        {
+                            title: "Total de Animais\nNo Sistema",
+                            value: totalAnimais,
+                            icon: <PiCow size={35} strokeWidth={0.5}/>,
+                        },
+                        {
+                            title: "Total de Animais\nCom Registro",
+                            value: totalAnimaisComRegistro,
+                            icon: <PiCertificate size={35} strokeWidth={0.5}/>,
+                        },
+                        {
+                            title: "Total de Animais\nVendidos",
+                            value: totalAnimaisVendidos,
+                            icon: <PiMoneyWavy size={35} strokeWidth={0.5}/>,
+                        },
+                        {
+                            title: "Total de Fazendas\nDo Criador",
+                            value: totalFazendasDoCriador,
+                            icon: <PiFarm size={35} strokeWidth={0.5}/>,
+                        }
+                    ].map((card, index) => (
+                        <div
+                            key={index}
+                            className="
+                              flex items-center gap-4
+                              p-4 rounded-xl shadow-md
+                              bg-[hsl(var(--dashboard-primary))]
+                              text-[hsl(var(--dashboard-primary-foreground))]
+                              h-32
+                            "
+                        >
+                            <div className="text-[hsl(var(--dashboard-primary-foreground))]">
+                                {card.icon}
+                            </div>
+                            <div className="flex flex-col flex-1 text-right leading-snug">
+                                <h2 className="text-base font-medium whitespace-pre-line">
+                                    {card.title}
+                                </h2>
+                                <p className="text-sm">{card.value}</p>
+                            </div>
                         </div>
-                    </div>
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
-                        <Image src="/images/sperm.svg" alt="Ícone de reprodução" width={35} height={35}/>
-                        <div className="flex flex-col justify-center flex-1 text-right">
-                            <h2 className="text-lg font-medium leading-snug">
-                                Taxa de Reprodução <br/> Efetiva
-                            </h2>
-                            <p className="text-sm">{taxaReproducao}%</p>
-                        </div>
-                    </div>
-                    {/* Total de Animais do Criador no Sistema */}
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
-                        <PiCow size={35} strokeWidth={0.5}/>
-                        <div className="flex flex-col justify-center flex-1 text-right">
-                            <h2 className="text-lg font-medium leading-snug">
-                                Total de Animais <br/> No Sistema
-                            </h2>
-                            <p className="text-sm"> {totalAnimais}</p>
-                        </div>
-                    </div>
-                    {/* Total de Animais com Registro */}
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
-                        <PiCertificate size={35} strokeWidth={0.5}/>
-                        <div className="flex flex-col justify-center flex-1 text-right">
-                            <h2 className="text-lg font-medium leading-snug">
-                                Total de Animais <br/> Com Registro
-                            </h2>
-                            <p className="text-sm"> {totalAnimaisComRegistro}</p>
-                        </div>
-                    </div>
-                    {/* Total de Animais Vendidos */}
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
-                        <PiMoneyWavy size={35} strokeWidth={0.5}/>
-                        <div className="flex flex-col justify-center flex-1 text-right">
-                            <h2 className="text-lg font-medium leading-snug">
-                                Total de Animais <br/> Vendidos
-                            </h2>
-                            <p className="text-sm"> {totalAnimaisVendidos}</p>
-                        </div>
-                    </div>
-                    {/* Total de Fazendas do Criador */}
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
-                        <PiFarm size={35} strokeWidth={0.5}/>
-                        <div className="flex flex-col justify-center flex-1 text-right">
-                            <h2 className="text-lg font-medium leading-snug">
-                                Total de Fazendas <br/> Do Criador
-                            </h2>
-                            <p className="text-sm"> {totalFazendasDoCriador}</p>
-                        </div>
-                    </div>
+                    ))}
                 </div>
             </div>
 
@@ -297,31 +297,34 @@ export default function DashboardPage() {
                 <div
                     className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Animais Doentes</h2>
-                    <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center"><Line data={lineData}
-                                                                                                     options={chartOptions}/></div>
+                    <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center">
+                        <Line data={lineData} options={chartOptions}/>
+                    </div>
                 </div>
 
                 <div
                     className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Animais cadastrados
                         por ano</h2>
-                    <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center"><Line data={areaData}
-                                                                                                     options={chartOptions}/></div>
+                    <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center">
+                        <Line data={areaData} options={chartOptions}/>
+                    </div>
                 </div>
 
                 <div
                     className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Animais por
                         Localização</h2>
-                    <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center"><Bar data={barData} options={chartOptions}/>
+                    <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center">
+                        <Bar data={barData} options={chartOptions}/>
                     </div>
                 </div>
 
                 <div
                     className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Tipo de Raça</h2>
-                    <div className="h-64 w-full max-w-xs mx-auto flex justify-center items-center"><Pie data={pieData}
-                                                                                                     options={pieOptions}/>
+                    <div className="h-64 w-full max-w-xs mx-auto flex justify-center items-center">
+                        <Pie data={pieData} options={pieOptions}/>
                     </div>
                 </div>
 
@@ -329,8 +332,9 @@ export default function DashboardPage() {
                     className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Distribuição por
                         Sexo</h2>
-                    <div className="h-64 w-full max-w-xs mx-auto flex justify-center items-center"><Pie data={sexoPieData}
-                                                                                                     options={pieOptions}/>
+                    <div className="h-64 w-full max-w-xs mx-auto flex justify-center items-center"><Pie
+                        data={sexoPieData}
+                        options={pieOptions}/>
                     </div>
                 </div>
 
@@ -338,21 +342,23 @@ export default function DashboardPage() {
                     className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Vacinas aplicadas
                         (por mês)</h2>
-                    <div className="h-44 sm:h-56 lg:h-40"><Bar data={vacinasBarData} options={chartOptions}/></div>
+                    <div className="h-64 sm:h-56 lg:h-40 flex justify-center items-center">
+                        <Bar data={vacinasBarData} options={chartOptions}/>
+                    </div>
                 </div>
-                
+
                 <div
                     className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Doenças Ativas</h2>
-                        <div className="h-44 sm:h-56 lg:h-40">
-                            {doencasBarData?.datasets && doencasBarData.datasets.length > 0 ? (
-                                <Bar data={doencasBarData} options={chartOptions} />
-                            ) : (
-                                <div className="flex items-center justify-center h-full text-sm text-gray-500">
-                                    Nenhuma doença ativa encontrada para suas fazendas.
-                                </div>
-                            )}
-                        </div>
+                    <div className="h-44 sm:h-56 lg:h-40 mx-auto flex justify-center items-center">
+                        {doencasBarData?.datasets && doencasBarData.datasets.length > 0 ? (
+                            <Bar data={doencasBarData} options={chartOptions}/>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-sm text-gray-500">
+                                Nenhuma doença ativa encontrada para suas fazendas.
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
