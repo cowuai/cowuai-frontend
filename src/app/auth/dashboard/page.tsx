@@ -3,6 +3,7 @@
 import Image from "next/image";
 import {useTheme} from "next-themes";
 import {useEffect, useState} from "react";
+import { getDoencasPorFazenda } from "@/actions/getDoencasPorFazenda";
 import {Line, Bar, Pie} from "react-chartjs-2";
 import {useAuth} from "@/app/providers/AuthProvider";
 import {Cross} from "lucide-react";
@@ -56,6 +57,7 @@ export default function DashboardPage() {
     const [pieData, setPieData] = useState<any>({labels: [], datasets: []});
     const [sexoPieData, setSexoPieData] = useState<any>({labels: ["Macho", "Fêmea", "Indeterm."], datasets: []});
     const [vacinasBarData, setVacinasBarData] = useState<any>({labels: [], datasets: []});
+    const [doencasBarData, setDoencasBarData] = useState<any>({labels: [], datasets: []});
 
     // ---------- Fetch do dashboard ----------
     useEffect(() => {
@@ -159,6 +161,43 @@ export default function DashboardPage() {
                         backgroundColor: "#9C27B0",
                     }],
                 });
+
+                // Doenças ativas por fazenda
+                if (data.doencasPorFazenda && Array.isArray(data.doencasPorFazenda) && data.doencasPorFazenda.length > 0) {
+                    setDoencasBarData({
+                        labels: data.doencasPorFazenda.map((d: any) => d.doenca?.nome ?? d.doenca?.nome ?? "Desconhecida"),
+                        datasets: [{
+                            label: 'Casos ativos por doença',
+                            data: data.doencasPorFazenda.map((d: any) => d.count),
+                            backgroundColor: ['#f97316', '#06b6d4', '#7c3aed', '#ef4444', '#10b981'],
+                        }],
+                    });
+                }
+
+                // Se houver dados de doenças por fazenda, garantir que o total de "animais doentes"
+                // reflita a soma dos casos por doença (para manter os gráficos consistentes).
+                if (data.doencasPorFazenda && Array.isArray(data.doencasPorFazenda)) {
+                    const totalDoencasCount = data.doencasPorFazenda.reduce((sum: number, d: any) => {
+                        const c = Number(d.count ?? 0);
+                        return sum + (Number.isNaN(c) ? 0 : c);
+                    }, 0);
+
+                    if (totalDoencasCount > 0) {
+                        // Atualiza o estado principal e o gráfico de linha para refletir o total calculado
+                        setAnimaisDoentes(totalDoencasCount);
+                        setLineData({
+                            labels: ["Total"],
+                            datasets: [{
+                                label: "Animais Doentes",
+                                data: [totalDoencasCount],
+                                borderColor: "#EF4444",
+                                backgroundColor: "transparent",
+                                tension: 0.4,
+                                borderWidth: 2,
+                            }],
+                        });
+                    }
+                }
 
             } catch (err) {
                 console.warn("Erro ao carregar dashboard:", err);
@@ -300,6 +339,20 @@ export default function DashboardPage() {
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Vacinas aplicadas
                         (por mês)</h2>
                     <div className="h-44 sm:h-56 lg:h-40"><Bar data={vacinasBarData} options={chartOptions}/></div>
+                </div>
+                
+                <div
+                    className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
+                    <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Doenças Ativas</h2>
+                        <div className="h-44 sm:h-56 lg:h-40">
+                            {doencasBarData?.datasets && doencasBarData.datasets.length > 0 ? (
+                                <Bar data={doencasBarData} options={chartOptions} />
+                            ) : (
+                                <div className="flex items-center justify-center h-full text-sm text-gray-500">
+                                    Nenhuma doença ativa encontrada para suas fazendas.
+                                </div>
+                            )}
+                        </div>
                 </div>
             </div>
         </div>
