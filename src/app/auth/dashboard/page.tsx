@@ -80,7 +80,7 @@ export default function DashboardPage() {
                         borderColor: "#EF4444",
                         backgroundColor: "transparent",
                         tension: 0.4,
-                        borderWidth: 2,
+                        borderWidth: 3,
                     }],
                 });
 
@@ -98,17 +98,17 @@ export default function DashboardPage() {
                 setTotalFazendasDoCriador(Number(data.totalFazendasDoCriador ?? 0));
 
                 // Área (animais por ano) - se houver
-                if (data.animaisPorAno) {
+                if (data.animaisCadastradosPorAno) {
                     setAreaData({
-                        labels: data.animaisPorAno.map((a: any) => a.ano),
+                        labels: data.animaisCadastradosPorAno.map((a: any) => a.ano),
                         datasets: [{
                             label: "Animais cadastrados (por ano)",
-                            data: data.animaisPorAno.map((a: any) => a.count),
+                            data: data.animaisCadastradosPorAno.map((a: any) => a.count),
                             fill: true,
                             backgroundColor: "rgba(16, 185, 129, 0.12)",
                             borderColor: "#10B981",
                             tension: 0.3,
-                            borderWidth: 2,
+                            borderWidth: 3,
                         }],
                     });
                 }
@@ -119,7 +119,9 @@ export default function DashboardPage() {
                     datasets: [{
                         label: "Animais",
                         data: data.animaisPorLocalizacao.map((a: any) => a.count),
-                        backgroundColor: ["#FF5722", "#009688", "#006064"],
+                        backgroundColor: ["#FF6B35", "#04A777", "#00D4FF"],
+                        borderColor: ["#FF6B35", "#04A777", "#00D4FF"],
+                        borderWidth: 2,
                     }],
                 });
 
@@ -144,7 +146,8 @@ export default function DashboardPage() {
                     labels: ["Macho", "Fêmea", "Indeterm."],
                     datasets: [{
                         data: [sexoMap.MACHO, sexoMap.FEMEA, sexoMap.INDETERMINADO],
-                        backgroundColor: ["#2196F3", "#E91E63", "#9E9E9E"]
+                        backgroundColor: ["#2196F3", "#E91E63", "#9E9E9E"],
+                        borderWidth: 0,
                     }],
                 });
 
@@ -154,7 +157,9 @@ export default function DashboardPage() {
                     datasets: [{
                         label: "Vacinas aplicadas",
                         data: data.vacinacoesPorMes.map((v: any) => v.count),
-                        backgroundColor: "#9C27B0",
+                        backgroundColor: "#D946EF",
+                        borderColor: "#D946EF",
+                        borderWidth: 2,
                     }],
                 });
 
@@ -165,7 +170,9 @@ export default function DashboardPage() {
                         datasets: [{
                             label: 'Casos ativos por doença',
                             data: data.doencasPorFazenda.map((d: any) => d.count),
-                            backgroundColor: ['#f97316', '#06b6d4', '#7c3aed', '#ef4444', '#10b981'],
+                            backgroundColor: ['#FF6B35', '#00D4FF', '#A855F7', '#FF1744', '#00E676'],
+                            borderColor: ['#FF6B35', '#00D4FF', '#A855F7', '#FF1744', '#00E676'],
+                            borderWidth: 2,
                         }],
                     });
                 }
@@ -189,7 +196,7 @@ export default function DashboardPage() {
                                 borderColor: "#EF4444",
                                 backgroundColor: "transparent",
                                 tension: 0.4,
-                                borderWidth: 2,
+                                borderWidth: 3,
                             }],
                         });
                     }
@@ -207,7 +214,20 @@ export default function DashboardPage() {
     const chartOptions = {
         responsive: true,
         plugins: {legend: {labels: {color: darkMode ? "#fff" : "#000"}}},
-        scales: {x: {ticks: {color: darkMode ? "#fff" : "#000"}}, y: {ticks: {color: darkMode ? "#fff" : "#000"}}},
+        scales: {
+            x: {
+                ticks: {color: darkMode ? "#fff" : "#000"},
+                grid: {
+                    color: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                }
+            },
+            y: {
+                ticks: {color: darkMode ? "#fff" : "#000"},
+                grid: {
+                    color: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                }
+            }
+        },
     };
 
     const pieOptions = {
@@ -295,7 +315,7 @@ export default function DashboardPage() {
             {/* Gráficos */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div
-                    className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
+                    className={`p-6 rounded-xl shadow border transition-colors duration-500 ${darkMode ? "bg-stone-950 border-stone-800" : "bg-white border-stone-200"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Animais Doentes</h2>
                     <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center">
                         <Line data={lineData} options={chartOptions}/>
@@ -303,7 +323,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div
-                    className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
+                    className={`p-6 rounded-xl shadow border transition-colors duration-500 ${darkMode ? "bg-stone-950 border-stone-800" : "bg-white border-stone-200"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Animais cadastrados
                         por ano</h2>
                     <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center">
@@ -312,7 +332,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div
-                    className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
+                    className={`p-6 rounded-xl shadow border transition-colors duration-500 ${darkMode ? "bg-stone-950 border-stone-800" : "bg-white border-stone-200"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Animais por
                         Localização</h2>
                     <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center">
@@ -321,7 +341,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div
-                    className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
+                    className={`p-6 rounded-xl shadow border transition-colors duration-500 ${darkMode ? "bg-stone-950 border-stone-800" : "bg-white border-stone-200"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Tipo de Raça</h2>
                     <div className="h-64 w-full max-w-xs mx-auto flex justify-center items-center">
                         <Pie data={pieData} options={pieOptions}/>
@@ -329,7 +349,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div
-                    className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
+                    className={`p-6 rounded-xl shadow border transition-colors duration-500 ${darkMode ? "bg-stone-950 border-stone-800" : "bg-white border-stone-200"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Distribuição por
                         Sexo</h2>
                     <div className="h-64 w-full max-w-xs mx-auto flex justify-center items-center"><Pie
@@ -339,7 +359,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div
-                    className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
+                    className={`p-6 rounded-xl shadow border transition-colors duration-500 ${darkMode ? "bg-stone-950 border-stone-800" : "bg-white border-stone-200"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Vacinas aplicadas
                         (por mês)</h2>
                     <div className="h-64 sm:h-56 lg:h-40 flex justify-center items-center">
@@ -348,7 +368,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div
-                    className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
+                    className={`p-6 rounded-xl shadow border transition-colors duration-500 ${darkMode ? "bg-stone-950 border-stone-800" : "bg-white border-stone-200"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Doenças Ativas</h2>
                     <div className="h-44 sm:h-56 lg:h-40 mx-auto flex justify-center items-center">
                         {doencasBarData?.datasets && doencasBarData.datasets.length > 0 ? (
