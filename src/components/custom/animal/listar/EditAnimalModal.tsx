@@ -88,7 +88,7 @@ export const EditAnimalModal: React.FC<EditAnimalModalProps> = ({
                 ]);
 
                 setFazendasProprietario(fazendas);
-                setAnimaisProprietario(animais);
+                if (Array.isArray(animais)) setAnimaisProprietario(animais);
                 setTipoRacaNome(racas);
             } catch (error) {
                 console.error("Erro ao carregar dados do modal", error);
