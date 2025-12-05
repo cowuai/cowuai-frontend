@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {ArrowLeft, FileText, HeartPulse, BugIcon, DnaIcon, Syringe} from "lucide-react";
+import {ArrowLeft, FileText, HeartPulse, BugIcon, DnaIcon, BabyIcon} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/app/providers/AuthProvider";
 
@@ -110,8 +110,8 @@ const AnimalDetails = () => {
     const menuItems = [
         { id: "details" as TabType, label: "Detalhes", icon: FileText },
         { id: "genealogy" as TabType, label: "Genealogia", icon: DnaIcon },
-        { id: "health" as TabType, label: "Vacinas", icon: Syringe },
-        { id: "offspring" as TabType, label: "Descendentes", icon: SiLineageos },
+        { id: "health" as TabType, label: "Saúde", icon: HeartPulse },
+        { id: "offspring" as TabType, label: "Descendentes", icon: BabyIcon },
         { id: "diseases" as TabType, label: "Doenças", icon: BugIcon },
     ];
 
@@ -122,6 +122,18 @@ const AnimalDetails = () => {
             setDoencasAnimal(data);
         } catch (e) {
             console.error("Erro ao atualizar lista de doenças:", e);
+        }
+    };
+
+    const refreshHealthData = async () => {
+        if (!accessToken || !id) return;
+        try {
+            const res = await getAnimalRelation(accessToken, id.toString(), "vacinacoes");
+
+            // Atualiza o estado do animal com as novas vacinas vindas do back
+            setAnimal((prev) => (prev ? { ...prev, ...res } : res));
+        } catch (e) {
+            console.error("Erro ao recarregar vacinas:", e);
         }
     };
 
@@ -183,7 +195,7 @@ const AnimalDetails = () => {
                                                     : "hover:bg-muted text-muted-foreground"
                                             )}
                                         >
-                                            <Icon className="h-5 w-5"/>
+                                            <Icon width={20} height={20}/>
                                             {item.label}
                                         </button>
                                     );
@@ -205,7 +217,7 @@ const AnimalDetails = () => {
                             {!loading && activeTab === "genealogy" && (
                                 <GenealogyTab animal={animal}/>
                             )}
-                            {!loading && activeTab === "health" && <HealthTab animal={animal} />}
+                            {!loading && activeTab === "health" && <HealthTab animal={animal} onUpdate={refreshHealthData} />}
                             {!loading && activeTab === "offspring" && <OffspringTab animal={animal} />}
                             {!loading && activeTab === "diseases" && (
                                 <DiseasesTab
