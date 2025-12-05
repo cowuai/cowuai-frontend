@@ -100,12 +100,12 @@ export default function DashboardPage() {
                 setTotalFazendasDoCriador(Number(data.totalFazendasDoCriador ?? 0));
 
                 // Área (animais por ano) - se houver
-                if (data.animaisPorAno) {
+                if (data.animaisCadastradosPorAno) {
                     setAreaData({
-                        labels: data.animaisPorAno.map((a: any) => a.ano),
+                        labels: data.animaisCadastradosPorAno.map((a: any) => a.ano),
                         datasets: [{
                             label: "Animais cadastrados (por ano)",
-                            data: data.animaisPorAno.map((a: any) => a.count),
+                            data: data.animaisCadastradosPorAno.map((a: any) => a.count),
                             fill: true,
                             backgroundColor: "rgba(16, 185, 129, 0.12)",
                             borderColor: "#10B981",
