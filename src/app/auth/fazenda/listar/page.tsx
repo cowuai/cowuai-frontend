@@ -292,11 +292,8 @@ export default function ListarFazendasPage() {
                 cidade: selectedFarm.city,
                 estado: selectedFarm.state,
                 porte: sizeToPorte(selectedFarm.size),
-                afixo: selectedFarm.affix || "",
+                afixo: selectedFarm.affix,
                 ...flagsFromAffixType(selectedFarm.affixType),
-                // se o back exigir pais/idProprietario no update, adicione aqui:
-                // pais: "Brasil",
-                // idProprietario: <id>,
             };
 
             // 🔍 validação com Zod (update = parcial)
@@ -898,14 +895,16 @@ export default function ListarFazendasPage() {
                                 {/* Afixo + Tipo (editáveis) */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium mb-1">Afixo (opcional)</label>
+                                        <label className="block text-sm font-medium mb-1">Afixo</label>
                                         <input
                                             type="text"
+                                            name="affix"
                                             value={selectedFarm.affix}
                                             onChange={(e) =>
                                                 setSelectedFarm({ ...selectedFarm, affix: e.target.value })
                                             }
-                                            className="w-full border rounded-md p-2 text-black dark:text-foreground bg-white dark:bg-stone-900"
+                                            required
+                                            className="w-full ... p-2 text-black dark:text-foreground bg-white dark:bg-stone-900"
                                             placeholder="Ex.: Boa Esperança"
                                         />
                                     </div>

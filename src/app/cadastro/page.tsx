@@ -1,6 +1,6 @@
 "use client";
 
-import { z } from "zod"; 
+import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -164,7 +164,7 @@ export default function CadastroPage() {
       };
 
       // 2. Fazer a chamada para a rota /api/cadastro
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL; 
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL;
       if (!API_BASE) {
         throw new Error(
           "API base não configurada. Defina NEXT_PUBLIC_API_URL no .env.local"
@@ -421,7 +421,7 @@ export default function CadastroPage() {
           {/* Coluna 2: Dados da fazenda */}
           <div className="flex-1 p-4 md:p-8">
             <Card className="w-full h-full bg-red-900 text-white flex flex-col border-0 shadow-none p-4 md:p-6">
-                <CardHeader>
+              <CardHeader>
                 <CardTitle
                   className={`${tsukimi.className} text-2xl font-normal text-white items-center justify-center text-center`}
                 >
@@ -478,7 +478,7 @@ export default function CadastroPage() {
                           value={field.value}
                           onValueChange={field.onChange}
                         >
-                          <SelectTrigger className="w-auto data-placeholder:text-white [&_svg:not([class*='text-'])]:text-white">
+                 <SelectTrigger className="w-auto text-white [&>span]:text-white/80 data-placeholder:text-white [&_svg:not([class*='text-'])]:text-white">
                             <SelectValue placeholder="Selecione o estado" />
                           </SelectTrigger>
                           <SelectContent>
@@ -505,7 +505,7 @@ export default function CadastroPage() {
                           value={field.value}
                           onValueChange={field.onChange}
                         >
-                          <SelectTrigger className="w-auto data-placeholder:text-white [&_svg:not([class*='text-'])]:text-white">
+                          <SelectTrigger className="w-auto text-white [&>span]:text-white/80 data-placeholder:text-white [&_svg:not([class*='text-'])]:text-white">
                             <SelectValue placeholder="Selecione a cidade" />
                           </SelectTrigger>
                           <SelectContent>
@@ -594,7 +594,7 @@ export default function CadastroPage() {
                             <SelectValue placeholder="Selecione o tipo" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="none">— Nenhum —</SelectItem>
+                            {/* <SelectItem value="none">— Nenhum —</SelectItem> */}
                             <SelectItem value="preffix">Prefixo</SelectItem>
                             <SelectItem value="suffix">Sufixo</SelectItem>
                           </SelectContent>

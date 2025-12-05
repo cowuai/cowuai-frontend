@@ -80,7 +80,7 @@ export default function CadastrarFazendaPage() {
             estado: form.state,
             pais: "Brasil",
             porte,
-            afixo: form.affix || "",
+            afixo: form.affix,
             prefixo,
             sufixo,
         };
@@ -206,7 +206,7 @@ export default function CadastrarFazendaPage() {
                                 value={formData.address}
                                 onChange={handleChange}
                                 className="w-full border rounded-md p-2 text-black dark:text-white
-             placeholder:text-gray-500 dark:placeholder:text-gray-300"
+             placeholder:text-gray-300 dark:placeholder:text-gray-300"
                                 placeholder="Rua, número, complemento…"
                                 required
                             />
@@ -291,13 +291,14 @@ export default function CadastrarFazendaPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium mb-1">
-                                    Afixo (opcional)
+                                    Afixo
                                 </label>
                                 <input
                                     type="text"
                                     name="affix"
                                     value={formData.affix}
                                     onChange={handleChange}
+                                    required
                                     className="w-full border rounded-md p-2 text-black dark:text-white
              placeholder:text-gray-500 dark:placeholder:text-gray-300"
                                     placeholder="Ex.: Boa Esperança"
@@ -315,7 +316,7 @@ export default function CadastrarFazendaPage() {
                                     className="w-full border rounded-md p-2 text-black dark:text-white
              placeholder:text-gray-500 dark:placeholder:text-gray-300"
                                 >
-                                    <option value="">— Nenhum —</option>
+                                    {/* <option value="">— Nenhum —</option> */}
                                     <option value="preffix">Prefixo</option>
                                     <option value="suffix">Sufixo</option>
                                 </select>
