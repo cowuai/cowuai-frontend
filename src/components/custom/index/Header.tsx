@@ -62,7 +62,8 @@ const Header = () => {
                         >
                             Sobre
                         </a>
-                        <Button variant="default" className="w-full border-primary/30 text-primary-foreground hover:bg-primary-foreground/10">
+                        <Button asChild variant="default" className="w-full border-primary/30 text-primary-foreground hover:bg-primary-foreground/10">
+                            <Link href="/login">Acesso</Link>
                             Acesso
                         </Button>
                     </div>

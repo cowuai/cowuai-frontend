@@ -67,11 +67,34 @@ const schema = z
     farmName: z.string().min(3, "Informe o nome da fazenda"),
     address: z.string().min(5, "Informe o endereço"),
     city: z.string().min(2, "Informe a cidade"),
-    state: z.string().min(2, "Informe o estado"),
-    country: z.string().min(5, "Informe o país"),
+    state: z.string().min(2, "Informe o estado").length(2, "Estado deve ser a sigla (ex: MG)"),
+    country: z.string().min(2, "Informe o país"),
     size: z.number().min(1, "Informe o porte da fazenda"),
-    affix: z.string().max(55, "Informe o afixo da fazenda"),
+    affix: z.string().max(55, "Informe o afixo da fazenda").optional().or(z.literal("")),
     affixType: z.enum(["preffix", "suffix"]).nullable(),
+    telefone: z
+      .string()
+      .optional()
+      .or(z.literal(""))
+      .refine((v) => {
+        if (!v) return true;
+        // permite dígitos, espaços, parênteses, + e traços
+        return /^\+?[0-9()\s-]{6,20}$/.test(v);
+      }, "Telefone inválido"),
+    urlImagem: z
+      .string()
+      .optional()
+      .or(z.literal(""))
+      .refine((v) => {
+        if (!v) return true;
+        try {
+          // validação simples de URL
+          new URL(v);
+          return true;
+        } catch {
+          return false;
+        }
+      }, "URL inválida"),
   })
   .refine((data) => data.password === data.confirm, {
     path: ["confirm"],
