@@ -13,7 +13,7 @@ export const DetailsTab = ({ animal }: DetailsTabProps) => {
             case "VIVO":
                 return "bg-accent-green text-primary-foreground";
             case "VENDIDO":
-                return "bg-foreground text-accent-foreground";
+                return "bg-muted text-foreground";
             case "FALECIDO":
                 return "bg-destructive text-destructive-foreground";
             case "DOADO":
