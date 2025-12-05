@@ -5,7 +5,7 @@ import {Animal} from "@/types/Animal";
 export async function getAnimalRelation(accessToken: string, id: string, relacao: 'pais' | 'filhos' | 'vacinacoes') {
     const res    = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/animais/relation/${id}/${relacao}`, {
         method: 'GET',
-        next: { revalidate: 300 },
+        cache: 'no-store',
         headers: {
             'Authorization': `Bearer ${accessToken}`
         },

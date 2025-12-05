@@ -29,21 +29,21 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-md bg-white rounded-xl p-0 shadow-2xl border-none [&>button]:hidden">
+      <DialogContent className="sm:max-w-md rounded-xl p-0 shadow-2xl border-none [&>button]:hidden">
         <DialogHeader className="p-6 pb-4 border-b border-red-900/10">
           <DialogTitle
-            className={`${tsukimiClassName} text-xl font-semibold text-red-800`}
+            className={`${tsukimiClassName} text-xl font-semibold text-primary`}
           >
             Confirmar Exclusão
           </DialogTitle>
           <DialogClose className="absolute right-4 top-4 opacity-100 transition-opacity hover:opacity-70 disabled:pointer-events-none p-2 rounded-md">
-            <X className="h-5 w-5 text-red-900" />
+            <X className="h-5 w-5 text-primary" />
             <span className="sr-only">Fechar</span>
           </DialogClose>
         </DialogHeader>
 
         <div className="p-6">
-          <p className="text-gray-700 text-base">
+          <p className="text-base">
             Você tem certeza que deseja excluir permanentemente este animal?
             Esta ação não pode ser desfeita.
           </p>
@@ -54,7 +54,7 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
             <Button
               type="button"
               variant="outline"
-              className="px-4 py-2 rounded-md text-red-900 border-3 border-red-900 bg-transparent hover:bg-stone-300 dark:hover:bg-stone-800 dark:text-white"
+              className="px-4 py-2 rounded-md text-primary border-3 border-primary bg-transparent hover:bg-stone-300 dark:hover:bg-stone-800 dark:text-white"
               disabled={isLoading}
             >
               Cancelar
@@ -65,7 +65,7 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
             type="button"
             onClick={onConfirm}
             disabled={isLoading}
-            className="px-4 py-2 rounded-md bg-red-900 text-white hover:bg-red-800"
+            className="px-4 py-2 rounded-md bg-primary hover:bg-primary/90 text-white ml-3"
           >
             {isLoading ? "Excluindo..." : "Excluir"}
           </Button>
