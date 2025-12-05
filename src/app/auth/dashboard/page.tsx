@@ -22,7 +22,7 @@ import {
     ArcElement,
 } from "chart.js";
 import {PiCertificate, PiCow} from "react-icons/pi";
-import { PiMoneyWavy, PiFarm } from "react-icons/pi";
+import {PiMoneyWavy, PiFarm} from "react-icons/pi";
 
 ChartJS.register(
     CategoryScale,
@@ -44,7 +44,6 @@ export default function DashboardPage() {
 
     // ---------- States dos gráficos ----------
     const [animaisDoentes, setAnimaisDoentes] = useState(0);
-    const [taxaReproducao, setTaxaReproducao] = useState(0);
     const [totalAnimais, setTotalAnimais] = useState(0);
     const [totalAnimaisComRegistro, setTotalAnimaisComRegistro] = useState(0);
     const [totalAnimaisVendidos, setTotalAnimaisVendidos] = useState(0);
@@ -56,6 +55,7 @@ export default function DashboardPage() {
     const [pieData, setPieData] = useState<any>({labels: [], datasets: []});
     const [sexoPieData, setSexoPieData] = useState<any>({labels: ["Macho", "Fêmea", "Indeterm."], datasets: []});
     const [vacinasBarData, setVacinasBarData] = useState<any>({labels: [], datasets: []});
+    const [doencasBarData, setDoencasBarData] = useState<any>({labels: [], datasets: []});
 
     // ---------- Fetch do dashboard ----------
     useEffect(() => {
@@ -80,12 +80,10 @@ export default function DashboardPage() {
                         borderColor: "#EF4444",
                         backgroundColor: "transparent",
                         tension: 0.4,
-                        borderWidth: 2,
+                        borderWidth: 3,
                     }],
                 });
 
-                // Taxa de reprodução
-                setTaxaReproducao(Number(data.taxaReproducao ?? 0));
 
                 // Total de animais cadastrados
                 setTotalAnimais(Number(data.totalAnimais ?? 0));
@@ -110,7 +108,7 @@ export default function DashboardPage() {
                             backgroundColor: "rgba(16, 185, 129, 0.12)",
                             borderColor: "#10B981",
                             tension: 0.3,
-                            borderWidth: 2,
+                            borderWidth: 3,
                         }],
                     });
                 }
@@ -121,7 +119,9 @@ export default function DashboardPage() {
                     datasets: [{
                         label: "Animais",
                         data: data.animaisPorLocalizacao.map((a: any) => a.count),
-                        backgroundColor: ["#FF5722", "#009688", "#006064"],
+                        backgroundColor: ["#FF6B35", "#04A777", "#00D4FF"],
+                        borderColor: ["#FF6B35", "#04A777", "#00D4FF"],
+                        borderWidth: 2,
                     }],
                 });
 
@@ -146,7 +146,8 @@ export default function DashboardPage() {
                     labels: ["Macho", "Fêmea", "Indeterm."],
                     datasets: [{
                         data: [sexoMap.MACHO, sexoMap.FEMEA, sexoMap.INDETERMINADO],
-                        backgroundColor: ["#2196F3", "#E91E63", "#9E9E9E"]
+                        backgroundColor: ["#2196F3", "#E91E63", "#9E9E9E"],
+                        borderWidth: 0,
                     }],
                 });
 
@@ -156,9 +157,50 @@ export default function DashboardPage() {
                     datasets: [{
                         label: "Vacinas aplicadas",
                         data: data.vacinacoesPorMes.map((v: any) => v.count),
-                        backgroundColor: "#9C27B0",
+                        backgroundColor: "#D946EF",
+                        borderColor: "#D946EF",
+                        borderWidth: 2,
                     }],
                 });
+
+                // Doenças ativas por fazenda
+                if (data.doencasPorFazenda && Array.isArray(data.doencasPorFazenda) && data.doencasPorFazenda.length > 0) {
+                    setDoencasBarData({
+                        labels: data.doencasPorFazenda.map((d: any) => d.doenca?.nome ?? d.doenca?.nome ?? "Desconhecida"),
+                        datasets: [{
+                            label: 'Casos ativos por doença',
+                            data: data.doencasPorFazenda.map((d: any) => d.count),
+                            backgroundColor: ['#FF6B35', '#00D4FF', '#A855F7', '#FF1744', '#00E676'],
+                            borderColor: ['#FF6B35', '#00D4FF', '#A855F7', '#FF1744', '#00E676'],
+                            borderWidth: 2,
+                        }],
+                    });
+                }
+
+                // Se houver dados de doenças por fazenda, garantir que o total de "animais doentes"
+                // reflita a soma dos casos por doença (para manter os gráficos consistentes).
+                if (data.doencasPorFazenda && Array.isArray(data.doencasPorFazenda)) {
+                    const totalDoencasCount = data.doencasPorFazenda.reduce((sum: number, d: any) => {
+                        const c = Number(d.count ?? 0);
+                        return sum + (Number.isNaN(c) ? 0 : c);
+                    }, 0);
+
+                    if (totalDoencasCount > 0) {
+                        // Atualiza o estado principal e o gráfico de linha para refletir o total calculado
+                        setAnimaisDoentes(totalDoencasCount);
+                        setLineData({
+                            labels: ["Total"],
+                            datasets: [{
+                                label: "Animais Doentes",
+                                data: [totalDoencasCount],
+                                borderColor: "#EF4444",
+                                backgroundColor: "transparent",
+                                tension: 0.4,
+                                borderWidth: 3,
+                            }],
+                        });
+                    }
+                }
 
             } catch (err) {
                 console.warn("Erro ao carregar dashboard:", err);
@@ -172,7 +214,20 @@ export default function DashboardPage() {
     const chartOptions = {
         responsive: true,
         plugins: {legend: {labels: {color: darkMode ? "#fff" : "#000"}}},
-        scales: {x: {ticks: {color: darkMode ? "#fff" : "#000"}}, y: {ticks: {color: darkMode ? "#fff" : "#000"}}},
+        scales: {
+            x: {
+                ticks: {color: darkMode ? "#fff" : "#000"},
+                grid: {
+                    color: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                }
+            },
+            y: {
+                ticks: {color: darkMode ? "#fff" : "#000"},
+                grid: {
+                    color: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                }
+            }
+        },
     };
 
     const pieOptions = {
@@ -192,114 +247,138 @@ export default function DashboardPage() {
 
             {/* Cards */}
             <div
-                className="w-full mb-8 p-6 md:p-8 rounded-2xl shadow-lg bg-[hsl(var(--dashboard-primary))] text-[hsl(var(--dashboard-primary-foreground))]">
-                <div className="flex flex-wrap gap-4 justify-start">
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
-                        <Cross size={30} strokeWidth={2} className="text-[hsl(var(--dashboard-primary-foreground))]"/>
-                        <div className="flex flex-col justify-center flex-1 text-right">
-                            <h2 className="text-lg font-medium leading-snug">Animais Doentes</h2>
-                            <p className="text-sm">{animaisDoentes} casos</p>
+                className="w-full mb-8 p-6 md:p-8 rounded-2xl shadow-lg bg-[hsl(var(--dashboard-primary))] text-[hsl(var(--dashboard-primary-foreground))]"
+            >
+                <div
+                    className="
+                      grid
+                      grid-cols-1
+                      sm:grid-cols-2
+                      md:grid-cols-3
+                      lg:grid-cols-4
+                      xl:grid-cols-5
+                      gap-6
+                    "
+                >
+                    {/* Card base */}
+                    {[
+                        {
+                            title: "Animais Doentes",
+                            value: `${animaisDoentes} casos`,
+                            icon: <Cross size={30} strokeWidth={2}/>,
+                        },
+                        {
+                            title: "Total de Animais\nNo Sistema",
+                            value: totalAnimais,
+                            icon: <PiCow size={35} strokeWidth={0.5}/>,
+                        },
+                        {
+                            title: "Total de Animais\nCom Registro",
+                            value: totalAnimaisComRegistro,
+                            icon: <PiCertificate size={35} strokeWidth={0.5}/>,
+                        },
+                        {
+                            title: "Total de Animais\nVendidos",
+                            value: totalAnimaisVendidos,
+                            icon: <PiMoneyWavy size={35} strokeWidth={0.5}/>,
+                        },
+                        {
+                            title: "Total de Fazendas\nDo Criador",
+                            value: totalFazendasDoCriador,
+                            icon: <PiFarm size={35} strokeWidth={0.5}/>,
+                        }
+                    ].map((card, index) => (
+                        <div
+                            key={index}
+                            className="
+                              flex items-center gap-4
+                              p-4 rounded-xl shadow-md
+                              bg-dashboard
+                              text-[hsl(var(--dashboard-primary-foreground))]
+                              h-32
+                            "
+                        >
+                            <div className="text-[hsl(var(--dashboard-primary-foreground))]">
+                                {card.icon}
+                            </div>
+                            <div className="flex flex-col flex-1 text-right leading-snug">
+                                <h2 className="text-base font-medium whitespace-pre-line">
+                                    {card.title}
+                                </h2>
+                                <p className="text-sm">{card.value}</p>
+                            </div>
                         </div>
-                    </div>
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
-                        <Image src="/images/sperm.svg" alt="Ícone de reprodução" width={35} height={35}/>
-                        <div className="flex flex-col justify-center flex-1 text-right">
-                            <h2 className="text-lg font-medium leading-snug">
-                                Taxa de Reprodução <br/> Efetiva
-                            </h2>
-                            <p className="text-sm">{taxaReproducao}%</p>
-                        </div>
-                    </div>
-                    {/* Total de Animais do Criador no Sistema */}
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
-                        <PiCow size={35} strokeWidth={0.5}/>
-                        <div className="flex flex-col justify-center flex-1 text-right">
-                            <h2 className="text-lg font-medium leading-snug">
-                                Total de Animais <br/> No Sistema
-                            </h2>
-                            <p className="text-sm"> {totalAnimais}</p>
-                        </div>
-                    </div>
-                    {/* Total de Animais com Registro */}
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
-                        <PiCertificate size={35} strokeWidth={0.5}/>
-                        <div className="flex flex-col justify-center flex-1 text-right">
-                            <h2 className="text-lg font-medium leading-snug">
-                                Total de Animais <br/> Com Registro
-                            </h2>
-                            <p className="text-sm"> {totalAnimaisComRegistro}</p>
-                        </div>
-                    </div>
-                    {/* Total de Animais Vendidos */}
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
-                        <PiMoneyWavy size={35} strokeWidth={0.5}/>
-                        <div className="flex flex-col justify-center flex-1 text-right">
-                            <h2 className="text-lg font-medium leading-snug">
-                                Total de Animais <br/> Vendidos
-                            </h2>
-                            <p className="text-sm"> {totalAnimaisVendidos}</p>
-                        </div>
-                    </div>
-                    {/* Total de Fazendas do Criador */}
-                    <div className="flex items-center p-4 rounded-xl shadow-md w-full sm:w-56 md:w-52 h-20 sm:h-24 gap-3">
-                        <PiFarm size={35} strokeWidth={0.5}/>
-                        <div className="flex flex-col justify-center flex-1 text-right">
-                            <h2 className="text-lg font-medium leading-snug">
-                                Total de Fazendas <br/> Do Criador
-                            </h2>
-                            <p className="text-sm"> {totalFazendasDoCriador}</p>
-                        </div>
-                    </div>
+                    ))}
                 </div>
             </div>
 
             {/* Gráficos */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div
-                    className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
+                    className={`p-6 rounded-xl shadow border transition-colors duration-500 ${darkMode ? "bg-stone-950 border-stone-800" : "bg-white border-stone-200"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Animais Doentes</h2>
-                    <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center"><Line data={lineData}
-                                                                                                     options={chartOptions}/></div>
+                    <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center">
+                        <Line data={lineData} options={chartOptions}/>
+                    </div>
                 </div>
 
                 <div
-                    className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
+                    className={`p-6 rounded-xl shadow border transition-colors duration-500 ${darkMode ? "bg-stone-950 border-stone-800" : "bg-white border-stone-200"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Animais cadastrados
                         por ano</h2>
-                    <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center"><Line data={areaData}
-                                                                                                     options={chartOptions}/></div>
+                    <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center">
+                        <Line data={areaData} options={chartOptions}/>
+                    </div>
                 </div>
 
                 <div
-                    className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
+                    className={`p-6 rounded-xl shadow border transition-colors duration-500 ${darkMode ? "bg-stone-950 border-stone-800" : "bg-white border-stone-200"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Animais por
                         Localização</h2>
-                    <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center"><Bar data={barData} options={chartOptions}/>
+                    <div className="h-44 sm:h-56 lg:h-40 flex justify-center items-center">
+                        <Bar data={barData} options={chartOptions}/>
                     </div>
                 </div>
 
                 <div
-                    className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
+                    className={`p-6 rounded-xl shadow border transition-colors duration-500 ${darkMode ? "bg-stone-950 border-stone-800" : "bg-white border-stone-200"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Tipo de Raça</h2>
-                    <div className="h-64 w-full max-w-xs mx-auto flex justify-center items-center"><Pie data={pieData}
-                                                                                                     options={pieOptions}/>
+                    <div className="h-64 w-full max-w-xs mx-auto flex justify-center items-center">
+                        <Pie data={pieData} options={pieOptions}/>
                     </div>
                 </div>
 
                 <div
-                    className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
+                    className={`p-6 rounded-xl shadow border transition-colors duration-500 ${darkMode ? "bg-stone-950 border-stone-800" : "bg-white border-stone-200"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Distribuição por
                         Sexo</h2>
-                    <div className="h-64 w-full max-w-xs mx-auto flex justify-center items-center"><Pie data={sexoPieData}
-                                                                                                     options={pieOptions}/>
+                    <div className="h-64 w-full max-w-xs mx-auto flex justify-center items-center"><Pie
+                        data={sexoPieData}
+                        options={pieOptions}/>
                     </div>
                 </div>
 
                 <div
-                    className={`p-6 rounded-xl shadow transition-colors duration-500 ${darkMode ? "bg-stone-950" : "bg-white"}`}>
+                    className={`p-6 rounded-xl shadow border transition-colors duration-500 ${darkMode ? "bg-stone-950 border-stone-800" : "bg-white border-stone-200"}`}>
                     <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Vacinas aplicadas
                         (por mês)</h2>
-                    <div className="h-44 sm:h-56 lg:h-40"><Bar data={vacinasBarData} options={chartOptions}/></div>
+                    <div className="h-64 sm:h-56 lg:h-40 flex justify-center items-center">
+                        <Bar data={vacinasBarData} options={chartOptions}/>
+                    </div>
+                </div>
+
+                <div
+                    className={`p-6 rounded-xl shadow border transition-colors duration-500 ${darkMode ? "bg-stone-950 border-stone-800" : "bg-white border-stone-200"}`}>
+                    <h2 className={`text-center mb-2 ${darkMode ? "text-white" : "text-red-800"}`}>Doenças Ativas</h2>
+                    <div className="h-44 sm:h-56 lg:h-40 mx-auto flex justify-center items-center">
+                        {doencasBarData?.datasets && doencasBarData.datasets.length > 0 ? (
+                            <Bar data={doencasBarData} options={chartOptions}/>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-sm text-gray-500">
+                                Nenhuma doença ativa encontrada para suas fazendas.
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
