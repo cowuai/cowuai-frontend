@@ -37,11 +37,14 @@ export const fazendaCreateSchema = z
       "Selecione o porte da fazenda"
     ),
 
+    // 🔒 afixo agora é obrigatório, não aceita vazio nem só espaços
     afixo: z
       .string()
-      .max(255, "Afixo muito longo (máx. 255 caracteres)")
-      .optional()
-      .nullable(),
+      .min(1, "Afixo é obrigatório")
+      .refine((value) => value.trim().length > 0, {
+        message: "Afixo é obrigatório",
+      })
+      .max(255, "Afixo muito longo (máx. 255 caracteres)"),
 
     prefixo: z.boolean(),
     sufixo: z.boolean(),
