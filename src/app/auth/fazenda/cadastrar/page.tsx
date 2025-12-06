@@ -22,6 +22,13 @@ import { ArrowLeft } from "lucide-react";
 
 import { fazendaScheme } from "@/zodSchemes/fazendaScheme";
 import { z } from "zod";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 type FarmForm = {
     farmName: string;
@@ -214,49 +221,68 @@ export default function CadastrarFazendaPage() {
 
                         {/* UF + Cidade */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* ESTADO (UF) */}
                             <div>
                                 <label className="block text-sm font-medium mb-1">
                                     Estado (UF)
                                 </label>
-                                <select
-                                    name="state"
+
+                                <Select
+                                    // o Select usa value + onValueChange em vez de event.target
                                     value={formData.state}
-                                    onChange={handleChange}
-                                    className="w-full border rounded-md p-2 text-black dark:text-white
-             placeholder:text-gray-500 dark:placeholder:text-gray-300"
-                                    required
+                                    onValueChange={(value) =>
+                                        handleChange({
+                                            target: { name: "state", value },
+                                        } as any)
+                                    }
                                 >
-                                    <option value="">Selecione a UF</option>
-                                    {estados.map((e) => (
-                                        <option key={e.id} value={e.sigla}>
-                                            {e.nome} ({e.sigla})
-                                        </option>
-                                    ))}
-                                </select>
+                                    <SelectTrigger className="w-full border rounded-md p-2 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-300">
+                                        <SelectValue placeholder="Selecione a UF" />
+                                    </SelectTrigger>
+
+                                    <SelectContent>
+                                        {estados.map((e) => (
+                                            <SelectItem key={e.id} value={e.sigla}>
+                                                {e.nome} ({e.sigla})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
 
+                            {/* CIDADE */}
                             <div>
-                                <label className="block text-sm font-medium mb-1">Cidade</label>
-                                <select
-                                    name="city"
+                                <label className="block text-sm font-medium mb-1">
+                                    Cidade
+                                </label>
+
+                                <Select
                                     value={formData.city}
-                                    onChange={handleChange}
-                                    className="w-full border rounded-md p-2 text-black dark:text-white
-             placeholder:text-gray-500 dark:placeholder:text-gray-300"
-                                    required
+                                    onValueChange={(value) =>
+                                        handleChange({
+                                            target: { name: "city", value },
+                                        } as any)
+                                    }
                                     disabled={municipios.length === 0}
                                 >
-                                    <option value="">
-                                        {municipios.length === 0
-                                            ? "Selecione a UF primeiro"
-                                            : "Selecione a cidade"}
-                                    </option>
-                                    {municipios.map((m) => (
-                                        <option key={m.id} value={m.nome}>
-                                            {m.nome}
-                                        </option>
-                                    ))}
-                                </select>
+                                    <SelectTrigger className="w-full border rounded-md p-2 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-300">
+                                        <SelectValue
+                                            placeholder={
+                                                municipios.length === 0
+                                                    ? "Selecione a UF primeiro"
+                                                    : "Selecione a cidade"
+                                            }
+                                        />
+                                    </SelectTrigger>
+
+                                    <SelectContent>
+                                        {municipios.map((m) => (
+                                            <SelectItem key={m.id} value={m.nome}>
+                                                {m.nome}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
 
@@ -299,8 +325,7 @@ export default function CadastrarFazendaPage() {
                                     value={formData.affix}
                                     onChange={handleChange}
                                     required
-                                    className="w-full border rounded-md p-2 text-black dark:text-white
-             placeholder:text-gray-500 dark:placeholder:text-gray-300"
+                                    className="w-full border rounded-md p-2 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-300"
                                     placeholder="Ex.: Boa Esperança"
                                 />
                             </div>
@@ -309,19 +334,29 @@ export default function CadastrarFazendaPage() {
                                 <label className="block text-sm font-medium mb-1">
                                     Tipo de Afixo
                                 </label>
-                                <select
-                                    name="affixType"
+
+                                <Select
                                     value={formData.affixType}
-                                    onChange={handleChange}
-                                    className="w-full border rounded-md p-2 text-black dark:text-white
-             placeholder:text-gray-500 dark:placeholder:text-gray-300"
+                                    onValueChange={(value) =>
+                                        handleChange({
+                                            target: { name: "affixType", value },
+                                        } as any)
+                                    }
                                 >
-                                    {/* <option value="">— Nenhum —</option> */}
-                                    <option value="preffix">Prefixo</option>
-                                    <option value="suffix">Sufixo</option>
-                                </select>
+                                    <SelectTrigger className="w-full border rounded-md p-2 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-300">
+                                        <SelectValue placeholder="Selecione o tipo de afixo" />
+                                    </SelectTrigger>
+
+                                    <SelectContent>
+                                        {/* Se quiser permitir “nenhum”, pode descomentar isso */}
+                                        {/* <SelectItem value="">— Nenhum —</SelectItem> */}
+                                        <SelectItem value="preffix">Prefixo</SelectItem>
+                                        <SelectItem value="suffix">Sufixo</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
+
 
                         {/* Botão salvar */}
                         <button
