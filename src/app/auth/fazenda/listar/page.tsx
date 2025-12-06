@@ -6,7 +6,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Tsukimi_Rounded } from "next/font/google";
 import { Pencil, Trash2, Eye } from "lucide-react";
-
+import { toast } from "sonner";
 import {
     Table,
     TableBody,
@@ -15,7 +15,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-
 import {
     Pagination,
     PaginationContent,
@@ -24,7 +23,6 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination";
-
 import {
     Dialog,
     DialogContent,
@@ -33,11 +31,9 @@ import {
     DialogFooter,
     DialogClose,
 } from "@/components/ui/dialog"
-
 //  Auth + fetch helper (sem hooks dentro)
 import { useAuth } from "@/app/providers/AuthProvider";
 import { apiFetch } from "@/helpers/ApiFetch";
-
 //  CONFIRMAÇÃO COM SHADCN (substitui window.confirm)
 import {
     AlertDialog,
@@ -49,7 +45,6 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
 //  TIPOS/AÇÕES para UF/município (mesmo padrão do cadastrar)
 import { Estado } from "@/types/Estado";
 import { Municipio } from "@/types/Municipio";
@@ -57,14 +52,39 @@ import { getUfs as getUFS } from "@/actions/getUfs";
 import { getMunicipios } from "@/actions/getMunicipios";
 import BreadcrumbArea from "@/components/custom/BreadcrumbArea";
 
+import { fazendaUpdateSchema } from "@/zodSchemes/fazendaScheme";
+import { z } from "zod";
+
 // Fonte do título (igual às outras páginas)
 const tsukimi = Tsukimi_Rounded({
     subsets: ["latin"],
     weight: ["300", "400", "600"],
 });
 
-import { fazendaUpdateSchema } from "@/zodSchemes/fazendaScheme";
-import { z } from "zod";
+
+// 🔒 Schema específico para EDIÇÃO: exige afixo e tipo de afixo
+const fazendaEditSchema = fazendaUpdateSchema.superRefine((data, ctx) => {
+    const afixo = (data.afixo ?? "").trim();
+
+    // Afixo obrigatório
+    if (!afixo) {
+        ctx.addIssue({
+            code: "custom",
+            path: ["afixo"],
+            message: "O afixo é obrigatório.",
+        });
+    }
+
+    // Obrigatório escolher prefixo OU sufixo
+    if (!data.prefixo && !data.sufixo) {
+        ctx.addIssue({
+            code: "custom",
+            path: ["prefixo"],
+            message: "Selecione se o afixo será prefixo ou sufixo.",
+        });
+    }
+});
+
 
 // Tipagem básica da UI (mantendo seu shape com size/affixType)
 type Farm = {
@@ -160,14 +180,12 @@ export default function ListarFazendasPage() {
                 // se 404/rota indisponível, tenta query
                 try {
                     data = await apiFetch(urlByQuery, {}, accessToken);
-                } catch (errQuery: any) {
-                    const msg = String(errQuery?.message || errPath?.message || "");
-                    if (msg.toLowerCase().includes("nenhuma fazenda")) {
-                        setFarms([]);
-                        setError(null);
-                        return;
-                    }
-                    throw errQuery;
+                } catch (e: any) {
+                    const msg = e?.message ?? "Falha ao carregar fazendas";
+                    setError(msg);
+                    toast.error(msg);
+                } finally {
+                    setLoading(false);
                 }
             }
 
@@ -223,19 +241,24 @@ export default function ListarFazendasPage() {
         try {
             // otimista: remove local
             setFarms((curr) => curr.filter((f) => f.id !== id));
-            await apiFetch(`${apiBase}/fazendas/${id}`, { method: "DELETE" }, accessToken ?? undefined);
+            await apiFetch(
+                `${apiBase}/fazendas/${id}`,
+                { method: "DELETE" },
+                accessToken ?? undefined
+            );
             // opcional: recarrega do servidor para garantir consistência
             // await loadFarms();
         } catch (e: any) {
             // rollback e aviso
             await loadFarms();
-            // aqui você pode usar sonner/toast se quiser
-            console.error(e?.message ?? "Erro ao excluir");
+            const msg = e?.message ?? "Erro ao excluir fazenda";
+            toast.error(msg);
         } finally {
             setIsDeleteOpen(false);
             setDeleteId(null);
         }
     }
+
 
     // ======== DIALOG DE EDIÇÃO ========
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -263,7 +286,12 @@ export default function ListarFazendasPage() {
 
     // Carrega UFs ao montar a página (uma única vez)
     useEffect(() => {
-        getUFS().then(setEstados).catch(console.error);
+        getUFS()
+            .then(setEstados)
+            .catch((err) => {
+                console.error(err);
+                toast.error("Erro ao carregar estados");
+            });
     }, []);
 
     // Quando abrir o diálogo de edição OU quando a UF mudar, carrega os municípios
@@ -274,10 +302,14 @@ export default function ListarFazendasPage() {
                 .then((list) => {
                     setMunicipios(list);
                 })
-                .catch(console.error);
+                .catch((err) => {
+                    console.error(err);
+                    toast.error("Erro ao carregar municípios");
+                });
         } else {
             setMunicipios([]);
         }
+
     }, [isEditOpen, selectedFarm?.state]);
 
     // ======== 💾 SALVAR EDIÇÃO (PUT /fazendas/:id) ========
@@ -297,7 +329,7 @@ export default function ListarFazendasPage() {
             };
 
             // 🔍 validação com Zod (update = parcial)
-            const body = fazendaUpdateSchema.parse(rawBody);
+            const body = fazendaEditSchema.parse(rawBody);
 
             await apiFetch(
                 `${apiBase}/fazendas/${selectedFarm.id}`,
@@ -315,15 +347,15 @@ export default function ListarFazendasPage() {
         } catch (e) {
             if (e instanceof z.ZodError) {
                 e.issues.forEach((issue: z.ZodIssue) => {
-                    alert(issue.message); // se quiser depois trocamos por toast/sonner
+                    toast.error(issue.message);
                 });
                 return;
             }
 
-            // aqui você pode usar sonner/toast se preferir
             const anyErr = e as any;
-            alert(anyErr?.message ?? "Erro ao salvar alterações");
+            toast.error(anyErr?.message ?? "Erro ao salvar alterações");
         }
+
     }
 
     // ✅ Agora o early return pode vir, depois de TODOS os hooks
@@ -919,12 +951,15 @@ export default function ListarFazendasPage() {
                                                     affixType: e.target.value as "" | "preffix" | "suffix",
                                                 })
                                             }
-                                            className="w-full border rounded-md p-2 text-black dark:text-foreground bg-white dark:bg-stone-900"
+                                            required
+                                            className="w-f... p-2 text-black dark:text-foreground bg-white dark:bg-stone-900"
                                         >
-                                            <option value="">— Nenhum —</option>
+                                            {/* 🔹 Placeholder, mas SEM a palavra "Nenhum" */}
+                                            <option value="">Selecione o tipo de afixo</option>
                                             <option value="preffix">Prefixo</option>
                                             <option value="suffix">Sufixo</option>
                                         </select>
+
                                     </div>
                                 </div>
 
