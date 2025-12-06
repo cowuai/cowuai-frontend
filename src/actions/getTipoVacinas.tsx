@@ -1,6 +1,6 @@
 'use server';
 
-import {TipoVacina} from "@/types/TipoVacina";
+import {TipoVacina} from "@/types/tipoVacina";
 
 export async function getTipoVacinas(accessToken: string) {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tipos-vacina`, {

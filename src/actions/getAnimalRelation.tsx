@@ -1,6 +1,6 @@
 'use server';
 
-import {Animal} from "@/types/Animal";
+import {Animal} from "@/types/animal";
 
 export async function getAnimalRelation(accessToken: string, id: string, relacao: 'pais' | 'filhos' | 'vacinacoes') {
     const res    = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/animais/relation/${id}/${relacao}`, {

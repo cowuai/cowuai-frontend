@@ -7,10 +7,10 @@ import {ArrowLeft, FileText, HeartPulse, BugIcon, DnaIcon, Syringe} from "lucide
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/app/providers/AuthProvider";
 
-import { Animal } from "@/types/Animal";
+import { Animal } from "@/types/animal";
 import { getAnimal } from "@/actions/getAnimal";
 import { getAnimalRelation } from "@/actions/getAnimalRelation";
-import { DoencaAnimal } from "@/types/DoencaAnimal";
+import { DoencaAnimal } from "@/types/doencaAnimal";
 import { getDoencasByAnimal } from "@/actions/getDoencasByAnimal";
 
 import { DetailsTab } from "@/components/custom/animal/detalhes/DetailsTab";

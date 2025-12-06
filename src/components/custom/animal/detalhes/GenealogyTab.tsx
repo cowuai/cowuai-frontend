@@ -1,4 +1,4 @@
-import {Animal} from "@/types/Animal";
+import {Animal} from "@/types/animal";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {CgGenderFemale, CgGenderMale} from "react-icons/cg";
 import {ArcherContainer, ArcherElement} from "@gitii/react-archer";

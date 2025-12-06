@@ -1,6 +1,6 @@
 "use server";
 
-import {Fazenda} from "@/types/Fazenda";
+import {Fazenda} from "@/types/fazenda";
 
 export async function getFazendasByIdProprietario(idProprietario: string, accessToken: string) {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/fazendas/proprietario/${idProprietario}`, {

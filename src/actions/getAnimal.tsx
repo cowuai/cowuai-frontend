@@ -1,6 +1,6 @@
 'use server';
 
-import {Animal} from "@/types/Animal";
+import {Animal} from "@/types/animal";
 
 export async function getAnimal(accessToken: string, id: string) {
     console.log("Buscando animal com ID:", id + " usando token:", accessToken);

@@ -1,4 +1,4 @@
-import {TipoVacina} from "@/types/TipoVacina";
+import {TipoVacina} from "@/types/tipoVacina";
 
 export interface Animal {
     id: string;

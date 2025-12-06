@@ -1,4 +1,4 @@
-// types/Doenca.ts
+// types/doenca.ts
 export interface Doenca {
   id: string; // BigInt no back, string no front
   nome: string;

@@ -1,6 +1,6 @@
 'use server';
 
-import {Municipio} from "@/types/Municipio";
+import {Municipio} from "@/types/municipio";
 
 export async function getMunicipios(uf: string) {
     const res = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`, {

@@ -1,4 +1,4 @@
-import {Animal, StatusAnimal} from "@/types/Animal";
+import {Animal, StatusAnimal} from "@/types/animal";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Weight, Activity } from "lucide-react";
 import {calculateAge} from "@/lib/utils";

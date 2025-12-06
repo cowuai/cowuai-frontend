@@ -1,8 +1,8 @@
-import {Animal} from "@/types/Animal";
+import {Animal} from "@/types/animal";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Calendar, Heart} from "lucide-react";
-import {SexoAnimal} from "@/types/TipoVacina";
+import {SexoAnimal} from "@/types/tipoVacina";
 import {PiCow} from "react-icons/pi";
 
 interface OffspringTabProps {

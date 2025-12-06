@@ -1,4 +1,3 @@
-// src/app/auth/fazenda/listar/page.tsx
 "use client";
 
 import Link from "next/link";
@@ -31,10 +30,8 @@ import {
     DialogFooter,
     DialogClose,
 } from "@/components/ui/dialog"
-//  Auth + fetch helper (sem hooks dentro)
 import { useAuth } from "@/app/providers/AuthProvider";
-import { apiFetch } from "@/helpers/ApiFetch";
-//  CONFIRMAÇÃO COM SHADCN (substitui window.confirm)
+import { apiFetch } from "@/helpers/apiFetch";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -45,15 +42,16 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-//  TIPOS/AÇÕES para UF/município (mesmo padrão do cadastrar)
-import { Estado } from "@/types/Estado";
-import { Municipio } from "@/types/Municipio";
+import { Estado } from "@/types/estado";
+import { Municipio } from "@/types/municipio";
 import { getUfs as getUFS } from "@/actions/getUfs";
 import { getMunicipios } from "@/actions/getMunicipios";
 import BreadcrumbArea from "@/components/custom/BreadcrumbArea";
 
 import { fazendaUpdateSchema } from "@/zodSchemes/fazendaScheme";
 import { z } from "zod";
+import {handleUiError} from "@/utils/handleUiError";
+import {handleResponse} from "@/utils/apiResponseHelper";
 
 // Fonte do título (igual às outras páginas)
 const tsukimi = Tsukimi_Rounded({
@@ -149,47 +147,45 @@ export default function ListarFazendasPage() {
 
     // ======== 🔗 LOAD (GET /fazendas) ========
     async function loadFarms() {
-        // precisa do token e do id do usuário logado
         if (!accessToken || !usuario?.id) {
-            console.log("Sem token ou sem usuario.id ainda. accessToken?", !!accessToken, "usuario?", usuario);
             return;
         }
 
         const apiBase = process.env.NEXT_PUBLIC_API_URL!;
         const userIdStr = String(usuario.id);
 
-        console.log("API BASE:", apiBase);
-        console.log("USER ID:", userIdStr);
-        console.log("GET URL (byPath):", `${apiBase}/fazendas/proprietario/${userIdStr}`);
-        console.log("GET URL (byQuery):", `${apiBase}/fazendas?idProprietario=${userIdStr}`);
-
         try {
             setLoading(true);
             setError(null);
 
-            // 1) tenta a rota REST específica
             const urlByPath = `${apiBase}/fazendas/proprietario/${userIdStr}`;
-            // 2) fallback por query param
             const urlByQuery = `${apiBase}/fazendas?idProprietario=${userIdStr}`;
 
             let data: any;
 
+            // TENTATIVA 1: Rota REST Específica
             try {
-                data = await apiFetch(urlByPath, {}, accessToken);
-            } catch (errPath: any) {
-                // se 404/rota indisponível, tenta query
+                const resPath = await apiFetch(urlByPath, {}, accessToken);
+                // O segredo está aqui: processar a resposta
+                data = await handleResponse(resPath);
+            } catch (errPath) {
+                console.warn("Rota por path falhou/404, tentando fallback por query param...");
+
+                // TENTATIVA 2: Fallback (dentro do catch da primeira)
                 try {
-                    data = await apiFetch(urlByQuery, {}, accessToken);
-                } catch (e: any) {
-                    const msg = e?.message ?? "Falha ao carregar fazendas";
-                    setError(msg);
-                    toast.error(msg);
-                } finally {
+                    const resQuery = await apiFetch(urlByQuery, {}, accessToken);
+                    data = await handleResponse(resQuery);
+                } catch (e) {
+                    // Se falhar nas duas, usamos nosso tratador padronizado
+                    handleUiError(e, { defaultMessage: "Falha ao carregar fazendas" });
                     setLoading(false);
+                    return; // Interrompe a função aqui
                 }
             }
 
-            // pode vir array ou {items:[], total}
+            // Se chegou aqui, 'data' agora é o JSON correto (Array ou Objeto)
+
+            // Verificação defensiva: pode vir array ou {items:[], total}
             const rawList: any[] = Array.isArray(data) ? data : (data?.items ?? []);
 
             // filtra no cliente por segurança
@@ -201,7 +197,6 @@ export default function ListarFazendasPage() {
                 address: b.endereco,
                 state: b.estado,
                 city: b.cidade,
-                // 👇 mantém sua lógica atual, só "diz" pro TS que é 1|2|3
                 size: (b.porte === "PEQUENO" ? 1 : b.porte === "MEDIO" ? 2 : 3) as 1 | 2 | 3,
                 affix: b.afixo ?? null,
                 affixType: b.prefixo ? "preffix" : b.sufixo ? "suffix" : null,
@@ -211,17 +206,14 @@ export default function ListarFazendasPage() {
 
             setFarms(mapped);
         } catch (e: any) {
-            setError(e?.message ?? "Falha ao carregar fazendas");
+            // Catch geral para erros de mapeamento ou lógica JS
+            console.error(e);
+            handleUiError(e, { defaultMessage: "Erro ao processar dados das fazendas" });
         } finally {
             setLoading(false);
         }
     }
 
-    // useEffect(() => {
-    //   // carrega ao ter token
-    //   loadFarms();
-    //   // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [accessToken]);
     useEffect(() => {
         loadFarms();
         // eslint-disable-next-line react-hooks/exhaustive-deps

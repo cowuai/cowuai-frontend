@@ -1,5 +1,5 @@
 // src/actions/getDoencasByAnimal.tsx
-import { DoencaAnimal } from "@/types/DoencaAnimal";
+import { DoencaAnimal } from "@/types/doencaAnimal";
 
 export async function getDoencasByAnimal(
   accessToken: string,

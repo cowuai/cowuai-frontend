@@ -1,5 +1,5 @@
 "use server";
-import { Animal } from "@/types/Animal";
+import { Animal } from "@/types/animal";
 
 export type PaginatedAnimals = {
     data: Animal[];

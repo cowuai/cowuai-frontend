@@ -12,12 +12,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X } from "lucide-react";
-import { Animal, SexoAnimal, StatusAnimal } from "@/types/Animal";
+import { Animal, SexoAnimal, StatusAnimal } from "@/types/animal";
 import { getTipoRaca } from "@/actions/getTipoRaca";
 import { getFazendasByIdProprietario } from "@/actions/getFazendasByIdProprietario";
 import { useAuth } from "@/app/providers/AuthProvider";
 import { getAnimalsByIdProprietario } from "@/actions/getAnimalsByIdProprietario";
-import { Fazenda } from "@/types/Fazenda";
+import { Fazenda } from "@/types/fazenda";
 import {
   Select,
   SelectContent,

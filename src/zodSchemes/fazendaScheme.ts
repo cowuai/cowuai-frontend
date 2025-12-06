@@ -1,4 +1,3 @@
-// src/zodSchemes/fazendaScheme.ts
 import { z } from "zod";
 
 export const fazendaCreateSchema = z
@@ -37,7 +36,6 @@ export const fazendaCreateSchema = z
       "Selecione o porte da fazenda"
     ),
 
-    // 🔒 afixo agora é obrigatório, não aceita vazio nem só espaços
     afixo: z
       .string()
       .min(1, "Afixo é obrigatório")
@@ -59,8 +57,6 @@ export const fazendaCreateSchema = z
     }
   });
 
-// para update, todos os campos opcionais
 export const fazendaUpdateSchema = fazendaCreateSchema.partial();
 
-// para manter compatível com o que você já importou como `fazendaScheme`
 export const fazendaScheme = fazendaCreateSchema;

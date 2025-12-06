@@ -1,27 +1,20 @@
-// src/app/auth/fazenda/cadastrar/page.tsx
 "use client";
 
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
-import { Slider } from "@/components/ui/slider";
-
-// ✅ toasts
-import { toast } from "sonner";
-
-import { Estado } from "@/types/Estado";
-import { Municipio } from "@/types/Municipio";
-import { getUfs as getUFS } from "@/actions/getUfs";
-import { getMunicipios } from "@/actions/getMunicipios";
-
-import { apiFetch } from "@/helpers/ApiFetch";
-import { useAuth } from "@/app/providers/AuthProvider";
-import { useRouter } from "next/navigation";
+import {useTheme} from "next-themes";
+import {useEffect, useState} from "react";
+import {Slider} from "@/components/ui/slider";
+import {toast} from "sonner";
+import {Estado} from "@/types/estado";
+import {Municipio} from "@/types/municipio";
+import {getUfs as getUFS} from "@/actions/getUfs";
+import {getMunicipios} from "@/actions/getMunicipios";
+import {apiFetch} from "@/helpers/apiFetch";
+import {useAuth} from "@/app/providers/AuthProvider";
+import {useRouter} from "next/navigation";
 import BreadcrumbArea from "@/components/custom/BreadcrumbArea";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-
-import { fazendaScheme } from "@/zodSchemes/fazendaScheme";
-import { z } from "zod";
+import {ArrowLeft} from "lucide-react";
+import {fazendaScheme} from "@/zodSchemes/fazendaScheme";
 import {
     Select,
     SelectContent,
@@ -29,6 +22,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import {Button} from "@/components/ui/button";
+import {Label} from "@/components/ui/label";
+import {Input} from "@/components/ui/input";
+import {handleResponse} from "@/utils/apiResponseHelper";
+import {handleUiError} from "@/utils/handleUiError";
 
 type FarmForm = {
     farmName: string;
@@ -41,7 +39,7 @@ type FarmForm = {
 };
 
 export default function CadastrarFazendaPage() {
-    const { theme } = useTheme();
+    const {theme} = useTheme();
     const [mounted, setMounted] = useState(false);
 
     const [estados, setEstados] = useState<Estado[]>([]);
@@ -58,8 +56,7 @@ export default function CadastrarFazendaPage() {
     });
 
     const router = useRouter();
-    const { usuario, accessToken } = useAuth();
-
+    const {usuario, accessToken} = useAuth();
 
     type FazendaPayload = {
         idProprietario: number;
@@ -105,10 +102,10 @@ export default function CadastrarFazendaPage() {
     useEffect(() => {
         if (formData.state && formData.state.length === 2) {
             getMunicipios(formData.state).then(setMunicipios).catch(console.error);
-            setFormData((prev) => ({ ...prev, city: "" })); // zera cidade ao trocar UF
+            setFormData((prev) => ({...prev, city: ""})); // zera cidade ao trocar UF
         } else {
             setMunicipios([]);
-            setFormData((prev) => ({ ...prev, city: "" }));
+            setFormData((prev) => ({...prev, city: ""}));
         }
 
     }, [formData.state]);
@@ -116,7 +113,7 @@ export default function CadastrarFazendaPage() {
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        setFormData({...formData, [e.target.name]: e.target.value});
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -133,7 +130,7 @@ export default function CadastrarFazendaPage() {
             // valida com Zod (front)
             const body = fazendaScheme.parse(rawBody);
 
-            const data = await apiFetch(
+            const res = await apiFetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/fazendas`,
                 {
                     method: "POST",
@@ -142,21 +139,12 @@ export default function CadastrarFazendaPage() {
                 accessToken ?? undefined
             );
 
+            await handleResponse(res);
+
             router.push("/auth/fazenda/listar");
             toast.success("Fazenda cadastrada com sucesso!");
-            console.log("Fazenda criada:", data);
-        } catch (err) {
-            if (err instanceof z.ZodError) {
-                // ⬇️ aqui muda de `errors` para `issues` e tipamos o issue
-                err.issues.forEach((issue: z.ZodIssue) => {
-                    toast.error(issue.message);
-                });
-                return;
-            }
-
-            console.error(err);
-            const anyErr = err as any;
-            toast.error(anyErr?.message ?? "Erro ao cadastrar fazenda");
+        } catch (err: unknown) {
+            handleUiError(err, {defaultMessage: "Erro ao salvar edição."});
         }
     };
 
@@ -169,34 +157,36 @@ export default function CadastrarFazendaPage() {
                 {/* Header */}
                 <header className="flex-row justify-between items-start mb-8">
                     <Link href="/auth/fazenda/listar"
-                        className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
+                          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
+                        <ArrowLeft className="mr-2 h-4 w-4"/>
                         Voltar para fazendas
                     </Link>
                     <h1 className={`text-3xl font-title mb-2 ${darkMode ? "text-white" : "text-red-900"}`}>
                         Cadastrar Fazenda
                     </h1>
-                    <BreadcrumbArea />
+                    <BreadcrumbArea/>
+                    <p className="text-muted-foreground mt-2">
+                        Preencha as informações da fazenda para adicioná-la ao sistema
+                    </p>
                 </header>
 
                 {/* Card do formulário (padrão do animal) */}
                 <div
                     className={`w-full max-w-2xl mx-auto p-8 rounded-2xl shadow-lg ${darkMode ? "bg-stone-950" : "bg-white"
-                        }`}
+                    }`}
                 >
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Nome da Fazenda */}
                         <div>
-                            <label className="block text-sm font-medium mb-1">
+                            <Label className="block text-sm font-medium mb-1">
                                 Nome da Fazenda
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 type="text"
                                 name="farmName"
                                 value={formData.farmName}
                                 onChange={handleChange}
-                                className="w-full border rounded-md p-2 text-black dark:text-white
-             placeholder:text-gray-500 dark:placeholder:text-gray-300"
+                                className="w-full border rounded-md p-2 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-300"
                                 placeholder="Digite o nome da fazenda..."
                                 required
                             />
@@ -204,16 +194,15 @@ export default function CadastrarFazendaPage() {
 
                         {/* Endereço */}
                         <div>
-                            <label className="block text-sm font-medium mb-1">
+                            <Label className="block text-sm font-medium mb-1">
                                 Endereço / Localidade
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 type="text"
                                 name="address"
                                 value={formData.address}
                                 onChange={handleChange}
-                                className="w-full border rounded-md p-2 text-black dark:text-white
-             placeholder:text-gray-300 dark:placeholder:text-gray-300"
+                                className="w-full border rounded-md p-2 text-black dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-300"
                                 placeholder="Rua, número, complemento…"
                                 required
                             />
@@ -223,21 +212,22 @@ export default function CadastrarFazendaPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* ESTADO (UF) */}
                             <div>
-                                <label className="block text-sm font-medium mb-1">
+                                <Label className="block text-sm font-medium mb-1">
                                     Estado (UF)
-                                </label>
+                                </Label>
 
                                 <Select
                                     // o Select usa value + onValueChange em vez de event.target
                                     value={formData.state}
                                     onValueChange={(value) =>
                                         handleChange({
-                                            target: { name: "state", value },
+                                            target: {name: "state", value},
                                         } as any)
                                     }
                                 >
-                                    <SelectTrigger className="w-full border rounded-md p-2 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-300">
-                                        <SelectValue placeholder="Selecione a UF" />
+                                    <SelectTrigger
+                                        className="w-full border rounded-md p-2 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-300">
+                                        <SelectValue placeholder="Selecione a UF"/>
                                     </SelectTrigger>
 
                                     <SelectContent>
@@ -252,20 +242,21 @@ export default function CadastrarFazendaPage() {
 
                             {/* CIDADE */}
                             <div>
-                                <label className="block text-sm font-medium mb-1">
+                                <Label className="block text-sm font-medium mb-1">
                                     Cidade
-                                </label>
+                                </Label>
 
                                 <Select
                                     value={formData.city}
                                     onValueChange={(value) =>
                                         handleChange({
-                                            target: { name: "city", value },
+                                            target: {name: "city", value},
                                         } as any)
                                     }
                                     disabled={municipios.length === 0}
                                 >
-                                    <SelectTrigger className="w-full border rounded-md p-2 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-300">
+                                    <SelectTrigger
+                                        className="w-full border rounded-md p-2 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-300">
                                         <SelectValue
                                             placeholder={
                                                 municipios.length === 0
@@ -288,7 +279,7 @@ export default function CadastrarFazendaPage() {
 
                         {/* Porte - Slider 1..3 */}
                         <div>
-                            <label className="block text-sm font-medium mb-2">Defina o porte</label>
+                            <Label className="block text-sm font-medium mb-2">Defina o porte</Label>
 
                             <div className="flex items-center gap-3">
                                 <span className="text-sm opacity-80">Pequena</span>
@@ -316,10 +307,10 @@ export default function CadastrarFazendaPage() {
                         {/* Afixo + Tipo */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium mb-1">
+                                <Label className="block text-sm font-medium mb-1">
                                     Afixo
-                                </label>
-                                <input
+                                </Label>
+                                <Input
                                     type="text"
                                     name="affix"
                                     value={formData.affix}
@@ -331,20 +322,21 @@ export default function CadastrarFazendaPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-1">
+                                <Label className="mb-2 block text-sm font-medium">
                                     Tipo de Afixo
-                                </label>
+                                </Label>
 
                                 <Select
                                     value={formData.affixType}
                                     onValueChange={(value) =>
                                         handleChange({
-                                            target: { name: "affixType", value },
+                                            target: {name: "affixType", value},
                                         } as any)
                                     }
                                 >
-                                    <SelectTrigger className="w-full border rounded-md p-2 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-300">
-                                        <SelectValue placeholder="Selecione o tipo de afixo" />
+                                    <SelectTrigger
+                                        className="w-full border rounded-md p-2 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-300">
+                                        <SelectValue placeholder="Selecione o tipo de afixo"/>
                                     </SelectTrigger>
 
                                     <SelectContent>
@@ -359,12 +351,13 @@ export default function CadastrarFazendaPage() {
 
 
                         {/* Botão salvar */}
-                        <button
+                        <Button
                             type="submit"
-                            className="px-6 py-2 bg-red-900 text-white rounded-md hover:bg-red-700"
+                            variant={"default"}
+                            className="py-2 px-4 rounded-md"
                         >
-                            Salvar
-                        </button>
+                            Cadastrar Fazenda
+                        </Button>
                     </form>
                 </div>
             </main>

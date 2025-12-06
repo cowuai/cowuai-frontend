@@ -1,6 +1,6 @@
 'use server';
 
-import { Usuario } from "@/types/Usuario";
+import { Usuario } from "@/types/usuario";
 import { updateUsuarioSchema } from "@/zodSchemes/usuarioScheme";
 import { z } from "zod";
 

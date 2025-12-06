@@ -5,10 +5,10 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 import { useAuth } from "@/app/providers/AuthProvider";
-import { apiFetch } from "@/helpers/ApiFetch";
+import { apiFetch } from "@/helpers/apiFetch";
 
-import { Doenca } from "@/types/Doenca";
-import { DoencaAnimal } from "@/types/DoencaAnimal";
+import { Doenca } from "@/types/doenca";
+import { DoencaAnimal } from "@/types/doencaAnimal";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import {handleResponse} from "@/utils/apiResponseHelper";
+import {handleUiError} from "@/utils/handleUiError";
 
 /**
  * Normaliza uma string "YYYY-MM-DD" para "YYYY-MM-DDT00:00:00"
@@ -59,32 +61,37 @@ export const DiseasesTab = ({
   const [closingDate, setClosingDate] = useState<string>("");
 
   // ====== 1. Buscar lista de doenças cadastradas no sistema ======
-  useEffect(() => {
-    if (!accessToken) return;
+    useEffect(() => {
+        if (!accessToken) return;
 
-    const loadDoencas = async () => {
-      try {
-        setLoadingLista(true);
+        const loadDoencas = async () => {
+            try {
+                setLoadingLista(true);
 
-        const data = await apiFetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/doencas`,
-          {
-            method: "GET",
-            credentials: "include",
-          },
-          accessToken
-        );
+                const res = await apiFetch(
+                    `${process.env.NEXT_PUBLIC_API_URL}/doencas`,
+                    {
+                        method: "GET",
+                        credentials: "include",
+                    },
+                    accessToken
+                );
 
-        setAvailableDiseases((data as Doenca[]) ?? []);
-      } catch (error) {
-        console.error("Erro ao buscar doenças:", error);
-      } finally {
-        setLoadingLista(false);
-      }
-    };
+                const data = await handleResponse(res);
+                const listaSegura = Array.isArray(data) ? data : [];
 
-    loadDoencas();
-  }, [accessToken]);
+                setAvailableDiseases(listaSegura as Doenca[]);
+
+            } catch (error) {
+                handleUiError(error, { defaultMessage: "Erro ao buscar lista de doenças." });
+                setAvailableDiseases([]);
+            } finally {
+                setLoadingLista(false);
+            }
+        };
+
+        loadDoencas();
+    }, [accessToken]);
 
   // ====== 2. Separar doenças ativas x histórico ======
   const doencasAtivas = useMemo(

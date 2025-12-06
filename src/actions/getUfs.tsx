@@ -1,6 +1,6 @@
 'use server';
 
-import {Estado} from "@/types/Estado";
+import {Estado} from "@/types/estado";
 
 export async function getUfs() {
     const res = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados', {

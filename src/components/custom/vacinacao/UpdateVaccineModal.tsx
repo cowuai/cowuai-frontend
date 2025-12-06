@@ -2,7 +2,7 @@
 
 import {useAuth} from "@/app/providers/AuthProvider";
 import React, {useState, useEffect} from "react";
-import {VacinaAplicada} from "@/types/Animal";
+import {VacinaAplicada} from "@/types/animal";
 import {
     Dialog,
     DialogContent,
@@ -24,7 +24,7 @@ import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {calculaProximaDose} from "@/lib/utils";
 import {BiEdit} from "react-icons/bi";
-import {apiFetch} from "@/helpers/ApiFetch";
+import {apiFetch} from "@/helpers/apiFetch";
 import {toast} from "sonner";
 import {format} from "date-fns";
 

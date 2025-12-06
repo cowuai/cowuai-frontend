@@ -20,9 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Estado } from "@/types/Estado";
-import { Municipio } from "@/types/Municipio";
-import { apiFetch } from "@/helpers/ApiFetch";
+import { Estado } from "@/types/estado";
+import { Municipio } from "@/types/municipio";
+import { apiFetch } from "@/helpers/apiFetch";
 
 import {
   Card,

@@ -1,4 +1,4 @@
-import {Estado} from "@/types/Estado";
+import {Estado} from "@/types/estado";
 
 export interface Municipio {
     id: number;

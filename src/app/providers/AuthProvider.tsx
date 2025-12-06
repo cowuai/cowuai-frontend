@@ -1,9 +1,9 @@
 'use client';
 
 import React, {createContext, useContext, useState, ReactNode, useEffect} from 'react';
-import DeviceInfo from "@/helpers/DeviceInfo";
+import DeviceInfo from "@/helpers/deviceInfo";
 import {Spinner} from "@/components/ui/spinner";
-import {Usuario} from "@/types/Usuario";
+import {Usuario} from "@/types/usuario";
 
 interface AuthContextType {
     accessToken: string | null;

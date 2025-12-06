@@ -29,8 +29,11 @@ import {
     EditAnimalModal,
 } from "@/components/custom/animal/listar/EditAnimalModal";
 import {toast} from "sonner";
-import {Animal} from "@/types/Animal";
+import {Animal} from "@/types/animal";
 import {getAnimalsByIdProprietario} from "@/actions/getAnimalsByIdProprietario";
+import {handleResponse} from "@/utils/apiResponseHelper";
+import {ApiRequestError} from "@/utils/apiRequestError";
+import {handleUiError} from "@/utils/handleUiError";
 
 const tsukimi = Tsukimi_Rounded({
     subsets: ["latin"],
@@ -176,18 +179,17 @@ export default function ListarAnimaisPage() {
                 body: JSON.stringify(updatedAnimal),
             });
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || "Erro ao atualizar o animal.");
-            }
+            // Helper para tratar respostas da API
+            await handleResponse(response);
 
             setIsEditModalOpen(false);
             setSelectedAnimal(null);
             triggerRefresh();
             toast.success("Animal atualizado com sucesso.");
+
         } catch (err: any) {
-            console.error("Erro ao salvar edição:", err);
-            toast.error(`Erro ao salvar edição: ${err.message}`);
+            // Usa o helper genérico para tratar erros na UI
+            handleUiError(err, { defaultMessage: "Erro ao salvar edição." });
         } finally {
             setLoading(false);
         }
@@ -213,9 +215,7 @@ export default function ListarAnimaisPage() {
                 },
             });
 
-            if (!response.ok) {
-                throw new Error("Falha ao deletar.");
-            }
+            await handleResponse(response);
 
             if (
                 animais.length === 1 &&
@@ -229,9 +229,8 @@ export default function ListarAnimaisPage() {
             setAnimalIdToDelete(null);
             setIsConfirmModalOpen(false);
             toast.success("Animal deletado com sucesso.");
-        } catch (error: any) {
-            console.error("Erro ao deletar animal:", error);
-            toast.error(`Erro ao deletar animal: ${error.message}`);
+        } catch (err: any) {
+            handleUiError(err, { defaultMessage: "Erro ao deletar animal." });
         } finally {
             setLoading(false);
         }

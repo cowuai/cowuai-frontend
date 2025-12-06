@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { FrequenciaVacina, SexoAnimal } from "@/types/TipoVacina";
+import { FrequenciaVacina, SexoAnimal } from "@/types/tipoVacina";
 
 export const tipoVacinaScheme = z
     .object({

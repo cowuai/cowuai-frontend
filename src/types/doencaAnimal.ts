@@ -1,5 +1,5 @@
-// types/DoencaAnimal.ts
-import { Doenca } from "./Doenca";
+// types/doencaAnimal.ts
+import { Doenca } from "./doenca";
 
 export interface DoencaAnimal {
   id: string; // BigInt no back, string aqui

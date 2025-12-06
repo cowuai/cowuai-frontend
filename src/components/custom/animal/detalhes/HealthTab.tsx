@@ -1,6 +1,6 @@
 'use client';
 
-import {Animal} from "@/types/Animal";
+import {Animal} from "@/types/animal";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Calendar, Syringe, User, FileText} from "lucide-react";
@@ -11,7 +11,7 @@ import UpdateVaccineModal from "@/components/custom/vacinacao/UpdateVaccineModal
 import {BiTrash} from "react-icons/bi";
 import {useAuth} from "@/app/providers/AuthProvider";
 import {toast} from "sonner";
-import {apiFetch} from "@/helpers/ApiFetch";
+import {apiFetch} from "@/helpers/apiFetch";
 import { useState, useEffect } from "react";
 
 // Quebra a string do back em partes Y-M-D
