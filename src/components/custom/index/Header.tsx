@@ -17,21 +17,22 @@ const Header = () => {
                     {/* Logo */}
                     <div className="flex items-center">
                         <Image src={logo} alt="CowUai Logo" className="h-12 w-12" />
+                        <span className="ml-4 text-xl font-tsukimi-rounded font-bold text-primary-foreground">CowUai</span>
                     </div>
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center space-x-8">
-                        <a href="#inicio" className="text-primary-foreground hover:text-accent-foreground transition-colors">
+                        <a href="#inicio" className="text-primary-foreground p-2 hover:bg-white/10 rounded-lg hover:rounded-lg transition-colors">
                             Início
                         </a>
-                        <a href="#sobre" className="text-primary-foreground hover:text-accent-foreground transition-colors">
+                        <a href="#sobre" className="text-primary-foreground p-2 hover:bg-white/10 rounded-lg hover:rounded-lg transition-colors">
                             Sobre
                         </a>
                     </div>
 
                     {/* CTA Button */}
                     <div className="hidden md:block">
-                        <Button asChild variant="default" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
+                        <Button asChild variant="link" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
                           <Link href="/login">Acesso</Link>
                         </Button>
                     </div>
@@ -63,8 +64,7 @@ const Header = () => {
                             Sobre
                         </a>
                         <Button asChild variant="default" className="w-full border-primary/30 text-primary-foreground hover:bg-primary-foreground/10">
-                            <Link href="/login">Acesso</Link>
-                            Acesso
+                            <Link href="/login" className="w-full block text-center">Acesso</Link>
                         </Button>
                     </div>
                 )}

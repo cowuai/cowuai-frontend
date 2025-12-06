@@ -1,11 +1,9 @@
-// src/app/auth/animal/listar/page.tsx
 "use client";
 
 import {useAuth} from "@/app/providers/AuthProvider";
 import {useEffect, useState} from "react";
 import {useRouter} from "next/navigation";
 import {useTheme} from "next-themes";
-
 import {
     Table,
     TableBody,
@@ -16,11 +14,8 @@ import {
 } from "@/components/ui/table";
 import {FaEye} from "react-icons/fa";
 import {Tsukimi_Rounded} from "next/font/google";
-import {Pencil, Trash2, Eye} from "lucide-react";
+import {Pencil, Trash2} from "lucide-react";
 import BreadcrumbArea from "@/components/custom/BreadcrumbArea";
-
-// REMOVIDO: import { PaginationControls } ...
-// ADICIONADO: Importações diretas do Shadcn (igual à Fazenda)
 import {
     Pagination,
     PaginationContent,
@@ -29,13 +24,13 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination";
-
-import {ConfirmDeleteModal} from "../../../../components/custom/animal/listar/ConfirmDeleteModal";
+import {ConfirmDeleteModal} from "@/components/custom/animal/listar/ConfirmDeleteModal";
 import {
     EditAnimalModal,
-} from "../../../../components/custom/animal/listar/EditAnimalModal";
+} from "@/components/custom/animal/listar/EditAnimalModal";
 import {toast} from "sonner";
 import {Animal} from "@/types/Animal";
+import {getAnimalsByIdProprietario} from "@/actions/getAnimalsByIdProprietario";
 
 const tsukimi = Tsukimi_Rounded({
     subsets: ["latin"],
@@ -49,41 +44,8 @@ interface PaginationData {
     totalPages: number;
 }
 
-interface ApiResponse {
-    data: Animal[];
-    pagination: PaginationData;
-}
-
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 const ANIMAL_ENDPOINT = `${API_BASE_URL}/animais`;
-
-const fetchAnimals = async (
-    page: number,
-    pageSize: number,
-    token: string | null
-): Promise<ApiResponse> => {
-    const url = `${ANIMAL_ENDPOINT}?page=${page}&pageSize=${pageSize}`;
-    const headers: HeadersInit = {"Content-Type": "application/json"};
-    if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-    }
-    const response = await fetch(url, {
-        credentials: "include",
-        headers: headers,
-    });
-
-    if (!response.ok) {
-        const errorData = await response
-            .json()
-            .catch(() => ({message: response.statusText}));
-        throw new Error(
-            `Erro ${response.status}: ${
-                errorData.message || "Falha ao buscar dados."
-            }`
-        );
-    }
-    return response.json();
-};
 
 const formatDate = (dateString: string | undefined): string => {
     if (!dateString) return "-";
@@ -101,10 +63,10 @@ const formatDate = (dateString: string | undefined): string => {
 export default function ListarAnimaisPage() {
     const {theme} = useTheme();
     const [mounted, setMounted] = useState(false);
-    const {accessToken} = useAuth();
+    const {accessToken, usuario} = useAuth();
 
     // Definição de itens por página
-    const DEFAULT_PAGE_SIZE = 2;
+    const DEFAULT_PAGE_SIZE = 10;
 
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [pageSize] = useState<number>(DEFAULT_PAGE_SIZE);
@@ -143,13 +105,25 @@ export default function ListarAnimaisPage() {
             if (!accessToken) return;
             setLoading(true);
             try {
-                const apiResponse = await fetchAnimals(
+                const apiResponse = await getAnimalsByIdProprietario(
+                    accessToken,
+                    usuario?.id.toString() || "",
                     currentPage,
-                    pageSize,
-                    accessToken
+                    pageSize
                 );
 
-                if (apiResponse && Array.isArray(apiResponse.data)) {
+                // O retorno pode ser Animal[] ou PaginatedAnimals.
+                if (Array.isArray(apiResponse)) {
+                    // Sem paginação: recebemos diretamente a lista de animais
+                    setAnimais(apiResponse);
+                    setPaginationData({
+                        page: 1,
+                        pageSize: pageSize,
+                        totalItems: apiResponse.length,
+                        totalPages: 1,
+                    });
+                } else if (apiResponse && "data" in apiResponse && "pagination" in apiResponse) {
+                    // Com paginação: atualiza lista e dados de paginação
                     setAnimais(apiResponse.data);
                     setPaginationData(
                         apiResponse.pagination || {
@@ -160,6 +134,7 @@ export default function ListarAnimaisPage() {
                         }
                     );
                 } else {
+                    // Fallback seguro
                     setAnimais([]);
                     setPaginationData({
                         page: 1,
@@ -175,7 +150,7 @@ export default function ListarAnimaisPage() {
             }
         };
         loadAnimals();
-    }, [currentPage, pageSize, refreshFlag, accessToken]);
+    }, [currentPage, pageSize, refreshFlag, accessToken, usuario?.id]);
 
     const triggerRefresh = () => {
         setRefreshFlag((prev) => prev + 1);

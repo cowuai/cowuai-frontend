@@ -168,7 +168,19 @@ export default function CadastrarAnimalPage() {
           accessToken,
           String(usuarioAtivo.id)
         );
-        setAnimais(res);
+
+        if (Array.isArray(res)) {
+          setAnimais(res);
+        } else {
+          const pag = res as any;
+          if (Array.isArray(pag.data)) {
+            setAnimais(pag.data);
+          } else if (Array.isArray(pag.items)) {
+            setAnimais(pag.items);
+          } else {
+            setAnimais([]);
+          }
+        }
       } catch (_err: unknown) {
         // Não mostramos erro ao usuário nesta tela quando não houver animais.
         // Apenas garantimos que a lista de animais fique vazia.
